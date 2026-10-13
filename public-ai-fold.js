@@ -69,6 +69,6 @@
   if(document.getElementById('dipRecoveryLoader'))return;
   const s=document.createElement('script');
   s.id='dipRecoveryLoader';
-  s.src='./public-dip-recovery.js?v=2';
+  s.src='./public-dip-recovery.js?v=3';
   document.head.appendChild(s);
 })();
