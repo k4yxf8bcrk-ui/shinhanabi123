@@ -1,0 +1,118 @@
+name: Analyze low spin next day
+on:
+  push:
+    paths:
+      - low-spin.trigger
+permissions:
+  contents: write
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Analyze
+        run: |
+          python - <<'PY'
+          import json, statistics
+          from pathlib import Path
+          from datetime import date, timedelta
+
+          ACTIVE=['3232','3233','3235']
+          data=json.loads(Path('data.json').read_text(encoding='utf-8'))
+          agg={}
+          for r in data.get('records',[]):
+            m=str(r.get('machineNo','')); d=str(r.get('date',''))
+            if m not in ACTIVE or not d: continue
+            k=(d,m)
+            x=agg.setdefault(k,{'date':d,'machineNo':m,'games':0.0,'diff':0.0})
+            x['games']+=float(r.get('games') or 0); x['diff']+=float(r.get('diff') or 0)
+
+          dates=sorted({d for d,m in agg})
+          def rows_for(d):
+            rows=[agg.get((d,m)) for m in ACTIVE]
+            return rows if all(x and x['games']>0 for x in rows) else None
+          def next_calendar(d):
+            y,m,dd=map(int,d.split('-'))
+            return (date(y,m,dd)+timedelta(days=1)).isoformat()
+
+          cases=[]
+          for d in dates:
+            a=rows_for(d)
+            if not a: continue
+            nd=next_calendar(d)
+            b=rows_for(nd)
+            if not b: continue
+            sg=sorted(a,key=lambda x:x['games'])
+            if sg[0]['games']==sg[1]['games']: continue
+            low=sg[0]['machineNo']
+            best=max(x['diff'] for x in b)
+            worst=min(x['diff'] for x in b)
+            nxt={x['machineNo']:x for x in b}
+            cases.append({
+              'date':d,'nextDate':nd,'lowMachine':low,'lowGames':round(sg[0]['games']),
+              'nextDiff':round(nxt[low]['diff']),'nextBest':nxt[low]['diff']==best,
+              'nextPlus':nxt[low]['diff']>0,
+              'nextRank':1+sum(x['diff']>nxt[low]['diff'] for x in b),
+              'prevRanks':[x['machineNo'] for x in sg]
+            })
+
+          def summary(cs):
+            n=len(cs)
+            return {
+              'n':n,
+              'bestCount':sum(c['nextBest'] for c in cs),
+              'bestRate':sum(c['nextBest'] for c in cs)/n if n else None,
+              'plusCount':sum(c['nextPlus'] for c in cs),
+              'plusRate':sum(c['nextPlus'] for c in cs)/n if n else None,
+              'avgNextDiff':statistics.mean(c['nextDiff'] for c in cs) if n else None,
+              'medianNextDiff':statistics.median(c['nextDiff'] for c in cs) if n else None,
+              'avgNextRank':statistics.mean(c['nextRank'] for c in cs) if n else None,
+            }
+
+          # Compare previous-day spin ranks 1=least, 2=middle, 3=most
+          rank_stats={}
+          for rank in [1,2,3]:
+            vals=[]
+            for d in dates:
+              a=rows_for(d)
+              if not a: continue
+              nd=next_calendar(d); b=rows_for(nd)
+              if not b: continue
+              sg=sorted(a,key=lambda x:x['games'])
+              if len({x['games'] for x in sg})<3: continue
+              m=sg[rank-1]['machineNo']; nxt={x['machineNo']:x for x in b}; best=max(x['diff'] for x in b)
+              vals.append({'diff':nxt[m]['diff'],'plus':nxt[m]['diff']>0,'best':nxt[m]['diff']==best})
+            n=len(vals)
+            rank_stats[str(rank)]={
+              'label':{1:'least_spun',2:'middle_spun',3:'most_spun'}[rank],
+              'n':n,
+              'nextBestRate':sum(v['best'] for v in vals)/n if n else None,
+              'nextPlusRate':sum(v['plus'] for v in vals)/n if n else None,
+              'avgNextDiff':statistics.mean(v['diff'] for v in vals) if n else None,
+            }
+
+          # Conditional buckets by how low the least-spun machine was
+          buckets={}
+          for lim in [1000,1500,2000,2500,3000]:
+            cs=[c for c in cases if c['lowGames']<=lim]
+            buckets[str(lim)]=summary(cs)
+
+          out={
+            'generatedFrom':data.get('generatedAt'),
+            'machines':ACTIVE,
+            'definition':'Among 3232/3233/3235, previous calendar day least games; test whether same machine is next calendar day highest diff.',
+            'baselineBestRate':1/3,
+            'all':summary(cases),
+            'recent30Cases':summary(cases[-30:]),
+            'recent60Cases':summary(cases[-60:]),
+            'spinRankComparison':rank_stats,
+            'lowGamesBuckets':buckets,
+            'latestCases':list(reversed(cases[-20:])),
+          }
+          Path('low-spin-analysis.json').write_text(json.dumps(out,ensure_ascii=False,indent=2),encoding='utf-8')
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add low-spin-analysis.json
+          git commit -m "Update low-spin next-day analysis" || exit 0
+          git push
