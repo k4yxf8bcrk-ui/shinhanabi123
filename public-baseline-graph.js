@@ -32,9 +32,9 @@
     const x=new Date(String(d)+'T12:00:00');if(Number.isNaN(x.getTime())||x.getDay()!==6)return false;
     const y=new Date(x);y.setDate(y.getDate()+7);return y.getMonth()!==x.getMonth();
   }
-  function isWeekdayOrSunday(d){
+  function isAnyDay(d){
     const x=new Date(String(d)+'T12:00:00');if(Number.isNaN(x.getTime()))return false;
-    const w=x.getDay();return w===0||(w>=1&&w<=5);
+    const w=x.getDay();return w>=0&&w<=6;
   }
   function monthOptions(rows){return [...new Set(rows.map(r=>r.date.slice(0,7)))].sort();}
 
@@ -58,7 +58,7 @@
     const rows=aggregate(RECORDS,machines).sort((a,b)=>a.date.localeCompare(b.date)||Number(a.machineNo)-Number(b.machineNo));
     const months=monthOptions(rows);
     const panel=document.createElement('section');panel.id='baselinePanel';panel.className='panel baselinePanel';
-    panel.innerHTML=`<div class="baselineHead"><div><h2>通常日推定グラフ</h2><div class="muted">大きく出た日を条件別に外して、普段の設定1寄りの波を見る参考グラフ</div></div><div class="pill">設定1寄り</div></div><div class="baselineControls"><label>台番<select id="baselineMachine">${machines.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}</select></label><label>月<select id="baselineMonth"><option value="ALL">全期間</option>${months.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}</select></label><label>グラフ<select id="baselineMode"><option value="cumulative">累計差枚</option><option value="daily">日別差枚</option><option value="pergame">1Gあたり差枚</option></select></label></div><div class="baselineChecks"><label><input id="baselineMonthEnd1500" type="checkbox" checked> 月末土曜日 +1,500枚以上を除外</label><label><input id="baselineOther3000" type="checkbox" checked> 平日・日曜 +3,000枚以上を除外</label></div><div id="baselineStats" class="baselineStats"></div><div class="baselineChartWrap"><canvas id="baselineCanvas"></canvas><div id="baselineTip" class="baselineTooltip"></div></div><div id="baselineLegend" class="baselineLegend"></div><details id="baselineExcluded" class="baselineExcluded"><summary>除外された日を見る</summary><div id="baselineExcludedBody" class="baselineExcludedBody"></div></details><div class="baselineNote">月末土曜日は、その月の最後の土曜日で+1,500枚以上の台を除外します。平日（月〜金）・日曜日は+3,000枚以上の台を除外します。通常の土曜日は+3,000枚以上でも自動除外しません。0G日は対象外です。設定投入を証明する判定ではなく、通常日の傾向を見るための参考フィルターです。</div>`;
+    panel.innerHTML=`<div class="baselineHead"><div><h2>通常日推定グラフ</h2><div class="muted">大きく出た日を条件別に外して、普段の設定1寄りの波を見る参考グラフ</div></div><div class="pill">設定1寄り</div></div><div class="baselineControls"><label>台番<select id="baselineMachine">${machines.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}</select></label><label>月<select id="baselineMonth"><option value="ALL">全期間</option>${months.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}</select></label><label>グラフ<select id="baselineMode"><option value="cumulative">累計差枚</option><option value="daily">日別差枚</option><option value="pergame">1Gあたり差枚</option></select></label></div><div class="baselineChecks"><label><input id="baselineMonthEnd1500" type="checkbox" checked> 月末土曜日 +1,500枚以上を除外</label><label><input id="baselineOther3000" type="checkbox" checked> 全曜日 +3,000枚以上を除外</label></div><div id="baselineStats" class="baselineStats"></div><div class="baselineChartWrap"><canvas id="baselineCanvas"></canvas><div id="baselineTip" class="baselineTooltip"></div></div><div id="baselineLegend" class="baselineLegend"></div><details id="baselineExcluded" class="baselineExcluded"><summary>除外された日を見る</summary><div id="baselineExcludedBody" class="baselineExcludedBody"></div></details><div class="baselineNote">月末土曜日は、その月の最後の土曜日で+1,500枚以上の台を除外します。曜日に関係なく+3,000枚以上の台を除外します。土曜日も対象です。0G日は対象外です。設定投入を証明する判定ではなく、通常日の傾向を見るための参考フィルターです。</div>`;
     const anchor=$('tablePanel');anchor?.parentNode.insertBefore(panel,anchor);
     canvas=$('baselineCanvas');tip=$('baselineTip');
 
@@ -69,7 +69,7 @@
       for(const r of base){
         const reasons=[];
         if(cutMonthEnd&&isLastSaturday(r.date)&&r.diff>=1500)reasons.push('月末土曜 +1500枚以上');
-        if(cutOther&&isWeekdayOrSunday(r.date)&&r.diff>=3000)reasons.push('平日・日曜 +3000枚以上');
+        if(cutOther&&isAnyDay(r.date)&&r.diff>=3000)reasons.push('全曜日 +3000枚以上');
         if(reasons.length)excluded.push({...r,reasons});else kept.push(r);
       }
       const g=kept.reduce((s,r)=>s+r.games,0),d=kept.reduce((s,r)=>s+r.diff,0),exd=excluded.reduce((s,r)=>s+r.diff,0),pg=g?d/g:0;
