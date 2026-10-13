@@ -72,3 +72,12 @@
   s.src='./public-dip-recovery.js?v=3';
   document.head.appendChild(s);
 })();
+
+// 前日低稼働→翌日分析を公開ページへ読み込む
+(()=>{
+  if(document.getElementById('lowSpinLoader'))return;
+  const s=document.createElement('script');
+  s.id='lowSpinLoader';
+  s.src='./public-low-spin.js?v=1';
+  document.head.appendChild(s);
+})();
