@@ -1,0 +1,31 @@
+name: Apply public v13 enhancement
+on:
+  push:
+    paths:
+      - 'public-v13.trigger'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch index
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          if 'public-v13.css' not in s:
+              s=s.replace('</head>', '<link rel="stylesheet" href="./public-v13.css?v=13">\n</head>', 1)
+          if 'public-v13.js' not in s:
+              s=s.replace('</body>', '<script src="./public-v13.js?v=13"></script>\n</body>', 1)
+          p.write_text(s, encoding='utf-8')
+      - name: Commit public page
+        run: |
+          if git diff --quiet -- index.html; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Enable public v13 range summary and per-game chart"
+          git push
