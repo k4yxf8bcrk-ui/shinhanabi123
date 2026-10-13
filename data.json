@@ -1,6 +1,6 @@
 {
   "schemaVersion": 4,
-  "generatedAt": "2026-10-13T01:32:57.461Z",
+  "generatedAt": "2026-10-13T02:38:20.550Z",
   "records": [
     {
       "date": "2025-12-01",
@@ -6267,6 +6267,45 @@
       "bbProb": 233.1,
       "rbProb": 282.2,
       "collectedAt": "2026-10-13T01:16:14.125Z"
+    },
+    {
+      "date": "2026-09-29",
+      "weekday": "火",
+      "machineNo": "3232",
+      "games": 1245,
+      "diff": -250,
+      "bb": 4,
+      "rb": 3,
+      "totalProb": 177.9,
+      "bbProb": 311.2,
+      "rbProb": 415,
+      "collectedAt": "2026-10-13T02:38:18.655Z"
+    },
+    {
+      "date": "2026-09-29",
+      "weekday": "火",
+      "machineNo": "3233",
+      "games": 0,
+      "diff": 0,
+      "bb": 0,
+      "rb": 0,
+      "totalProb": 0,
+      "bbProb": 0,
+      "rbProb": 0,
+      "collectedAt": "2026-10-13T02:38:18.655Z"
+    },
+    {
+      "date": "2026-09-29",
+      "weekday": "火",
+      "machineNo": "3235",
+      "games": 3518,
+      "diff": -183,
+      "bb": 11,
+      "rb": 5,
+      "totalProb": 219.9,
+      "bbProb": 319.8,
+      "rbProb": 703.6,
+      "collectedAt": "2026-10-13T02:38:18.655Z"
     },
     {
       "date": "2026-10-01",
