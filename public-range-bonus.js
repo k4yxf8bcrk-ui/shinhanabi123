@@ -48,3 +48,39 @@
   };
   const timer=setInterval(()=>{if(typeof RECORDS!=='undefined'&&RECORDS.length&&g('rangeSummaryGrid')){clearInterval(timer);bind();}},100);
 })();
+
+(()=>{
+  const g=id=>document.getElementById(id);
+  function setupAiFold(){
+    const panel=g('predictionPanel'),grid=g('predictionGrid'),ai=g('aiBox'),acc=g('aiAccuracyBox');
+    if(!panel||!grid||!ai||!acc||g('aiPredictionFold'))return false;
+    const details=document.createElement('details');
+    details.id='aiPredictionFold';
+    details.className='aiPredictionFold';
+    const summary=document.createElement('summary');
+    summary.innerHTML='<span>AI予想を見る</span><small>参考スコア・AI分析・AI的中率</small>';
+    const body=document.createElement('div');
+    body.className='aiPredictionFoldBody';
+    grid.parentNode.insertBefore(details,grid);
+    details.appendChild(summary);
+    details.appendChild(body);
+    body.appendChild(grid);
+    body.appendChild(ai);
+    body.appendChild(acc);
+    details.addEventListener('toggle',()=>{
+      const span=summary.querySelector('span');
+      if(span)span.textContent=details.open?'AI予想を閉じる':'AI予想を見る';
+    });
+    if(!g('aiPredictionFoldStyle')){
+      const style=document.createElement('style');
+      style.id='aiPredictionFoldStyle';
+      style.textContent='.aiPredictionFold{margin-top:13px;border:1px solid #c9d9f5;border-radius:12px;background:#fff;overflow:hidden}.aiPredictionFold>summary{cursor:pointer;list-style:none;padding:12px 14px;font-weight:900;color:#174ea6;display:flex;align-items:center;justify-content:space-between;gap:10px}.aiPredictionFold>summary::-webkit-details-marker{display:none}.aiPredictionFold>summary:after{content:"＋";font-size:18px;line-height:1}.aiPredictionFold[open]>summary:after{content:"−"}.aiPredictionFold>summary small{font-weight:500;color:#6b7280;font-size:10px;margin-left:auto}.aiPredictionFoldBody{padding:0 12px 12px}.aiPredictionFoldBody .predictionGrid{margin-top:0}@media(max-width:600px){.aiPredictionFold>summary{align-items:flex-start}.aiPredictionFold>summary small{display:none}}';
+      document.head.appendChild(style);
+    }
+    return true;
+  }
+  if(!setupAiFold()){
+    const t=setInterval(()=>{if(setupAiFold())clearInterval(t);},100);
+    setTimeout(()=>clearInterval(t),10000);
+  }
+})();
