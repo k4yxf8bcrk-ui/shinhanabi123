@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 3,
-  "generatedAt": "2026-10-13T00:18:40.889Z",
+  "schemaVersion": 4,
+  "generatedAt": "2026-10-13T00:33:02.901Z",
   "records": [
     {
       "date": "2025-12-01",
@@ -6134,5 +6134,17 @@
       "3233・3232番台の連勝が苦手な火曜日にストップするか"
     ],
     "caution": "連勝中の台は火曜日に極端に弱い傾向があるため、好調さだけで過信せず深追いは避けましょう。"
+  },
+  "aiAccuracy": {
+    "evaluated": 0,
+    "plusHits": 0,
+    "plusRate": null,
+    "bestHits": 0,
+    "bestRate": null,
+    "top2Hits": 0,
+    "top2Rate": null,
+    "avgTopDiff": 0,
+    "pending": 1,
+    "recent": []
   }
 }
