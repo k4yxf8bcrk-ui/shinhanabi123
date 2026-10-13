@@ -1,0 +1,417 @@
+{
+  "generatedFrom": "2026-10-13T04:02:54.256Z",
+  "machines": [
+    "3232",
+    "3233",
+    "3235"
+  ],
+  "definition": "Among 3232/3233/3235, previous calendar day least games; test whether same machine is next calendar day highest diff.",
+  "baselineBestRate": 0.3333333333333333,
+  "all": {
+    "n": 137,
+    "bestCount": 44,
+    "bestRate": 0.32116788321167883,
+    "plusCount": 60,
+    "plusRate": 0.43795620437956206,
+    "avgNextDiff": 77.33576642335767,
+    "medianNextDiff": -217,
+    "avgNextRank": 2.051094890510949
+  },
+  "recent30Cases": {
+    "n": 30,
+    "bestCount": 10,
+    "bestRate": 0.3333333333333333,
+    "plusCount": 14,
+    "plusRate": 0.4666666666666667,
+    "avgNextDiff": 348.4,
+    "medianNextDiff": -217.0,
+    "avgNextRank": 2.033333333333333
+  },
+  "recent60Cases": {
+    "n": 60,
+    "bestCount": 19,
+    "bestRate": 0.31666666666666665,
+    "plusCount": 31,
+    "plusRate": 0.5166666666666667,
+    "avgNextDiff": 237.31666666666666,
+    "medianNextDiff": 53.0,
+    "avgNextRank": 2.0166666666666666
+  },
+  "spinRankComparison": {
+    "1": {
+      "label": "least_spun",
+      "n": 137,
+      "nextBestRate": 0.32116788321167883,
+      "nextPlusRate": 0.43795620437956206,
+      "avgNextDiff": 77.33576642335767
+    },
+    "2": {
+      "label": "middle_spun",
+      "n": 137,
+      "nextBestRate": 0.29927007299270075,
+      "nextPlusRate": 0.40875912408759124,
+      "avgNextDiff": -4.810218978102189
+    },
+    "3": {
+      "label": "most_spun",
+      "n": 137,
+      "nextBestRate": 0.38686131386861317,
+      "nextPlusRate": 0.4233576642335766,
+      "avgNextDiff": 118.0948905109489
+    }
+  },
+  "lowGamesBuckets": {
+    "1000": {
+      "n": 43,
+      "bestCount": 17,
+      "bestRate": 0.3953488372093023,
+      "plusCount": 18,
+      "plusRate": 0.4186046511627907,
+      "avgNextDiff": 104.69767441860465,
+      "medianNextDiff": -217,
+      "avgNextRank": 2.0232558139534884
+    },
+    "1500": {
+      "n": 82,
+      "bestCount": 29,
+      "bestRate": 0.35365853658536583,
+      "plusCount": 32,
+      "plusRate": 0.3902439024390244,
+      "avgNextDiff": 29.426829268292682,
+      "medianNextDiff": -260.5,
+      "avgNextRank": 2.0609756097560976
+    },
+    "2000": {
+      "n": 98,
+      "bestCount": 34,
+      "bestRate": 0.3469387755102041,
+      "plusCount": 41,
+      "plusRate": 0.41836734693877553,
+      "avgNextDiff": 38.265306122448976,
+      "medianNextDiff": -247.0,
+      "avgNextRank": 2.0408163265306123
+    },
+    "2500": {
+      "n": 108,
+      "bestCount": 36,
+      "bestRate": 0.3333333333333333,
+      "plusCount": 49,
+      "plusRate": 0.4537037037037037,
+      "avgNextDiff": 93.4074074074074,
+      "medianNextDiff": -204.5,
+      "avgNextRank": 2.0277777777777777
+    },
+    "3000": {
+      "n": 117,
+      "bestCount": 42,
+      "bestRate": 0.358974358974359,
+      "plusCount": 52,
+      "plusRate": 0.4444444444444444,
+      "avgNextDiff": 82.12820512820512,
+      "medianNextDiff": -206,
+      "avgNextRank": 1.9914529914529915
+    }
+  },
+  "latestCases": [
+    {
+      "date": "2026-10-11",
+      "nextDate": "2026-10-12",
+      "lowMachine": "3235",
+      "lowGames": 3319,
+      "nextDiff": -383,
+      "nextBest": false,
+      "nextPlus": false,
+      "nextRank": 3,
+      "prevRanks": [
+        "3235",
+        "3232",
+        "3233"
+      ]
+    },
+    {
+      "date": "2026-10-10",
+      "nextDate": "2026-10-11",
+      "lowMachine": "3232",
+      "lowGames": 2878,
+      "nextDiff": 1744,
+      "nextBest": true,
+      "nextPlus": true,
+      "nextRank": 1,
+      "prevRanks": [
+        "3232",
+        "3235",
+        "3233"
+      ]
+    },
+    {
+      "date": "2026-09-23",
+      "nextDate": "2026-09-24",
+      "lowMachine": "3232",
+      "lowGames": 1143,
+      "nextDiff": 1075,
+      "nextBest": true,
+      "nextPlus": true,
+      "nextRank": 1,
+      "prevRanks": [
+        "3232",
+        "3235",
+        "3233"
+      ]
+    },
+    {
+      "date": "2026-09-22",
+      "nextDate": "2026-09-23",
+      "lowMachine": "3232",
+      "lowGames": 780,
+      "nextDiff": -383,
+      "nextBest": false,
+      "nextPlus": false,
+      "nextRank": 3,
+      "prevRanks": [
+        "3232",
+        "3235",
+        "3233"
+      ]
+    },
+    {
+      "date": "2026-09-21",
+      "nextDate": "2026-09-22",
+      "lowMachine": "3235",
+      "lowGames": 2454,
+      "nextDiff": 294,
+      "nextBest": false,
+      "nextPlus": true,
+      "nextRank": 2,
+      "prevRanks": [
+        "3235",
+        "3232",
+        "3233"
+      ]
+    },
+    {
+      "date": "2026-09-20",
+      "nextDate": "2026-09-21",
+      "lowMachine": "3235",
+      "lowGames": 1611,
+      "nextDiff": -1425,
+      "nextBest": false,
+      "nextPlus": false,
+      "nextRank": 2,
+      "prevRanks": [
+        "3235",
+        "3232",
+        "3233"
+      ]
+    },
+    {
+      "date": "2026-09-19",
+      "nextDate": "2026-09-20",
+      "lowMachine": "3235",
+      "lowGames": 2188,
+      "nextDiff": 183,
+      "nextBest": false,
+      "nextPlus": true,
+      "nextRank": 2,
+      "prevRanks": [
+        "3235",
+        "3232",
+        "3233"
+      ]
+    },
+    {
+      "date": "2026-09-18",
+      "nextDate": "2026-09-19",
+      "lowMachine": "3232",
+      "lowGames": 439,
+      "nextDiff": -550,
+      "nextBest": false,
+      "nextPlus": false,
+      "nextRank": 3,
+      "prevRanks": [
+        "3232",
+        "3233",
+        "3235"
+      ]
+    },
+    {
+      "date": "2026-09-17",
+      "nextDate": "2026-09-18",
+      "lowMachine": "3233",
+      "lowGames": 695,
+      "nextDiff": -406,
+      "nextBest": false,
+      "nextPlus": false,
+      "nextRank": 3,
+      "prevRanks": [
+        "3233",
+        "3232",
+        "3235"
+      ]
+    },
+    {
+      "date": "2026-09-16",
+      "nextDate": "2026-09-17",
+      "lowMachine": "3233",
+      "lowGames": 298,
+      "nextDiff": -761,
+      "nextBest": false,
+      "nextPlus": false,
+      "nextRank": 3,
+      "prevRanks": [
+        "3233",
+        "3232",
+        "3235"
+      ]
+    },
+    {
+      "date": "2026-09-15",
+      "nextDate": "2026-09-16",
+      "lowMachine": "3235",
+      "lowGames": 505,
+      "nextDiff": 3264,
+      "nextBest": true,
+      "nextPlus": true,
+      "nextRank": 1,
+      "prevRanks": [
+        "3235",
+        "3232",
+        "3233"
+      ]
+    },
+    {
+      "date": "2026-09-14",
+      "nextDate": "2026-09-15",
+      "lowMachine": "3235",
+      "lowGames": 407,
+      "nextDiff": -217,
+      "nextBest": false,
+      "nextPlus": false,
+      "nextRank": 2,
+      "prevRanks": [
+        "3235",
+        "3232",
+        "3233"
+      ]
+    },
+    {
+      "date": "2026-09-13",
+      "nextDate": "2026-09-14",
+      "lowMachine": "3233",
+      "lowGames": 2131,
+      "nextDiff": 2011,
+      "nextBest": true,
+      "nextPlus": true,
+      "nextRank": 1,
+      "prevRanks": [
+        "3233",
+        "3232",
+        "3235"
+      ]
+    },
+    {
+      "date": "2026-09-12",
+      "nextDate": "2026-09-13",
+      "lowMachine": "3235",
+      "lowGames": 3139,
+      "nextDiff": 1922,
+      "nextBest": true,
+      "nextPlus": true,
+      "nextRank": 1,
+      "prevRanks": [
+        "3235",
+        "3232",
+        "3233"
+      ]
+    },
+    {
+      "date": "2026-09-11",
+      "nextDate": "2026-09-12",
+      "lowMachine": "3233",
+      "lowGames": 845,
+      "nextDiff": 1342,
+      "nextBest": true,
+      "nextPlus": true,
+      "nextRank": 1,
+      "prevRanks": [
+        "3233",
+        "3235",
+        "3232"
+      ]
+    },
+    {
+      "date": "2026-09-10",
+      "nextDate": "2026-09-11",
+      "lowMachine": "3235",
+      "lowGames": 404,
+      "nextDiff": -983,
+      "nextBest": false,
+      "nextPlus": false,
+      "nextRank": 3,
+      "prevRanks": [
+        "3235",
+        "3232",
+        "3233"
+      ]
+    },
+    {
+      "date": "2026-09-09",
+      "nextDate": "2026-09-10",
+      "lowMachine": "3233",
+      "lowGames": 494,
+      "nextDiff": 561,
+      "nextBest": true,
+      "nextPlus": true,
+      "nextRank": 1,
+      "prevRanks": [
+        "3233",
+        "3232",
+        "3235"
+      ]
+    },
+    {
+      "date": "2026-09-08",
+      "nextDate": "2026-09-09",
+      "lowMachine": "3233",
+      "lowGames": 2842,
+      "nextDiff": -217,
+      "nextBest": true,
+      "nextPlus": false,
+      "nextRank": 1,
+      "prevRanks": [
+        "3233",
+        "3232",
+        "3235"
+      ]
+    },
+    {
+      "date": "2026-09-07",
+      "nextDate": "2026-09-08",
+      "lowMachine": "3235",
+      "lowGames": 2935,
+      "nextDiff": 594,
+      "nextBest": true,
+      "nextPlus": true,
+      "nextRank": 1,
+      "prevRanks": [
+        "3235",
+        "3232",
+        "3233"
+      ]
+    },
+    {
+      "date": "2026-09-06",
+      "nextDate": "2026-09-07",
+      "lowMachine": "3235",
+      "lowGames": 5741,
+      "nextDiff": -939,
+      "nextBest": false,
+      "nextPlus": false,
+      "nextRank": 3,
+      "prevRanks": [
+        "3235",
+        "3232",
+        "3233"
+      ]
+    }
+  ]
+}
