@@ -1,0 +1,254 @@
+name: Build today analysis
+on:
+  push:
+    paths:
+      - analysis-today.trigger
+permissions:
+  contents: write
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Refresh latest data and analyze
+        run: |
+          git pull --rebase origin main || true
+          python - <<'PY'
+          import json, math, statistics
+          from pathlib import Path
+          from datetime import datetime
+
+          TARGET='2026-10-13'
+          TARGET_WEEKDAY='火'
+          TARGET_ENDING=3
+          TARGET_SEG='11-20'
+          ACTIVE={'3232','3233','3235'}
+
+          data=json.loads(Path('data.json').read_text(encoding='utf-8'))
+          recs=data.get('records',[])
+          # aggregate duplicate rows by date/machine
+          agg={}
+          for r in recs:
+            m=str(r.get('machineNo',''))
+            d=str(r.get('date',''))
+            if not d or m not in ACTIVE: continue
+            k=(d,m)
+            x=agg.setdefault(k,{'date':d,'machineNo':m,'weekday':r.get('weekday',''),'games':0,'diff':0,'bb':0,'rb':0})
+            x['games']+=float(r.get('games') or 0); x['diff']+=float(r.get('diff') or 0); x['bb']+=float(r.get('bb') or 0); x['rb']+=float(r.get('rb') or 0)
+          bym={m:[] for m in ACTIVE}
+          for (_,m),x in agg.items(): bym[m].append(x)
+          for m in ACTIVE: bym[m].sort(key=lambda x:x['date'])
+          latest=max((x['date'] for m in ACTIVE for x in bym[m]), default='')
+
+          def perG(x): return x['diff']/x['games'] if x['games']>0 else 0
+          def safeprob(g,c): return g/c if c>0 else None
+          def stats(rows):
+            if not rows: return {'n':0,'games':0,'diff':0,'winRate':None,'perG':None,'bbProb':None,'rbProb':None,'totalProb':None,'avgGames':None,'vol':None}
+            g=sum(x['games'] for x in rows); d=sum(x['diff'] for x in rows); bb=sum(x['bb'] for x in rows); rb=sum(x['rb'] for x in rows)
+            ps=[perG(x) for x in rows]
+            return {'n':len(rows),'games':round(g),'diff':round(d),'winRate':sum(x['diff']>0 for x in rows)/len(rows),'perG':d/g if g else None,'bbProb':safeprob(g,bb),'rbProb':safeprob(g,rb),'totalProb':safeprob(g,bb+rb),'avgGames':g/len(rows),'vol':statistics.pstdev(ps) if len(ps)>1 else 0}
+          def streak(rows):
+            if not rows: return ('none',0)
+            s=1 if rows[-1]['diff']>0 else -1 if rows[-1]['diff']<0 else 0
+            if s==0:return ('flat',0)
+            n=0
+            for x in reversed(rows):
+              sx=1 if x['diff']>0 else -1 if x['diff']<0 else 0
+              if sx==s:n+=1
+              else:break
+            return ('plus' if s>0 else 'minus',n)
+          def cum_metrics(rows,n=30):
+            a=rows[-n:]
+            c=0; peak=0; trough=0; maxdd=0; vals=[0]; dd_trough=0
+            for x in a:
+              c+=x['diff']; vals.append(c); peak=max(peak,c); trough=min(trough,c); maxdd=min(maxdd,c-peak)
+            pos=(c-trough)/(peak-trough) if peak>trough else .5
+            recovery=(c-trough)/abs(maxdd) if maxdd<0 else 1.0
+            return {'cum':round(c),'peak':round(peak),'trough':round(trough),'position':pos,'currentDrawdown':round(c-peak),'maxDrawdown':round(maxdd),'recovery':recovery}
+          def condition_name(d):
+            if d<=-2000:return '<=-2000'
+            if d<=-1500:return '-1500~-1999'
+            if d<=-1000:return '-1000~-1499'
+            if d<=-500:return '-500~-999'
+            if d<0:return '-1~-499'
+            if d>=3000:return '>=+3000'
+            if d>=2000:return '+2000~+2999'
+            if d>=1000:return '+1000~+1999'
+            if d>=500:return '+500~+999'
+            return '0~+499'
+          def next_after_condition(rows, cond):
+            out=[]
+            for i,x in enumerate(rows[:-1]):
+              if condition_name(x['diff'])==cond: out.append(rows[i+1])
+            st=stats(out)
+            st.update({'plus1000':sum(x['diff']>=1000 for x in out)/len(out) if out else None,'minus1000':sum(x['diff']<=-1000 for x in out)/len(out) if out else None})
+            return st
+          def next_after_streak(rows, sign, nmin):
+            out=[]
+            for i in range(len(rows)-1):
+              cnt=0
+              j=i
+              while j>=0 and ((rows[j]['diff']>0)==(sign=='plus')) and rows[j]['diff']!=0:
+                cnt+=1; j-=1
+              if cnt>=nmin: out.append(rows[i+1])
+            return stats(out)
+          def next_after_threshold(rows, pred):
+            out=[rows[i+1] for i,x in enumerate(rows[:-1]) if pred(x)]
+            st=stats(out)
+            st.update({'plus1000':sum(x['diff']>=1000 for x in out)/len(out) if out else None,'plus2000':sum(x['diff']>=2000 for x in out)/len(out) if out else None,'minus1000':sum(x['diff']<=-1000 for x in out)/len(out) if out else None})
+            return st
+          def calendar_stats(rows, fn): return stats([x for x in rows if fn(x)])
+          def date_seg(d):
+            day=int(d[-2:]); return '1-10' if day<=10 else '11-20' if day<=20 else '21-end'
+          def rank_history(m):
+            dates=sorted(set(d for d,mm in agg if mm in ACTIVE))
+            arr=[]
+            for d in dates:
+              rs=[agg.get((d,mm)) for mm in ACTIVE]
+              rs=[x for x in rs if x and x['games']>0]
+              if len(rs)<2: continue
+              rs=sorted(rs,key=lambda x:x['diff'],reverse=True)
+              for i,x in enumerate(rs,1):
+                if x['machineNo']==m: arr.append((d,i,len(rs),x['diff']-statistics.mean(y['diff'] for y in rs)))
+            return arr
+          def similarity(rows):
+            if len(rows)<3:return []
+            cur=rows[-1]
+            feats=lambda x:[x['diff']/2000, perG(x)/0.3, x['games']/6000, (safeprob(x['games'],x['bb']) or 999)/300, (safeprob(x['games'],x['rb']) or 999)/350]
+            cf=feats(cur); cand=[]
+            for i,x in enumerate(rows[:-1]):
+              if i+1>=len(rows):continue
+              f=feats(x); dist=sum((a-b)**2 for a,b in zip(cf,f))**0.5
+              cand.append((dist,x,rows[i+1]))
+            cand.sort(key=lambda z:z[0])
+            return [{'date':x['date'],'diff':round(x['diff']),'nextDate':n['date'],'nextDiff':round(n['diff']),'distance':round(d,3)} for d,x,n in cand[:8]]
+          def wave(rows):
+            a=rows[-15:]
+            pg=[perG(x) for x in a]
+            ma3=sum(pg[-3:])/min(3,len(pg)) if pg else 0
+            ma10=sum(pg[-10:])/min(10,len(pg)) if pg else 0
+            prev3=sum(pg[-4:-1])/3 if len(pg)>=4 else ma3
+            prev10=sum(pg[-11:-1])/10 if len(pg)>=11 else ma10
+            golden=(len(pg)>=11 and prev3<=prev10 and ma3>ma10)
+            dead=(len(pg)>=11 and prev3>=prev10 and ma3<ma10)
+            # cumulative shape
+            c=0; pts=[]
+            for x in a: c+=x['diff']; pts.append(c)
+            breakout=len(pts)>=5 and pts[-1]>max(pts[:-1])
+            breakdown=len(pts)>=5 and pts[-1]<min(pts[:-1])
+            # double bottom approximate: two local lows near same level then current above both
+            lows=[]
+            for i in range(1,len(pts)-1):
+              if pts[i]<=pts[i-1] and pts[i]<=pts[i+1]: lows.append((i,pts[i]))
+            double=False
+            for i in range(len(lows)):
+              for j in range(i+1,len(lows)):
+                if lows[j][0]-lows[i][0]>=2 and abs(lows[j][1]-lows[i][1])<=1000 and pts[-1]>max(lows[i][1],lows[j][1])+500: double=True
+            cm=cum_metrics(rows,30)
+            vrebound=cm['maxDrawdown']<=-1500 and cm['recovery']>=0.6
+            peakout=len(pts)>=4 and pts[-1]<pts[-2]<pts[-3] and max(pts[-6:-3] or pts)>pts[-3]
+            return {'ma3PerG':ma3,'ma10PerG':ma10,'goldenCrossCandidate':golden,'deadCrossCandidate':dead,'resistanceBreakCandidate':breakout,'supportBreakCandidate':breakdown,'doubleBottomCandidate':double,'vReboundCandidate':vrebound,'peakoutCandidate':peakout}
+
+          result={'targetDate':TARGET,'sourceGeneratedAt':data.get('generatedAt'),'latestSourceDate':latest,'machines':{}}
+          for m in sorted(ACTIVE):
+            rows=[x for x in bym[m] if x['games']>0]
+            last=rows[-1] if rows else None
+            prev=rows[-2] if len(rows)>1 else None
+            stype,sn=streak(rows)
+            latest_cond=condition_name(last['diff']) if last else None
+            rh=rank_history(m); rh30=rh[-30:]
+            latest_rank=rh[-1][1] if rh else None
+            latest_n=rh[-1][2] if rh else None
+            sim=similarity(rows)
+            sim_next=[x['nextDiff'] for x in sim]
+            # 30d percentile of latest perG among own recent active days
+            recent30=rows[-30:]
+            lp=perG(last) if last else 0
+            pctile=(sum(perG(x)<=lp for x in recent30)/len(recent30)) if recent30 else None
+            # conditional score ingredients
+            cond=next_after_condition(rows,latest_cond) if latest_cond else stats([])
+            streakHist=next_after_streak(rows,stype,sn) if sn>=2 and stype in ('plus','minus') else stats([])
+            # content tags
+            bp=safeprob(last['games'],last['bb']) if last else None; rp=safeprob(last['games'],last['rb']) if last else None; tp=safeprob(last['games'],last['bb']+last['rb']) if last else None
+            content=''
+            if last:
+              if last['diff']<=-1500 and rp and rp<=300: content='内容あり凹み'
+              elif last['diff']<=-1500: content='内容なし凹み'
+              elif last['diff']>=3000 and rp and rp>=500: content='BIG偏重大幅プラス'
+              elif tp and tp<=140: content='合算強'
+              elif rp and rp<=300: content='REG強'
+              elif bp and bp<=250: content='BIG強'
+              else: content='通常'
+            # last unit trend
+            delta=perG(last)-perG(prev) if last and prev else 0
+            recent3=sum(perG(x) for x in rows[-3:])/min(3,len(rows)) if rows else 0
+            prior3=sum(perG(x) for x in rows[-6:-3])/len(rows[-6:-3]) if len(rows[-6:-3]) else recent3
+            item={
+              'latest': last,
+              'latestPerG': lp,
+              'perGDeltaVsPrev': delta,
+              'perGAccel3v3': recent3-prior3,
+              'recent3':stats(rows[-3:]),'recent5':stats(rows[-5:]),'recent10':stats(rows[-10:]),'recent30':stats(rows[-30:]),'all':stats(rows),
+              'streak':{'type':stype,'days':sn},
+              'cum30':cum_metrics(rows,30),'allMaxDrawdown':cum_metrics(rows,len(rows))['maxDrawdown'],
+              'latestPerGPercentile30':pctile,
+              'latestCondition':latest_cond,'nextAfterSameCondition':cond,'nextAfterCurrentStreakPattern':streakHist,
+              'nextAfterPlus3000':next_after_threshold(rows,lambda x:x['diff']>=3000),
+              'nextAfterMinus1500':next_after_threshold(rows,lambda x:x['diff']<=-1500),
+              'weekdayTarget':calendar_stats(rows,lambda x:x['weekday']==TARGET_WEEKDAY),
+              'dateEndingTarget':calendar_stats(rows,lambda x:int(x['date'][-1])==TARGET_ENDING),
+              'monthSegmentTarget':calendar_stats(rows,lambda x:date_seg(x['date'])==TARGET_SEG),
+              'weekdayOnly':calendar_stats(rows,lambda x:x['weekday'] in ['月','火','水','木','金']),
+              'storeRank':{'latestRank':latest_rank,'latestField':latest_n,'avgRank30':statistics.mean([x[1] for x in rh30]) if rh30 else None,'top1Rate30':sum(x[1]==1 for x in rh30)/len(rh30) if rh30 else None,'top2Rate30':sum(x[1]<=2 for x in rh30)/len(rh30) if rh30 else None,'avgVsStore30':statistics.mean([x[3] for x in rh30]) if rh30 else None},
+              'contentTag':content,'bbProbLatest':bp,'rbProbLatest':rp,'totalProbLatest':tp,
+              'similarCases':sim,'similarNextAvg':statistics.mean(sim_next) if sim_next else None,'similarNextPlusRate':sum(x>0 for x in sim_next)/len(sim_next) if sim_next else None,
+              'wave':wave(rows),
+              'dataLimits':['300-500G cycle cannot be judged from daily aggregates','morning/within-day turn cannot be judged','setting change and hall intent cannot be proven','showcase/edge-machine analysis needs position metadata']
+            }
+            result['machines'][m]=item
+
+          # Cross-machine relative score, 0-100. Components deliberately transparent.
+          ms=result['machines']
+          def norm(vals, key, reverse=False):
+            arr=[vals[m] for m in sorted(vals)]
+            lo=min(arr); hi=max(arr); out={}
+            for m,v in vals.items():
+              z=.5 if hi==lo else (v-lo)/(hi-lo)
+              out[m]=1-z if reverse else z
+            return out
+          per5=norm({m:(ms[m]['recent5']['perG'] or 0) for m in ms})
+          per10=norm({m:(ms[m]['recent10']['perG'] or 0) for m in ms})
+          cond=norm({m:(ms[m]['nextAfterSameCondition']['winRate'] if ms[m]['nextAfterSameCondition']['winRate'] is not None else .5) for m in ms})
+          store=norm({m:-(ms[m]['storeRank']['avgRank30'] or 9) for m in ms})
+          content=norm({m:-(ms[m]['totalProbLatest'] or 9999) for m in ms})
+          accel=norm({m:ms[m]['perGAccel3v3'] for m in ms})
+          wavev={}
+          for m,x in ms.items():
+            w=x['wave']; s=0
+            s+=1 if w['goldenCrossCandidate'] else 0
+            s+=1 if w['resistanceBreakCandidate'] else 0
+            s+=1 if w['doubleBottomCandidate'] else 0
+            s+=1 if w['vReboundCandidate'] else 0
+            s-=1 if w['deadCrossCandidate'] else 0
+            s-=1 if w['supportBreakCandidate'] else 0
+            s-=1 if w['peakoutCandidate'] else 0
+            wavev[m]=s
+          wav=norm(wavev)
+          sim=norm({m:(ms[m]['similarNextAvg'] or 0) for m in ms})
+          scores={}
+          for m in ms:
+            z=.20*per5[m]+.15*per10[m]+.15*cond[m]+.10*store[m]+.15*content[m]+.10*accel[m]+.10*wav[m]+.05*sim[m]
+            scores[m]=round(35+55*z,1)
+          result['scores']=scores
+          result['ranking']=sorted(scores,key=scores.get,reverse=True)
+          result['scoreWeights']={'recent5PerG':20,'recent10PerG':15,'samePreviousCondition':15,'storeRelative30':10,'latestBonusContent':15,'perGAcceleration':10,'dailyWaveCandidates':10,'similarCases':5}
+          Path('analysis-today.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+          PY
+          git add analysis-today.json
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m "Build today prediction analysis" || true
+          git pull --rebase origin main
+          git push
