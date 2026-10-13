@@ -1,0 +1,834 @@
+{
+  "targetDate": "2026-10-13",
+  "sourceGeneratedAt": "2026-10-13T03:23:48.158Z",
+  "latestSourceDate": "2026-10-12",
+  "machines": {
+    "3232": {
+      "latest": {
+        "date": "2026-10-12",
+        "machineNo": "3232",
+        "weekday": "月",
+        "games": 4960.0,
+        "diff": 1008.0,
+        "bb": 18.0,
+        "rb": 17.0
+      },
+      "latestPerG": 0.2032258064516129,
+      "perGDeltaVsPrev": -0.09156797312918494,
+      "perGAccel3v3": 0.354673014662589,
+      "recent3": {
+        "n": 3,
+        "games": 13754,
+        "diff": 3146,
+        "winRate": 1.0,
+        "perG": 0.22873345935727787,
+        "bbProb": 237.13793103448276,
+        "rbProb": 361.94736842105266,
+        "totalProb": 143.27083333333334,
+        "avgGames": 4584.666666666667,
+        "vol": 0.06473361780428655
+      },
+      "recent5": {
+        "n": 5,
+        "games": 23100,
+        "diff": 3046,
+        "winRate": 0.8,
+        "perG": 0.13186147186147187,
+        "bbProb": 253.84615384615384,
+        "rbProb": 372.5806451612903,
+        "totalProb": 150.98039215686273,
+        "avgGames": 4620.0,
+        "vol": 0.2962337350635396
+      },
+      "recent10": {
+        "n": 10,
+        "games": 45788,
+        "diff": 4291,
+        "winRate": 0.6,
+        "perG": 0.0937145103520573,
+        "bbProb": 261.6457142857143,
+        "rbProb": 416.25454545454545,
+        "totalProb": 160.65964912280702,
+        "avgGames": 4578.8,
+        "vol": 0.2410959696891839
+      },
+      "recent30": {
+        "n": 30,
+        "games": 105739,
+        "diff": -1950,
+        "winRate": 0.3333333333333333,
+        "perG": -0.018441634590832142,
+        "bbProb": 294.5376044568245,
+        "rbProb": 424.6546184738956,
+        "totalProb": 173.9128289473684,
+        "avgGames": 3524.633333333333,
+        "vol": 0.25151109433968327
+      },
+      "all": {
+        "n": 163,
+        "games": 538502,
+        "diff": -677,
+        "winRate": 0.3987730061349693,
+        "perG": -0.0012571912453435642,
+        "bbProb": 283.5713533438652,
+        "rbProb": 386.29985652797706,
+        "totalProb": 163.52930458548437,
+        "avgGames": 3303.693251533742,
+        "vol": 0.31266024816977156
+      },
+      "streak": {
+        "type": "plus",
+        "days": 4
+      },
+      "cum30": {
+        "cum": -1950,
+        "peak": 0,
+        "trough": -6761,
+        "position": 0.7115811270522112,
+        "currentDrawdown": -1950,
+        "maxDrawdown": -6761,
+        "recovery": 0.7115811270522112
+      },
+      "latestPerGPercentile30": 0.8666666666666667,
+      "latestCondition": "+1000~+1999",
+      "nextAfterSameCondition": {
+        "n": 20,
+        "games": 76124,
+        "diff": -697,
+        "winRate": 0.45,
+        "perG": -0.009156113709211287,
+        "bbProb": 292.7846153846154,
+        "rbProb": 369.5339805825243,
+        "totalProb": 163.35622317596565,
+        "avgGames": 3806.2,
+        "vol": 0.26010170600044913
+      },
+      "nextAfterCurrentStreakPattern": {
+        "n": 4,
+        "games": 10559,
+        "diff": -1398,
+        "winRate": 0.25,
+        "perG": -0.13239890141111849,
+        "bbProb": 310.55882352941177,
+        "rbProb": 391.0740740740741,
+        "totalProb": 173.0983606557377,
+        "avgGames": 2639.75,
+        "vol": 0.24932824443205726
+      },
+      "nextAfterPlus3000": {
+        "n": 1,
+        "games": 6173,
+        "diff": 1775,
+        "winRate": 1.0,
+        "perG": 0.28754252389437873,
+        "bbProb": 212.86206896551724,
+        "rbProb": 363.11764705882354,
+        "totalProb": 134.19565217391303,
+        "avgGames": 6173.0,
+        "vol": 0
+      },
+      "nextAfterMinus1500": {
+        "n": 1,
+        "games": 4362,
+        "diff": -1008,
+        "winRate": 0.0,
+        "perG": -0.2310866574965612,
+        "bbProb": 363.5,
+        "rbProb": 623.1428571428571,
+        "totalProb": 229.57894736842104,
+        "avgGames": 4362.0,
+        "vol": 0
+      },
+      "weekdayTarget": {
+        "n": 24,
+        "games": 64093,
+        "diff": -4886,
+        "winRate": 0.3333333333333333,
+        "perG": -0.07623297395971479,
+        "bbProb": 299.5,
+        "rbProb": 381.5059523809524,
+        "totalProb": 167.782722513089,
+        "avgGames": 2670.5416666666665,
+        "vol": 0.25697823999171315
+      },
+      "dateEndingTarget": {
+        "n": 17,
+        "games": 53417,
+        "diff": -3718,
+        "winRate": 0.35294117647058826,
+        "perG": -0.06960330980773911,
+        "bbProb": 293.5,
+        "rbProb": 407.76335877862596,
+        "totalProb": 170.66134185303514,
+        "avgGames": 3142.176470588235,
+        "vol": 0.30385410040174676
+      },
+      "monthSegmentTarget": {
+        "n": 49,
+        "games": 157711,
+        "diff": 10,
+        "winRate": 0.3673469387755102,
+        "perG": 6.3407118083076e-05,
+        "bbProb": 280.12611012433393,
+        "rbProb": 404.3871794871795,
+        "totalProb": 165.48898216159498,
+        "avgGames": 3218.591836734694,
+        "vol": 0.34247963352924565
+      },
+      "weekdayOnly": {
+        "n": 116,
+        "games": 326265,
+        "diff": -7882,
+        "winRate": 0.3879310344827586,
+        "perG": -0.02415827624783535,
+        "bbProb": 284.69895287958116,
+        "rbProb": 393.5645355850422,
+        "totalProb": 165.19746835443038,
+        "avgGames": 2812.6293103448274,
+        "vol": 0.3167598819329637
+      },
+      "storeRank": {
+        "latestRank": 2,
+        "avgRank30": 1.9666666666666666,
+        "top1Rate30": 0.3,
+        "top2Rate30": 0.7333333333333333,
+        "avgVsStore30": -274.0111111111111
+      },
+      "contentTag": "REG強",
+      "bbProbLatest": 275.55555555555554,
+      "rbProbLatest": 291.7647058823529,
+      "totalProbLatest": 141.71428571428572,
+      "similarCases": [
+        {
+          "date": "2025-12-06",
+          "diff": 821,
+          "nextDate": "2025-12-07",
+          "nextDiff": -1068,
+          "distance": 0.241
+        },
+        {
+          "date": "2026-04-21",
+          "diff": 1094,
+          "nextDate": "2026-04-22",
+          "nextDiff": -524,
+          "distance": 0.318
+        },
+        {
+          "date": "2025-12-31",
+          "diff": 1103,
+          "nextDate": "2026-01-01",
+          "nextDiff": -547,
+          "distance": 0.32
+        },
+        {
+          "date": "2025-12-29",
+          "diff": 1015,
+          "nextDate": "2025-12-30",
+          "nextDiff": 344,
+          "distance": 0.353
+        },
+        {
+          "date": "2026-10-09",
+          "diff": 1358,
+          "nextDate": "2026-10-10",
+          "nextDiff": 394,
+          "distance": 0.359
+        },
+        {
+          "date": "2025-12-13",
+          "diff": 697,
+          "nextDate": "2025-12-14",
+          "nextDiff": -394,
+          "distance": 0.405
+        },
+        {
+          "date": "2026-05-01",
+          "diff": 1471,
+          "nextDate": "2026-05-02",
+          "nextDiff": -397,
+          "distance": 0.418
+        },
+        {
+          "date": "2026-03-27",
+          "diff": 465,
+          "nextDate": "2026-03-28",
+          "nextDiff": -309,
+          "distance": 0.436
+        }
+      ],
+      "similarNextAvg": -312.625,
+      "similarNextPlusRate": 0.25,
+      "wave": {
+        "ma3PerG": 0.2116400704889134,
+        "ma10PerG": 0.046511458586779,
+        "goldenCrossCandidate": false,
+        "deadCrossCandidate": false,
+        "resistanceBreakCandidate": true,
+        "supportBreakCandidate": false,
+        "doubleBottomCandidate": true,
+        "vReboundCandidate": true,
+        "peakoutCandidate": false
+      }
+    },
+    "3233": {
+      "latest": {
+        "date": "2026-10-12",
+        "machineNo": "3233",
+        "weekday": "月",
+        "games": 5067.0,
+        "diff": 2056.0,
+        "bb": 26.0,
+        "rb": 10.0
+      },
+      "latestPerG": 0.40576277876455497,
+      "perGDeltaVsPrev": 0.30728629388930656,
+      "perGAccel3v3": 0.05862395215547617,
+      "recent3": {
+        "n": 3,
+        "games": 23002,
+        "diff": 6184,
+        "winRate": 1.0,
+        "perG": 0.2688461872880619,
+        "bbProb": 227.74257425742573,
+        "rbProb": 389.864406779661,
+        "totalProb": 143.7625,
+        "avgGames": 7667.333333333333,
+        "vol": 0.13618324453035757
+      },
+      "recent5": {
+        "n": 5,
+        "games": 31914,
+        "diff": 7998,
+        "winRate": 1.0,
+        "perG": 0.25061101710847905,
+        "bbProb": 238.16417910447763,
+        "rbProb": 354.6,
+        "totalProb": 142.47321428571428,
+        "avgGames": 6382.8,
+        "vol": 0.12826905477671027
+      },
+      "recent10": {
+        "n": 10,
+        "games": 51889,
+        "diff": 9297,
+        "winRate": 0.8,
+        "perG": 0.1791709225462044,
+        "bbProb": 247.09047619047618,
+        "rbProb": 368.0070921985816,
+        "totalProb": 147.83190883190883,
+        "avgGames": 5188.9,
+        "vol": 0.26214590615958794
+      },
+      "recent30": {
+        "n": 30,
+        "games": 120169,
+        "diff": 19159,
+        "winRate": 0.5666666666666667,
+        "perG": 0.1594337974019922,
+        "bbProb": 252.98736842105262,
+        "rbProb": 354.48082595870204,
+        "totalProb": 147.62776412776412,
+        "avgGames": 4005.633333333333,
+        "vol": 0.412993184336772
+      },
+      "all": {
+        "n": 148,
+        "games": 520755,
+        "diff": 21991,
+        "winRate": 0.4527027027027027,
+        "perG": 0.04222907125231635,
+        "bbProb": 279.2252010723861,
+        "rbProb": 362.1383866481224,
+        "totalProb": 157.66121707538602,
+        "avgGames": 3518.614864864865,
+        "vol": 0.3491041378495246
+      },
+      "streak": {
+        "type": "plus",
+        "days": 6
+      },
+      "cum30": {
+        "cum": 19159,
+        "peak": 19159,
+        "trough": -768,
+        "position": 1.0,
+        "currentDrawdown": 0,
+        "maxDrawdown": -1556,
+        "recovery": 12.80655526992288
+      },
+      "latestPerGPercentile30": 0.9666666666666667,
+      "latestCondition": "+2000~+2999",
+      "nextAfterSameCondition": {
+        "n": 3,
+        "games": 10224,
+        "diff": 931,
+        "winRate": 0.6666666666666666,
+        "perG": 0.0910602503912363,
+        "bbProb": 243.42857142857142,
+        "rbProb": 408.96,
+        "totalProb": 152.59701492537314,
+        "avgGames": 3408.0,
+        "vol": 0.06612806092896382
+      },
+      "nextAfterCurrentStreakPattern": {
+        "n": 2,
+        "games": 2741,
+        "diff": 176,
+        "winRate": 0.5,
+        "perG": 0.06421014228383802,
+        "bbProb": 274.1,
+        "rbProb": 342.625,
+        "totalProb": 152.27777777777777,
+        "avgGames": 1370.5,
+        "vol": 0.193072665632173
+      },
+      "nextAfterPlus3000": {
+        "n": 3,
+        "games": 21521,
+        "diff": 4970,
+        "winRate": 1.0,
+        "perG": 0.2309372241066865,
+        "bbProb": 239.12222222222223,
+        "rbProb": 371.05172413793105,
+        "totalProb": 145.41216216216216,
+        "avgGames": 7173.666666666667,
+        "vol": 0.11404968655351533
+      },
+      "nextAfterMinus1500": {
+        "n": 2,
+        "games": 2933,
+        "diff": -483,
+        "winRate": 0.0,
+        "perG": -0.16467780429594273,
+        "bbProb": 266.6363636363636,
+        "rbProb": 977.6666666666666,
+        "totalProb": 209.5,
+        "avgGames": 1466.5,
+        "vol": 0.3083535108958838
+      },
+      "weekdayTarget": {
+        "n": 22,
+        "games": 42096,
+        "diff": -7949,
+        "winRate": 0.22727272727272727,
+        "perG": -0.18883029266438617,
+        "bbProb": 347.900826446281,
+        "rbProb": 382.6909090909091,
+        "totalProb": 182.23376623376623,
+        "avgGames": 1913.4545454545455,
+        "vol": 0.33659226778064727
+      },
+      "dateEndingTarget": {
+        "n": 16,
+        "games": 41490,
+        "diff": 3913,
+        "winRate": 0.4375,
+        "perG": 0.0943118823812967,
+        "bbProb": 265.96153846153845,
+        "rbProb": 345.75,
+        "totalProb": 150.32608695652175,
+        "avgGames": 2593.125,
+        "vol": 0.305814976206872
+      },
+      "monthSegmentTarget": {
+        "n": 49,
+        "games": 158466,
+        "diff": 5683,
+        "winRate": 0.42857142857142855,
+        "perG": 0.03586258250981283,
+        "bbProb": 270.8820512820513,
+        "rbProb": 387.4474327628362,
+        "totalProb": 159.42253521126761,
+        "avgGames": 3234.0,
+        "vol": 0.40230609349408036
+      },
+      "weekdayOnly": {
+        "n": 105,
+        "games": 310885,
+        "diff": -3610,
+        "winRate": 0.38095238095238093,
+        "perG": -0.011612010872187465,
+        "bbProb": 294.39867424242425,
+        "rbProb": 375.918984280532,
+        "totalProb": 165.10090281465747,
+        "avgGames": 2960.809523809524,
+        "vol": 0.3569465891039033
+      },
+      "storeRank": {
+        "latestRank": 1,
+        "avgRank30": 1.7333333333333334,
+        "top1Rate30": 0.43333333333333335,
+        "top2Rate30": 0.8333333333333334,
+        "avgVsStore30": 270.3
+      },
+      "contentTag": "BIG強",
+      "bbProbLatest": 194.8846153846154,
+      "rbProbLatest": 506.7,
+      "totalProbLatest": 140.75,
+      "similarCases": [
+        {
+          "date": "2026-09-14",
+          "diff": 2011,
+          "nextDate": "2026-09-15",
+          "nextDiff": -39,
+          "distance": 0.064
+        },
+        {
+          "date": "2026-03-13",
+          "diff": 1509,
+          "nextDate": "2026-03-14",
+          "nextDiff": 41,
+          "distance": 0.461
+        },
+        {
+          "date": "2026-04-05",
+          "diff": 2200,
+          "nextDate": "2026-04-06",
+          "nextDiff": 626,
+          "distance": 0.493
+        },
+        {
+          "date": "2026-09-19",
+          "diff": 1492,
+          "nextDate": "2026-09-20",
+          "nextDiff": 294,
+          "distance": 0.587
+        },
+        {
+          "date": "2026-04-08",
+          "diff": 1350,
+          "nextDate": "2026-04-09",
+          "nextDiff": 929,
+          "distance": 0.656
+        },
+        {
+          "date": "2026-02-13",
+          "diff": 1703,
+          "nextDate": "2026-02-14",
+          "nextDiff": 1612,
+          "distance": 0.659
+        },
+        {
+          "date": "2026-09-03",
+          "diff": 1575,
+          "nextDate": "2026-09-04",
+          "nextDiff": -494,
+          "distance": 0.734
+        },
+        {
+          "date": "2026-09-23",
+          "diff": 1242,
+          "nextDate": "2026-09-24",
+          "nextDiff": 572,
+          "distance": 0.762
+        }
+      ],
+      "similarNextAvg": 442.625,
+      "similarNextPlusRate": 0.75,
+      "wave": {
+        "ma3PerG": 0.289592277546113,
+        "ma10PerG": 0.11798930518726784,
+        "goldenCrossCandidate": false,
+        "deadCrossCandidate": false,
+        "resistanceBreakCandidate": true,
+        "supportBreakCandidate": false,
+        "doubleBottomCandidate": true,
+        "vReboundCandidate": true,
+        "peakoutCandidate": false
+      }
+    },
+    "3235": {
+      "latest": {
+        "date": "2026-10-12",
+        "machineNo": "3235",
+        "weekday": "月",
+        "games": 1495.0,
+        "diff": -383.0,
+        "bb": 3.0,
+        "rb": 5.0
+      },
+      "latestPerG": -0.2561872909698997,
+      "perGDeltaVsPrev": -0.35501223824317474,
+      "perGAccel3v3": -0.09281630283557418,
+      "recent3": {
+        "n": 3,
+        "games": 10951,
+        "diff": -816,
+        "winRate": 0.3333333333333333,
+        "perG": -0.07451374303716556,
+        "bbProb": 331.8484848484849,
+        "rbProb": 353.258064516129,
+        "totalProb": 171.109375,
+        "avgGames": 3650.3333333333335,
+        "vol": 0.14649932908020824
+      },
+      "recent5": {
+        "n": 5,
+        "games": 18344,
+        "diff": -1794,
+        "winRate": 0.2,
+        "perG": -0.09779764500654164,
+        "bbProb": 333.5272727272727,
+        "rbProb": 390.29787234042556,
+        "totalProb": 179.84313725490196,
+        "avgGames": 3668.8,
+        "vol": 0.14574396706307854
+      },
+      "recent10": {
+        "n": 10,
+        "games": 42155,
+        "diff": 3950,
+        "winRate": 0.4,
+        "perG": 0.0937018147313486,
+        "bbProb": 271.96774193548384,
+        "rbProb": 354.2436974789916,
+        "totalProb": 153.85036496350364,
+        "avgGames": 4215.5,
+        "vol": 0.25266954456507196
+      },
+      "recent30": {
+        "n": 30,
+        "games": 112107,
+        "diff": 8598,
+        "winRate": 0.43333333333333335,
+        "perG": 0.07669458642190051,
+        "bbProb": 276.8074074074074,
+        "rbProb": 357.02866242038215,
+        "totalProb": 155.92072322670376,
+        "avgGames": 3736.9,
+        "vol": 0.28576548192807427
+      },
+      "all": {
+        "n": 163,
+        "games": 581381,
+        "diff": 16839,
+        "winRate": 0.4233128834355828,
+        "perG": 0.028963794826456318,
+        "bbProb": 282.36085478387565,
+        "rbProb": 357.33312845728335,
+        "totalProb": 157.72680412371133,
+        "avgGames": 3566.754601226994,
+        "vol": 0.34205492414739647
+      },
+      "streak": {
+        "type": "minus",
+        "days": 1
+      },
+      "cum30": {
+        "cum": 8598,
+        "peak": 10392,
+        "trough": 0,
+        "position": 0.8273672055427251,
+        "currentDrawdown": -1794,
+        "maxDrawdown": -2380,
+        "recovery": 3.6126050420168068
+      },
+      "latestPerGPercentile30": 0.26666666666666666,
+      "latestCondition": "-1~-499",
+      "nextAfterSameCondition": {
+        "n": 45,
+        "games": 161641,
+        "diff": 3305,
+        "winRate": 0.37777777777777777,
+        "perG": 0.020446545121596625,
+        "bbProb": 289.1610017889088,
+        "rbProb": 356.0374449339207,
+        "totalProb": 159.56663376110563,
+        "avgGames": 3592.0222222222224,
+        "vol": 0.36357136198316736
+      },
+      "nextAfterCurrentStreakPattern": {
+        "n": 0,
+        "games": 0,
+        "diff": 0,
+        "winRate": null,
+        "perG": null,
+        "bbProb": null,
+        "rbProb": null,
+        "totalProb": null,
+        "avgGames": null,
+        "vol": null
+      },
+      "nextAfterPlus3000": {
+        "n": 3,
+        "games": 8023,
+        "diff": -159,
+        "winRate": 0.3333333333333333,
+        "perG": -0.019818023183347876,
+        "bbProb": 297.14814814814815,
+        "rbProb": 308.5769230769231,
+        "totalProb": 151.37735849056602,
+        "avgGames": 2674.3333333333335,
+        "vol": 0.25130375500454605
+      },
+      "nextAfterMinus1500": {
+        "n": 4,
+        "games": 17458,
+        "diff": 1038,
+        "winRate": 0.5,
+        "perG": 0.05945698247221904,
+        "bbProb": 268.5846153846154,
+        "rbProb": 356.2857142857143,
+        "totalProb": 153.140350877193,
+        "avgGames": 4364.5,
+        "vol": 0.318281317936242
+      },
+      "weekdayTarget": {
+        "n": 24,
+        "games": 98436,
+        "diff": 9283,
+        "winRate": 0.4583333333333333,
+        "perG": 0.09430492909098297,
+        "bbProb": 261.1034482758621,
+        "rbProb": 357.9490909090909,
+        "totalProb": 150.9754601226994,
+        "avgGames": 4101.5,
+        "vol": 0.36602730781032106
+      },
+      "dateEndingTarget": {
+        "n": 17,
+        "games": 71600,
+        "diff": 8803,
+        "winRate": 0.6470588235294118,
+        "perG": 0.12294692737430167,
+        "bbProb": 261.3138686131387,
+        "rbProb": 323.9819004524887,
+        "totalProb": 144.64646464646464,
+        "avgGames": 4211.764705882353,
+        "vol": 0.33630741881758897
+      },
+      "monthSegmentTarget": {
+        "n": 49,
+        "games": 156238,
+        "diff": -596,
+        "winRate": 0.3877551020408163,
+        "perG": -0.0038146929684199746,
+        "bbProb": 299.8809980806142,
+        "rbProb": 338.9110629067245,
+        "totalProb": 159.10183299389,
+        "avgGames": 3188.530612244898,
+        "vol": 0.2845720162321848
+      },
+      "weekdayOnly": {
+        "n": 116,
+        "games": 390509,
+        "diff": 20134,
+        "winRate": 0.45689655172413796,
+        "perG": 0.05155835076784402,
+        "bbProb": 274.4265635980323,
+        "rbProb": 352.1271415689811,
+        "totalProb": 154.22946287519747,
+        "avgGames": 3366.456896551724,
+        "vol": 0.3646177335857801
+      },
+      "storeRank": {
+        "latestRank": 3,
+        "avgRank30": 1.7333333333333334,
+        "top1Rate30": 0.43333333333333335,
+        "top2Rate30": 0.8333333333333334,
+        "avgVsStore30": 77.58888888888889
+      },
+      "contentTag": "REG強",
+      "bbProbLatest": 498.3333333333333,
+      "rbProbLatest": 299.0,
+      "totalProbLatest": 186.875,
+      "similarCases": [
+        {
+          "date": "2026-02-25",
+          "diff": -500,
+          "nextDate": "2026-03-01",
+          "nextDiff": -688,
+          "distance": 0.322
+        },
+        {
+          "date": "2025-12-14",
+          "diff": -535,
+          "nextDate": "2025-12-15",
+          "nextDiff": -194,
+          "distance": 0.399
+        },
+        {
+          "date": "2026-02-09",
+          "diff": -806,
+          "nextDate": "2026-02-10",
+          "nextDiff": 1244,
+          "distance": 0.415
+        },
+        {
+          "date": "2025-12-27",
+          "diff": -676,
+          "nextDate": "2025-12-28",
+          "nextDiff": -1421,
+          "distance": 0.416
+        },
+        {
+          "date": "2026-02-17",
+          "diff": -465,
+          "nextDate": "2026-02-18",
+          "nextDiff": 65,
+          "distance": 0.454
+        },
+        {
+          "date": "2025-12-04",
+          "diff": -453,
+          "nextDate": "2025-12-05",
+          "nextDiff": 1424,
+          "distance": 0.459
+        },
+        {
+          "date": "2026-04-22",
+          "diff": -618,
+          "nextDate": "2026-04-23",
+          "nextDiff": 97,
+          "distance": 0.461
+        },
+        {
+          "date": "2026-03-03",
+          "diff": -841,
+          "nextDate": "2026-03-04",
+          "nextDiff": -276,
+          "distance": 0.487
+        }
+      ],
+      "similarNextAvg": 31.375,
+      "similarNextPlusRate": 0.5,
+      "wave": {
+        "ma3PerG": -0.09378809968313429,
+        "ma10PerG": -0.0019209161414585959,
+        "goldenCrossCandidate": false,
+        "deadCrossCandidate": false,
+        "resistanceBreakCandidate": false,
+        "supportBreakCandidate": false,
+        "doubleBottomCandidate": true,
+        "vReboundCandidate": true,
+        "peakoutCandidate": false
+      }
+    }
+  },
+  "scores": {
+    "3232": 63.4,
+    "3233": 86.4,
+    "3235": 41.8
+  },
+  "ranking": [
+    "3233",
+    "3232",
+    "3235"
+  ],
+  "weights": {
+    "recent5": 20,
+    "recent10": 15,
+    "samePrevCondition": 15,
+    "storeRelative": 10,
+    "latestBonusContent": 15,
+    "perGAcceleration": 10,
+    "dailyWave": 10,
+    "similarCases": 5
+  },
+  "limits": [
+    "300-500G周期は日別データでは判定不可",
+    "朝一・日中反転は日別データでは判定不可",
+    "設定変更や店舗意図は結果だけでは証明不可",
+    "見せ台判定には位置情報が必要"
+  ]
+}
