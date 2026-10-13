@@ -132,5 +132,6 @@ function setup(){const machines=[...new Set(RECORDS.map(r=>String(r.machineNo)))
 (async()=>{try{const [res,edRes]=await Promise.all([fetch('./data.json?ts='+Date.now(),{cache:'no-store'}),fetch('./editor.json?ts='+Date.now(),{cache:'no-store'}).catch(()=>null)]);if(!res.ok)throw new Error('data.json '+res.status);const data=await res.json();RECORDS=Array.isArray(data.records)?data.records:[];GENERATED_AT=data.generatedAt||'';AI_ANALYSIS=data.aiAnalysis||null;AI_ACCURACY=data.aiAccuracy||null;if(edRes&&edRes.ok){try{EDITOR_CHIEF=await edRes.json();}catch(_){EDITOR_CHIEF=null;}}if(!RECORDS.length)throw new Error('公開データがまだありません。拡張から「今すぐ最新版を公開」を実行してください。');setup();}catch(e){const box=$('loadStatus');box.classList.add('error');box.innerHTML='公開データを読み込めませんでした。<br>'+String(e.message||e)+'<br><span class="muted">初回設定直後の場合は、GitHub Pagesの公開設定と data.json の配置を確認してください。</span>';}})();
 </script>
 <script src="./public-v13.js?v=14"></script>
+<script src="./public-range-bonus.js?v=1"></script>
 </body>
 </html>
