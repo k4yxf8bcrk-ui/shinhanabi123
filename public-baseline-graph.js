@@ -32,12 +32,9 @@
     const x=new Date(String(d)+'T12:00:00');if(Number.isNaN(x.getTime())||x.getDay()!==6)return false;
     const y=new Date(x);y.setDate(y.getDate()+7);return y.getMonth()!==x.getMonth();
   }
-  function strongDays(rows,machines){
-    const byDate=new Map();
-    for(const r of rows){if(!machines.includes(r.machineNo)||r.games<=0)continue;if(!byDate.has(r.date))byDate.set(r.date,[]);byDate.get(r.date).push(r);}
-    const set=new Set();
-    for(const [d,a] of byDate){const pos=a.filter(x=>x.diff>0).length;if(a.length>=2&&pos>=2&&pos/a.length>=2/3)set.add(d);}
-    return set;
+  function isWeekdayOrSunday(d){
+    const x=new Date(String(d)+'T12:00:00');if(Number.isNaN(x.getTime()))return false;
+    const w=x.getDay();return w===0||(w>=1&&w<=5);
   }
   function monthOptions(rows){return [...new Set(rows.map(r=>r.date.slice(0,7)))].sort();}
 
@@ -59,25 +56,29 @@
     addStyle();
     const machines=activeMachines(RECORDS);if(!machines.length)return;
     const rows=aggregate(RECORDS,machines).sort((a,b)=>a.date.localeCompare(b.date)||Number(a.machineNo)-Number(b.machineNo));
-    const strong=strongDays(rows,machines);
     const months=monthOptions(rows);
     const panel=document.createElement('section');panel.id='baselinePanel';panel.className='panel baselinePanel';
-    panel.innerHTML=`<div class="baselineHead"><div><h2>通常日推定グラフ</h2><div class="muted">特別に設定が入った可能性があるプラス実績を外して、普段の波を見る参考グラフ</div></div><div class="pill">設定1寄り</div></div><div class="baselineControls"><label>台番<select id="baselineMachine">${machines.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}</select></label><label>月<select id="baselineMonth"><option value="ALL">全期間</option>${months.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}</select></label><label>グラフ<select id="baselineMode"><option value="cumulative">累計差枚</option><option value="daily">日別差枚</option><option value="pergame">1Gあたり差枚</option></select></label></div><div class="baselineChecks"><label><input id="baselineStrong" type="checkbox" checked> 全体強め日のプラス台を除外</label><label><input id="baselineMonthEnd" type="checkbox" checked> 月末土曜日のプラス台を除外</label></div><div id="baselineStats" class="baselineStats"></div><div class="baselineChartWrap"><canvas id="baselineCanvas"></canvas><div id="baselineTip" class="baselineTooltip"></div></div><div id="baselineLegend" class="baselineLegend"></div><details id="baselineExcluded" class="baselineExcluded"><summary>除外された日を見る</summary><div id="baselineExcludedBody" class="baselineExcludedBody"></div></details><div class="baselineNote">「全体強め日」は現在稼働台のうち実稼働2台以上かつ2/3以上がプラスの日を候補扱いし、その日にプラスだった台だけを除外します。「月末土曜日」はその月の最後の土曜日で、プラスだった台だけを除外します。設定投入を証明する判定ではなく、通常日の傾向を見るための参考フィルターです。</div>`;
+    panel.innerHTML=`<div class="baselineHead"><div><h2>通常日推定グラフ</h2><div class="muted">大きく出た日を条件別に外して、普段の設定1寄りの波を見る参考グラフ</div></div><div class="pill">設定1寄り</div></div><div class="baselineControls"><label>台番<select id="baselineMachine">${machines.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}</select></label><label>月<select id="baselineMonth"><option value="ALL">全期間</option>${months.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}</select></label><label>グラフ<select id="baselineMode"><option value="cumulative">累計差枚</option><option value="daily">日別差枚</option><option value="pergame">1Gあたり差枚</option></select></label></div><div class="baselineChecks"><label><input id="baselineMonthEnd1500" type="checkbox" checked> 月末土曜日 +1,500枚以上を除外</label><label><input id="baselineOther3000" type="checkbox" checked> 平日・日曜 +3,000枚以上を除外</label></div><div id="baselineStats" class="baselineStats"></div><div class="baselineChartWrap"><canvas id="baselineCanvas"></canvas><div id="baselineTip" class="baselineTooltip"></div></div><div id="baselineLegend" class="baselineLegend"></div><details id="baselineExcluded" class="baselineExcluded"><summary>除外された日を見る</summary><div id="baselineExcludedBody" class="baselineExcludedBody"></div></details><div class="baselineNote">月末土曜日は、その月の最後の土曜日で+1,500枚以上の台を除外します。平日（月〜金）・日曜日は+3,000枚以上の台を除外します。通常の土曜日は+3,000枚以上でも自動除外しません。0G日は対象外です。設定投入を証明する判定ではなく、通常日の傾向を見るための参考フィルターです。</div>`;
     const anchor=$('tablePanel');anchor?.parentNode.insertBefore(panel,anchor);
     canvas=$('baselineCanvas');tip=$('baselineTip');
 
     function render(){
-      const machine=$('baselineMachine').value,month=$('baselineMonth').value,mode=$('baselineMode').value,cutStrong=$('baselineStrong').checked,cutEnd=$('baselineMonthEnd').checked;
+      const machine=$('baselineMachine').value,month=$('baselineMonth').value,mode=$('baselineMode').value,cutMonthEnd=$('baselineMonthEnd1500').checked,cutOther=$('baselineOther3000').checked;
       let base=rows.filter(r=>r.machineNo===machine&&r.games>0&&(month==='ALL'||r.date.startsWith(month)));
       const excluded=[],kept=[];
-      for(const r of base){const reasons=[];if(r.diff>0&&cutStrong&&strong.has(r.date))reasons.push('全体強め日');if(r.diff>0&&cutEnd&&isLastSaturday(r.date))reasons.push('月末土曜');if(reasons.length)excluded.push({...r,reasons});else kept.push(r);}
+      for(const r of base){
+        const reasons=[];
+        if(cutMonthEnd&&isLastSaturday(r.date)&&r.diff>=1500)reasons.push('月末土曜 +1500枚以上');
+        if(cutOther&&isWeekdayOrSunday(r.date)&&r.diff>=3000)reasons.push('平日・日曜 +3000枚以上');
+        if(reasons.length)excluded.push({...r,reasons});else kept.push(r);
+      }
       const g=kept.reduce((s,r)=>s+r.games,0),d=kept.reduce((s,r)=>s+r.diff,0),exd=excluded.reduce((s,r)=>s+r.diff,0),pg=g?d/g:0;
       $('baselineStats').innerHTML=`<div class="baselineStat"><span>採用実稼働日</span><strong>${kept.length}日</strong></div><div class="baselineStat"><span>除外</span><strong>${excluded.length}日</strong></div><div class="baselineStat"><span>通常日推定差枚</span><strong class="${d>0?'blue':d<0?'red':''}">${signed(d)}枚</strong></div><div class="baselineStat"><span>通常日1G差枚</span><strong class="${pg>0?'blue':pg<0?'red':''}">${pg>0?'+':''}${pg.toFixed(3)}枚/G</strong></div>`;
       draw(kept,mode);
-      $('baselineLegend').textContent=`除外したプラス差枚 合計 ${signed(exd)}枚 / 判定対象 ${base.length}実稼働日`;
+      $('baselineLegend').textContent=`除外した差枚 合計 ${signed(exd)}枚 / 判定対象 ${base.length}実稼働日`;
       $('baselineExcludedBody').innerHTML=excluded.length?excluded.map(r=>`<div class="baselineExcludedRow"><span>${esc(r.date)}</span><span>${esc(r.reasons.join('・'))}</span><strong class="blue">${signed(r.diff)}枚</strong></div>`).join(''):'<div class="muted">除外対象なし</div>';
     }
-    ['baselineMachine','baselineMonth','baselineMode','baselineStrong','baselineMonthEnd'].forEach(id=>$(id).addEventListener('change',render));
+    ['baselineMachine','baselineMonth','baselineMode','baselineMonthEnd1500','baselineOther3000'].forEach(id=>$(id).addEventListener('change',render));
     canvas.addEventListener('mousemove',e=>{if(!points.length)return;const r=canvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;let best=null,dist=1e9;for(const p of points){const dd=(p.x-mx)**2+(p.y-my)**2;if(dd<dist){dist=dd;best=p;}}if(best&&dist<225){const d=best.d;tip.style.display='block';tip.style.left=Math.min(r.width-180,best.x+12)+'px';tip.style.top=Math.max(6,best.y-72)+'px';tip.innerHTML=`${esc(d.date)}<br>G数 ${fmt(d.games)}G<br>差枚 ${signed(d.diff)}枚<br>1G差枚 ${(d.diff/d.games>0?'+':'')+(d.diff/d.games).toFixed(3)}枚/G`; }else tip.style.display='none';});
     canvas.addEventListener('mouseleave',()=>tip.style.display='none');
     window.addEventListener('resize',render);render();
