@@ -1,0 +1,135 @@
+name: Build today analysis v2
+on:
+  push:
+    paths:
+      - analysis-today2.trigger
+permissions:
+  contents: write
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Analyze
+        run: |
+          git pull --rebase origin main || true
+          python - <<'PY'
+          import json, statistics
+          from pathlib import Path
+          TARGET='2026-10-13'; WDAY='火'; ENDING=3; SEG='11-20'; ACTIVE=['3232','3233','3235']
+          data=json.loads(Path('data.json').read_text(encoding='utf-8')); recs=data.get('records',[])
+          agg={}
+          for r in recs:
+            m=str(r.get('machineNo','')); d=str(r.get('date',''))
+            if m not in ACTIVE or not d: continue
+            x=agg.setdefault((d,m),{'date':d,'machineNo':m,'weekday':r.get('weekday',''),'games':0.0,'diff':0.0,'bb':0.0,'rb':0.0})
+            for k in ['games','diff','bb','rb']: x[k]+=float(r.get(k) or 0)
+          rows={m:sorted([x for (d,mm),x in agg.items() if mm==m and x['games']>0],key=lambda z:z['date']) for m in ACTIVE}
+          latest=max((x['date'] for m in ACTIVE for x in rows[m]),default='')
+          def pg(x): return x['diff']/x['games'] if x['games'] else 0
+          def pr(g,c): return g/c if c else None
+          def S(a):
+            if not a:return {'n':0,'games':0,'diff':0,'winRate':None,'perG':None,'bbProb':None,'rbProb':None,'totalProb':None,'avgGames':None,'vol':None}
+            g=sum(x['games'] for x in a); d=sum(x['diff'] for x in a); bb=sum(x['bb'] for x in a); rb=sum(x['rb'] for x in a); p=[pg(x) for x in a]
+            return {'n':len(a),'games':round(g),'diff':round(d),'winRate':sum(x['diff']>0 for x in a)/len(a),'perG':d/g if g else None,'bbProb':pr(g,bb),'rbProb':pr(g,rb),'totalProb':pr(g,bb+rb),'avgGames':g/len(a),'vol':statistics.pstdev(p) if len(p)>1 else 0}
+          def band(d):
+            if d<=-2000:return '<=-2000'
+            if d<=-1500:return '-1500~-1999'
+            if d<=-1000:return '-1000~-1499'
+            if d<=-500:return '-500~-999'
+            if d<0:return '-1~-499'
+            if d>=3000:return '>=+3000'
+            if d>=2000:return '+2000~+2999'
+            if d>=1000:return '+1000~+1999'
+            if d>=500:return '+500~+999'
+            return '0~+499'
+          def next_cond(a,b): return S([a[i+1] for i in range(len(a)-1) if band(a[i]['diff'])==b])
+          def next_thr(a,fn): return S([a[i+1] for i in range(len(a)-1) if fn(a[i])])
+          def streak(a):
+            if not a:return ('none',0)
+            sign=1 if a[-1]['diff']>0 else -1 if a[-1]['diff']<0 else 0
+            n=0
+            for x in reversed(a):
+              s=1 if x['diff']>0 else -1 if x['diff']<0 else 0
+              if s==sign and sign!=0:n+=1
+              else:break
+            return ('plus' if sign>0 else 'minus' if sign<0 else 'flat',n)
+          def next_streak(a,typ,nmin):
+            if typ not in ('plus','minus') or nmin<2:return S([])
+            out=[]
+            for i in range(len(a)-1):
+              n=0; j=i
+              while j>=0 and ((a[j]['diff']>0)==(typ=='plus')) and a[j]['diff']!=0:n+=1;j-=1
+              if n>=nmin: out.append(a[i+1])
+            return S(out)
+          def seg(d):
+            day=int(d[-2:]); return '1-10' if day<=10 else '11-20' if day<=20 else '21-end'
+          def cal(a,fn): return S([x for x in a if fn(x)])
+          def cum(a,n=30):
+            a=a[-n:]; c=0; peak=0; trough=0; maxdd=0
+            for x in a:
+              c+=x['diff']; peak=max(peak,c); trough=min(trough,c); maxdd=min(maxdd,c-peak)
+            pos=(c-trough)/(peak-trough) if peak>trough else .5
+            rec=(c-trough)/abs(maxdd) if maxdd<0 else 1.0
+            return {'cum':round(c),'peak':round(peak),'trough':round(trough),'position':pos,'currentDrawdown':round(c-peak),'maxDrawdown':round(maxdd),'recovery':rec}
+          def rankhist(m):
+            out=[]
+            for d in sorted(set(d for d,mm in agg)):
+              rr=[agg.get((d,mm)) for mm in ACTIVE]; rr=[x for x in rr if x and x['games']>0]
+              if len(rr)<2:continue
+              rr=sorted(rr,key=lambda x:x['diff'],reverse=True); avg=statistics.mean(x['diff'] for x in rr)
+              for i,x in enumerate(rr,1):
+                if x['machineNo']==m: out.append((d,i,len(rr),x['diff']-avg))
+            return out
+          def sim(a):
+            if len(a)<3:return []
+            cur=a[-1]
+            def f(x): return [x['diff']/2000,pg(x)/0.3,x['games']/6000,(pr(x['games'],x['bb']) or 999)/300,(pr(x['games'],x['rb']) or 999)/350]
+            cf=f(cur); out=[]
+            for i,x in enumerate(a[:-1]):
+              ff=f(x); dist=sum((u-v)**2 for u,v in zip(cf,ff))**.5; out.append((dist,x,a[i+1]))
+            out.sort(key=lambda z:z[0])
+            return [{'date':x['date'],'diff':round(x['diff']),'nextDate':n['date'],'nextDiff':round(n['diff']),'distance':round(d,3)} for d,x,n in out[:8]]
+          def wave(a):
+            b=a[-15:]; p=[pg(x) for x in b]; ma3=sum(p[-3:])/min(3,len(p)); ma10=sum(p[-10:])/min(10,len(p)); prev3=sum(p[-4:-1])/3 if len(p)>=4 else ma3; prev10=sum(p[-11:-1])/10 if len(p)>=11 else ma10
+            c=0; pts=[]
+            for x in b:c+=x['diff'];pts.append(c)
+            lows=[]
+            for i in range(1,len(pts)-1):
+              if pts[i]<=pts[i-1] and pts[i]<=pts[i+1]:lows.append((i,pts[i]))
+            dbl=any(lows[j][0]-lows[i][0]>=2 and abs(lows[j][1]-lows[i][1])<=1000 and pts[-1]>max(lows[i][1],lows[j][1])+500 for i in range(len(lows)) for j in range(i+1,len(lows)))
+            cm=cum(a,30)
+            return {'ma3PerG':ma3,'ma10PerG':ma10,'goldenCrossCandidate':len(p)>=11 and prev3<=prev10 and ma3>ma10,'deadCrossCandidate':len(p)>=11 and prev3>=prev10 and ma3<ma10,'resistanceBreakCandidate':len(pts)>=5 and pts[-1]>max(pts[:-1]),'supportBreakCandidate':len(pts)>=5 and pts[-1]<min(pts[:-1]),'doubleBottomCandidate':dbl,'vReboundCandidate':cm['maxDrawdown']<=-1500 and cm['recovery']>=.6,'peakoutCandidate':len(pts)>=4 and pts[-1]<pts[-2]<pts[-3]}
+          out={'targetDate':TARGET,'sourceGeneratedAt':data.get('generatedAt'),'latestSourceDate':latest,'machines':{}}
+          for m in ACTIVE:
+            a=rows[m]; last=a[-1]; prev=a[-2] if len(a)>1 else last; typ,sn=streak(a); rh=rankhist(m); r30=rh[-30:]; sims=sim(a); snext=[x['nextDiff'] for x in sims]
+            bp=pr(last['games'],last['bb']); rp=pr(last['games'],last['rb']); tp=pr(last['games'],last['bb']+last['rb'])
+            tag='合算強' if tp and tp<=140 else 'REG強' if rp and rp<=300 else 'BIG強' if bp and bp<=250 else '通常'
+            if last['diff']<=-1500: tag='内容あり凹み' if rp and rp<=300 else '内容なし凹み'
+            if last['diff']>=3000 and rp and rp>=500: tag='BIG偏重大幅プラス'
+            q={
+              'latest':last,'latestPerG':pg(last),'perGDeltaVsPrev':pg(last)-pg(prev),'perGAccel3v3':statistics.mean([pg(x) for x in a[-3:]])-statistics.mean([pg(x) for x in a[-6:-3]]) if len(a)>=6 else 0,
+              'recent3':S(a[-3:]),'recent5':S(a[-5:]),'recent10':S(a[-10:]),'recent30':S(a[-30:]),'all':S(a),
+              'streak':{'type':typ,'days':sn},'cum30':cum(a,30),'latestPerGPercentile30':sum(pg(x)<=pg(last) for x in a[-30:])/len(a[-30:]),
+              'latestCondition':band(last['diff']),'nextAfterSameCondition':next_cond(a,band(last['diff'])),'nextAfterCurrentStreakPattern':next_streak(a,typ,sn),'nextAfterPlus3000':next_thr(a,lambda x:x['diff']>=3000),'nextAfterMinus1500':next_thr(a,lambda x:x['diff']<=-1500),
+              'weekdayTarget':cal(a,lambda x:x['weekday']==WDAY),'dateEndingTarget':cal(a,lambda x:int(x['date'][-1])==ENDING),'monthSegmentTarget':cal(a,lambda x:seg(x['date'])==SEG),'weekdayOnly':cal(a,lambda x:x['weekday'] in ['月','火','水','木','金']),
+              'storeRank':{'latestRank':rh[-1][1] if rh else None,'avgRank30':statistics.mean(x[1] for x in r30) if r30 else None,'top1Rate30':sum(x[1]==1 for x in r30)/len(r30) if r30 else None,'top2Rate30':sum(x[1]<=2 for x in r30)/len(r30) if r30 else None,'avgVsStore30':statistics.mean(x[3] for x in r30) if r30 else None},
+              'contentTag':tag,'bbProbLatest':bp,'rbProbLatest':rp,'totalProbLatest':tp,'similarCases':sims,'similarNextAvg':statistics.mean(snext) if snext else None,'similarNextPlusRate':sum(x>0 for x in snext)/len(snext) if snext else None,'wave':wave(a)
+            }; out['machines'][m]=q
+          def norm(vals):
+            lo=min(vals.values()); hi=max(vals.values()); return {m:(.5 if hi==lo else (v-lo)/(hi-lo)) for m,v in vals.items()}
+          ms=out['machines']; n5=norm({m:ms[m]['recent5']['perG'] or 0 for m in ACTIVE}); n10=norm({m:ms[m]['recent10']['perG'] or 0 for m in ACTIVE}); nc=norm({m:ms[m]['nextAfterSameCondition']['winRate'] if ms[m]['nextAfterSameCondition']['winRate'] is not None else .5 for m in ACTIVE}); ns=norm({m:-(ms[m]['storeRank']['avgRank30'] or 9) for m in ACTIVE}); nb=norm({m:-(ms[m]['totalProbLatest'] or 9999) for m in ACTIVE}); na=norm({m:ms[m]['perGAccel3v3'] for m in ACTIVE}); nsi=norm({m:ms[m]['similarNextAvg'] or 0 for m in ACTIVE})
+          wraw={}
+          for m in ACTIVE:
+            w=ms[m]['wave']; wraw[m]=(w['goldenCrossCandidate']+w['resistanceBreakCandidate']+w['doubleBottomCandidate']+w['vReboundCandidate'])-(w['deadCrossCandidate']+w['supportBreakCandidate']+w['peakoutCandidate'])
+          nw=norm(wraw)
+          score={m:round(35+55*(.20*n5[m]+.15*n10[m]+.15*nc[m]+.10*ns[m]+.15*nb[m]+.10*na[m]+.10*nw[m]+.05*nsi[m]),1) for m in ACTIVE}
+          out['scores']=score; out['ranking']=sorted(ACTIVE,key=lambda m:score[m],reverse=True); out['weights']={'recent5':20,'recent10':15,'samePrevCondition':15,'storeRelative':10,'latestBonusContent':15,'perGAcceleration':10,'dailyWave':10,'similarCases':5}; out['limits']=['300-500G周期は日別データでは判定不可','朝一・日中反転は日別データでは判定不可','設定変更や店舗意図は結果だけでは証明不可','見せ台判定には位置情報が必要']
+          Path('analysis-today.json').write_text(json.dumps(out,ensure_ascii=False,indent=2),encoding='utf-8')
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add analysis-today.json
+          git commit -m "Build comprehensive today analysis" || true
+          git pull --rebase origin main
+          git push
