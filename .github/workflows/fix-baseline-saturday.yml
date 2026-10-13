@@ -1,4 +1,4 @@
-name: Fix baseline Saturday filter
+name: Publish dip recovery analysis
 on:
   push:
     paths:
@@ -6,30 +6,24 @@ on:
 permissions:
   contents: write
 jobs:
-  fix:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Update baseline filter and cache
+      - name: Add dip recovery loader and bump cache
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
 
-          p=Path('public-baseline-graph.js')
-          s=p.read_text(encoding='utf-8')
-          s=s.replace("function isWeekdayOrSunday(d){", "function isAnyDay(d){")
-          s=s.replace("const w=x.getDay();return w===0||(w>=1&&w<=5);", "const w=x.getDay();return w>=0&&w<=6;")
-          s=s.replace("平日・日曜 +3,000枚以上を除外", "全曜日 +3,000枚以上を除外")
-          s=s.replace("平日（月〜金）・日曜日は+3,000枚以上の台を除外します。通常の土曜日は+3,000枚以上でも自動除外しません。", "曜日に関係なく+3,000枚以上の台を除外します。土曜日も対象です。")
-          s=s.replace("isWeekdayOrSunday(r.date)&&r.diff>=3000", "isAnyDay(r.date)&&r.diff>=3000")
-          s=s.replace("平日・日曜 +3000枚以上", "全曜日 +3000枚以上")
-          p.write_text(s,encoding='utf-8')
-
           pv=Path('public-v13.js')
-          t=pv.read_text(encoding='utf-8')
-          t=re.sub(r"public-baseline-graph\.js\?v=\d+", "public-baseline-graph.js?v=2", t)
-          pv.write_text(t,encoding='utf-8')
+          s=pv.read_text(encoding='utf-8')
+          loader="\n(()=>{const s=document.createElement('script');s.src='./public-dip-recovery.js?v=1';s.defer=true;document.body.appendChild(s);})();\n"
+          if 'public-dip-recovery.js' not in s:
+              s=s.rstrip()+loader
+          else:
+              s=re.sub(r"public-dip-recovery\.js\?v=\d+", "public-dip-recovery.js?v=1", s)
+          pv.write_text(s,encoding='utf-8')
 
           idx=Path('index.html')
           h=idx.read_text(encoding='utf-8')
@@ -40,6 +34,7 @@ jobs:
           PY
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add public-baseline-graph.js public-v13.js index.html
-          git commit -m "Include Saturdays in 3000 baseline exclusion" || true
+          git add public-v13.js index.html
+          git commit -m "Publish dip recovery analysis" || true
+          git pull --rebase origin main
           git push
