@@ -1,6 +1,6 @@
 (()=>{
   const g=id=>document.getElementById(id);
-  const esc13=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+  const esc13=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt13=n=>Math.round(Number(n)||0).toLocaleString('ja-JP');
   const signed13=n=>{n=Number(n)||0;return(n>0?'+':'')+fmt13(n)};
   const short13=d=>d?String(d).replace(/^\d{4}-/,'').replace('-','/'):'-';
@@ -42,4 +42,4 @@
 
   const timer13=setInterval(()=>{if(typeof RECORDS!=='undefined'&&RECORDS.length){clearInterval(timer13);const dates=RECORDS.map(r=>String(r.date)).filter(Boolean).sort();if(dates.length){g('rangeStart').value=dates[0];g('rangeEnd').value=dates[dates.length-1];g('rangeStart').min=g('rangeEnd').min=dates[0];g('rangeStart').max=g('rangeEnd').max=dates[dates.length-1];}g('rangePanel').hidden=false;renderRange13();render();}},100);
 })();
-(()=>{const s=document.createElement('script');s.src='./public-longterm.js?v=1';s.defer=true;document.body.appendChild(s);})();
+(()=>{const s=document.createElement('script');s.src='./public-longterm-v2.js?v=2';s.defer=true;document.body.appendChild(s);})();
