@@ -63,3 +63,12 @@
     setTimeout(()=>clearInterval(t),10000);
   }
 })();
+
+// 凹み回復分析を公開ページへ読み込む
+(()=>{
+  if(document.getElementById('dipRecoveryLoader'))return;
+  const s=document.createElement('script');
+  s.id='dipRecoveryLoader';
+  s.src='./public-dip-recovery.js?v=2';
+  document.head.appendChild(s);
+})();
