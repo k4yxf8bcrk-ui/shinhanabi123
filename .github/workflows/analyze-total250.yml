@@ -1,0 +1,65 @@
+name: Analyze total250 next day
+on:
+  push:
+    paths:
+      - total250.trigger
+permissions:
+  contents: write
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Analyze
+        run: |
+          python - <<'PY'
+          import json, statistics
+          from pathlib import Path
+          from datetime import datetime, timedelta
+          ACTIVE={'3232','3233','3235'}
+          data=json.loads(Path('data.json').read_text(encoding='utf-8'))
+          recs=data.get('records',[])
+          agg={}
+          for r in recs:
+            m=str(r.get('machineNo','')); d=str(r.get('date',''))
+            if m not in ACTIVE or not d: continue
+            k=(d,m); x=agg.setdefault(k,{'date':d,'machineNo':m,'games':0,'diff':0,'bb':0,'rb':0})
+            x['games']+=float(r.get('games') or 0); x['diff']+=float(r.get('diff') or 0); x['bb']+=float(r.get('bb') or 0); x['rb']+=float(r.get('rb') or 0)
+          def next_date(d):
+            return (datetime.strptime(d,'%Y-%m-%d')+timedelta(days=1)).strftime('%Y-%m-%d')
+          def rank_on(d,m):
+            rs=[agg.get((d,x)) for x in ACTIVE]; rs=[x for x in rs if x and x['games']>0]
+            if len(rs)<2:return None
+            rs=sorted(rs,key=lambda x:x['diff'],reverse=True)
+            for i,x in enumerate(rs,1):
+              if x['machineNo']==m:return i
+          cases=[]; zero_bonus=[]
+          for (d,m),x in sorted(agg.items()):
+            g=x['games']; total=x['bb']+x['rb']
+            if g<=0: continue
+            nd=next_date(d); n=agg.get((nd,m))
+            if not n or n['games']<=0: continue
+            prob=(g/total if total>0 else None)
+            base={'date':d,'machineNo':m,'games':round(g),'diff':round(x['diff']),'bb':round(x['bb']),'rb':round(x['rb']),'totalProb':prob,'nextDate':nd,'nextGames':round(n['games']),'nextDiff':round(n['diff']),'nextBB':round(n['bb']),'nextRB':round(n['rb']),'nextTotalProb':(n['games']/(n['bb']+n['rb']) if n['bb']+n['rb']>0 else None),'nextPlus':n['diff']>0,'nextPlus1000':n['diff']>=1000,'nextMinus1000':n['diff']<=-1000,'nextRank':rank_on(nd,m)}
+            if total>0 and prob>250: cases.append(base)
+            elif total==0: zero_bonus.append(base)
+          def stats(cs):
+            if not cs:return {'n':0}
+            diffs=[c['nextDiff'] for c in cs]
+            ranks=[c['nextRank'] for c in cs if c['nextRank'] is not None]
+            return {'n':len(cs),'plusRate':sum(c['nextPlus'] for c in cs)/len(cs),'avgNextDiff':sum(diffs)/len(diffs),'medianNextDiff':statistics.median(diffs),'plus1000Rate':sum(c['nextPlus1000'] for c in cs)/len(cs),'minus1000Rate':sum(c['nextMinus1000'] for c in cs)/len(cs),'nextBestRate':(sum(r==1 for r in ranks)/len(ranks) if ranks else None),'avgNextRank':(sum(ranks)/len(ranks) if ranks else None)}
+          bym={m:stats([c for c in cases if c['machineNo']==m]) for m in sorted(ACTIVE)}
+          buckets={
+            '250-299':stats([c for c in cases if 250<c['totalProb']<300]),
+            '300-399':stats([c for c in cases if 300<=c['totalProb']<400]),
+            '400+':stats([c for c in cases if c['totalProb']>=400]),
+            'BONUS0':stats(zero_bonus)
+          }
+          result={'generatedFrom':data.get('generatedAt'),'definition':'Total bonus probability > 1/250 with BB+RB>=1; next calendar day on same machine. Zero-bonus days reported separately.','all':stats(cases),'byMachine':bym,'buckets':buckets,'recentCases':list(reversed(cases[-40:])), 'recentZeroBonusCases':list(reversed(zero_bonus[-20:]))}
+          Path('total250-analysis.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+          PY
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add total250-analysis.json
+          git commit -m 'Update total250 analysis' || exit 0
+          git push
