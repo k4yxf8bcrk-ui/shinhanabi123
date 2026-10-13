@@ -43,3 +43,4 @@
   const timer13=setInterval(()=>{if(typeof RECORDS!=='undefined'&&RECORDS.length){clearInterval(timer13);const dates=RECORDS.map(r=>String(r.date)).filter(Boolean).sort();if(dates.length){g('rangeStart').value=dates[0];g('rangeEnd').value=dates[dates.length-1];g('rangeStart').min=g('rangeEnd').min=dates[0];g('rangeStart').max=g('rangeEnd').max=dates[dates.length-1];}g('rangePanel').hidden=false;renderRange13();render();}},100);
 })();
 (()=>{const s=document.createElement('script');s.src='./public-longterm-v2.js?v=2';s.defer=true;document.body.appendChild(s);})();
+(()=>{const s=document.createElement('script');s.src='./public-baseline-graph.js?v=1';s.defer=true;document.body.appendChild(s);})();
