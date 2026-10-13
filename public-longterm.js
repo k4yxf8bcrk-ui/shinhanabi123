@@ -61,7 +61,7 @@
   function normalize(items,key,inverse=false){
     const vals=items.map(x=>Number(x[key])).filter(Number.isFinite);
     const min=Math.min(...vals),max=Math.max(...vals);
-    items.forEach(x=>{let v=Number(x[key]);let z=max===min?.5:(v-min)/(max-min);x['_'+key]=inverse?1-z:z;});
+    items.forEach(x=>{const v=Number(x[key]);const z=(max===min)?0.5:(v-min)/(max-min);x['_'+key]=inverse?1-z:z;});
   }
 
   function typeLabel(m,horizon){
