@@ -1,0 +1,45 @@
+name: Fix baseline Saturday filter
+on:
+  push:
+    paths:
+      - fix-baseline-saturday.trigger
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update baseline filter and cache
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p=Path('public-baseline-graph.js')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("function isWeekdayOrSunday(d){", "function isAnyDay(d){")
+          s=s.replace("const w=x.getDay();return w===0||(w>=1&&w<=5);", "const w=x.getDay();return w>=0&&w<=6;")
+          s=s.replace("平日・日曜 +3,000枚以上を除外", "全曜日 +3,000枚以上を除外")
+          s=s.replace("平日（月〜金）・日曜日は+3,000枚以上の台を除外します。通常の土曜日は+3,000枚以上でも自動除外しません。", "曜日に関係なく+3,000枚以上の台を除外します。土曜日も対象です。")
+          s=s.replace("isWeekdayOrSunday(r.date)&&r.diff>=3000", "isAnyDay(r.date)&&r.diff>=3000")
+          s=s.replace("平日・日曜 +3000枚以上", "全曜日 +3000枚以上")
+          p.write_text(s,encoding='utf-8')
+
+          pv=Path('public-v13.js')
+          t=pv.read_text(encoding='utf-8')
+          t=re.sub(r"public-baseline-graph\.js\?v=\d+", "public-baseline-graph.js?v=2", t)
+          pv.write_text(t,encoding='utf-8')
+
+          idx=Path('index.html')
+          h=idx.read_text(encoding='utf-8')
+          def bump(m): return 'public-v13.js?v='+str(int(m.group(1))+1)
+          h2,n=re.subn(r'public-v13\.js\?v=(\d+)',bump,h,count=1)
+          if n==0: raise SystemExit('public-v13 cache ref not found')
+          idx.write_text(h2,encoding='utf-8')
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add public-baseline-graph.js public-v13.js index.html
+          git commit -m "Include Saturdays in 3000 baseline exclusion" || true
+          git push
