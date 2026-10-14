@@ -1,28 +1,71 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-15T07:25:00+09:00",
+  "updatedAt": "2026-10-14T22:52:21.011Z",
   "history": [
     {
-      "targetDate": "2026-10-14",
-      "sourceLatestDate": "2026-10-13",
       "generatedAt": "2026-10-13T23:02:15.128Z",
       "ranking": [
-        {"machineNo": "3232", "rank": 1, "confidence": "高め"},
-        {"machineNo": "3233", "rank": 2, "confidence": "高め"},
-        {"machineNo": "3235", "rank": 3, "confidence": "高め"}
+        {
+          "confidence": "高め",
+          "machineNo": "3232",
+          "rank": 1
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3233",
+          "rank": 2
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3235",
+          "rank": 3
+        }
       ],
-      "source": "recovered_from_published_data"
+      "source": "recovered_from_published_data",
+      "sourceLatestDate": "2026-10-13",
+      "targetDate": "2026-10-14"
     },
     {
       "targetDate": "2026-10-15",
       "sourceLatestDate": "2026-10-14",
       "generatedAt": "2026-10-14T21:38:38.731Z",
       "ranking": [
-        {"machineNo": "3232", "rank": 1, "confidence": "高め"},
-        {"machineNo": "3233", "rank": 2, "confidence": "高め"},
-        {"machineNo": "3235", "rank": 3, "confidence": "高め"}
+        {
+          "machineNo": "3232",
+          "rank": 1,
+          "confidence": "高め"
+        },
+        {
+          "machineNo": "3233",
+          "rank": 2,
+          "confidence": "高め"
+        },
+        {
+          "machineNo": "3235",
+          "rank": 3,
+          "confidence": "高め"
+        }
       ],
-      "source": "published_data"
+      "predictions": [
+        {
+          "machineNo": "3232",
+          "score": 47,
+          "label": "中立",
+          "confidence": "高め"
+        },
+        {
+          "machineNo": "3235",
+          "score": 42.3,
+          "label": "ややマイナス寄り",
+          "confidence": "高め"
+        },
+        {
+          "machineNo": "3233",
+          "score": 42.1,
+          "label": "ややマイナス寄り",
+          "confidence": "高め"
+        }
+      ]
     }
   ]
 }
