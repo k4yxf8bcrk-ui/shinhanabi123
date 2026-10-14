@@ -1,0 +1,26 @@
+{
+  "sourceGeneratedAt": "2026-10-13T23:12:40.313Z",
+  "definition": "Per machine, records with 0 < games <= 1000. Plus means diff > 0.",
+  "machines": {
+    "3232": {
+      "n": 23,
+      "plusCount": 3,
+      "plusRate": 0.13043478260869565
+    },
+    "3233": {
+      "n": 24,
+      "plusCount": 2,
+      "plusRate": 0.08333333333333333
+    },
+    "3235": {
+      "n": 11,
+      "plusCount": 0,
+      "plusRate": 0.0
+    }
+  },
+  "combined": {
+    "n": 58,
+    "plusCount": 5,
+    "plusRate": 0.08620689655172414
+  }
+}
