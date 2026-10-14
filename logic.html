@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+<meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet">
+<title>予想・分析ロジック一覧</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",Meiryo,sans-serif;color:#202124;background:#f5f6f8}*{box-sizing:border-box}body{margin:0;background:#f5f6f8}.wrap{width:min(1120px,calc(100% - 28px));margin:24px auto 60px}.hero{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.hero h1{margin:0 0 6px;font-size:clamp(25px,4vw,36px)}.muted{color:#6b7280;font-size:13px;line-height:1.7}.toplinks{display:flex;gap:8px;flex-wrap:wrap}.btn{display:inline-block;text-decoration:none;color:#174ea6;background:#e8f0fe;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800}.panel{background:#fff;border:1px solid #e2e5e9;border-radius:14px;padding:18px;margin-top:15px;box-shadow:0 3px 14px rgba(0,0,0,.035)}h2{margin:0 0 7px;font-size:19px}h3{margin:0;font-size:15px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}.card{border:1px solid #e1e5eb;border-radius:12px;padding:12px;background:#fafbfc;min-width:0}.card .title{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.desc{font-size:12px;line-height:1.7;color:#4b5563;margin-top:7px}.tag{display:inline-block;border-radius:999px;padding:3px 7px;font-size:9px;font-weight:800;background:#eef2f7;color:#4b5563;white-space:nowrap}.tag.active{background:#eaf6ef;color:#176b3a}.tag.pending{background:#fff4df;color:#8b5b00}.tag.score{background:#e8f0fe;color:#174ea6}.tag.ref{background:#f0e8ff;color:#6b3fa0}.mini{display:grid;grid-template-columns:1fr auto;gap:5px 10px;font-size:11px;margin-top:9px}.mini span{color:#6b7280}.mini b{text-align:right}.formula{margin-top:10px;padding:10px 12px;background:#f7f9fc;border:1px solid #e0e6ef;border-radius:10px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px;line-height:1.7;overflow:auto}.weights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}.weightbox{border:1px solid #dfe5ee;border-radius:12px;padding:12px;background:#fbfcff}.weightbox h3{margin-bottom:8px}.barrow{display:grid;grid-template-columns:1fr 42px;gap:7px;font-size:11px;padding:4px 0;border-bottom:1px solid #edf0f3}.barrow:last-child{border-bottom:0}.barrow span:last-child{text-align:right;font-weight:800}.note{font-size:11px;color:#6b7280;line-height:1.75;margin-top:10px}.definitionGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.statusline{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.metriclist{font-size:11px;color:#4b5563;line-height:1.75;margin-top:8px}.source{font-size:10px;color:#8a919b;margin-top:8px}.footer{font-size:11px;color:#6b7280;line-height:1.75;margin-top:18px}.callout{border-left:4px solid #6b3fa0;background:#fcfaff;padding:11px 13px;border-radius:10px;margin-top:10px;font-size:12px;line-height:1.75}.tablewrap{overflow:auto;margin-top:10px;border:1px solid #e1e5eb;border-radius:10px}table{width:100%;min-width:720px;border-collapse:collapse;font-size:11px}th,td{padding:8px 9px;border-bottom:1px solid #edf0f3;text-align:left;vertical-align:top}th{background:#f7f8fa;color:#4b5563}code{font-size:11px;background:#f3f4f6;padding:2px 4px;border-radius:4px}@media(max-width:900px){.grid,.weights{grid-template-columns:1fr 1fr}}@media(max-width:650px){.hero{flex-direction:column}.grid,.weights,.definitionGrid{grid-template-columns:1fr}.wrap{width:calc(100% - 18px)}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header class="hero">
+  <div><h1>予想・分析ロジック一覧</h1><div class="muted">新ハナビ 3232・3233・3235の予想で使う定義と、分析画面で表示しているロジックを1ページに整理。</div></div>
+  <div class="toplinks"><a class="btn" href="./">データ画面へ戻る</a><a class="btn" href="./prediction-definitions.json">定義JSON</a></div>
+</header>
+
+<section class="panel">
+  <h2>基本方針</h2>
+  <div class="callout">1つの条件だけで決めず、短期・中期・長期、ボーナス内容、差枚帯、連勝連敗、ドローダウン、店内比較、曜日、類似ケースなどを重ねて評価する。件数が少ない条件は強い法則として扱わず、サンプル数と再現性を見て補助材料に下げる。</div>
+  <div class="grid">
+    <div class="card"><div class="title"><h3>複数定義の総合評価</h3><span class="tag active">基本</span></div><div class="desc">複数の指標を合成し、単一ルールで順位を決めない。</div></div>
+    <div class="card"><div class="title"><h3>サンプル数を重視</h3><span class="tag active">基本</span></div><div class="desc">nが少ない条件は補助扱い。十分な件数がある条件を優先する。</div></div>
+    <div class="card"><div class="title"><h3>0G日は除外</h3><span class="tag active">基本</span></div><div class="desc">実稼働日ベースの分析では0G日を日数に数えない。</div></div>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>7日・30日・90日の総合スコア</h2>
+  <div class="muted">現在の <code>public-longterm-v2.js</code> の重み。ドローダウンは30日・90日で使用し、7日スコアには直接入れていない。</div>
+  <div class="weights">
+    <div class="weightbox"><h3>7実稼働日</h3>
+      <div class="barrow"><span>1G差枚</span><span>22%</span></div><div class="barrow"><span>プラス日率</span><span>12%</span></div><div class="barrow"><span>トレンド</span><span>10%</span></div><div class="barrow"><span>合算</span><span>10%</span></div><div class="barrow"><span>REG</span><span>8%</span></div><div class="barrow"><span>安定度</span><span>8%</span></div><div class="barrow"><span>短期加速</span><span>10%</span></div><div class="barrow"><span>同条件後</span><span>7%</span></div><div class="barrow"><span>類似ケース</span><span>5%</span></div><div class="barrow"><span>店内比較</span><span>8%</span></div>
+    </div>
+    <div class="weightbox"><h3>30実稼働日</h3>
+      <div class="barrow"><span>1G差枚</span><span>20%</span></div><div class="barrow"><span>プラス日率</span><span>12%</span></div><div class="barrow"><span>トレンド</span><span>7%</span></div><div class="barrow"><span>合算</span><span>12%</span></div><div class="barrow"><span>REG</span><span>8%</span></div><div class="barrow"><span>安定度</span><span>10%</span></div><div class="barrow"><span>ドローダウン</span><span>8%</span></div><div class="barrow"><span>店内比較</span><span>10%</span></div><div class="barrow"><span>同条件後</span><span>6%</span></div><div class="barrow"><span>類似ケース</span><span>7%</span></div>
+    </div>
+    <div class="weightbox"><h3>90実稼働日</h3>
+      <div class="barrow"><span>1G差枚</span><span>16%</span></div><div class="barrow"><span>プラス日率</span><span>10%</span></div><div class="barrow"><span>合算</span><span>10%</span></div><div class="barrow"><span>REG</span><span>8%</span></div><div class="barrow"><span>安定度</span><span>10%</span></div><div class="barrow"><span>+3000枚日</span><span>8%</span></div><div class="barrow"><span>-1500枚日</span><span>8%</span></div><div class="barrow"><span>店内比較</span><span>10%</span></div><div class="barrow"><span>ドローダウン</span><span>7%</span></div><div class="barrow"><span>類似ケース</span><span>6%</span></div><div class="barrow"><span>同条件後</span><span>7%</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>ドローダウン・回復位置</h2>
+  <div class="grid">
+    <div class="card"><div class="title"><h3>現在ドローダウン</h3><span class="tag score">30/90日</span></div><div class="desc">期間内の累計差枚の最高値から、現在が何枚下にいるか。最高値なら0枚。</div><div class="formula">currentDD = 現在累計差枚 − 期間内ピーク</div></div>
+    <div class="card"><div class="title"><h3>最大ドローダウン</h3><span class="tag ref">分析</span></div><div class="desc">期間中にピークから最も深く落ちた幅。凹みの最大深度を見る。</div></div>
+    <div class="card"><div class="title"><h3>回復位置</h3><span class="tag score">30/90日</span></div><div class="desc">期間内の安値〜高値のどの位置まで戻しているかを0〜1付近で表す。</div><div class="formula">position = (現在 − 安値) ÷ (高値 − 安値)</div></div>
+  </div>
+  <div class="formula">ドローダウン評価 = 0.5 + 0.5 × position − 0.25 × min(|currentDD| ÷ 5000, 1)　※0〜1に丸めて台間比較</div>
+  <div class="note">コード上では <code>recovery</code> も計算しているが、30日・90日の総合スコアへ直接入るのは <code>position</code> と <code>currentDD</code> から作るドローダウン評価。</div>
+</section>
+
+<section class="panel">
+  <h2>日別・条件別の深掘り分析</h2>
+  <div class="grid">
+    <div class="card"><div class="title"><h3>差枚帯</h3><span class="tag active">使用中</span></div><div class="desc">-2000以下、-1500〜-1999、-1000〜-1499、-500〜-999、-1〜-499、+1〜+999、+1000〜+1999、+2000〜+2999、+3000以上などに分類し、その翌日の実績を見る。</div></div>
+    <div class="card"><div class="title"><h3>連勝・連敗</h3><span class="tag active">使用中</span></div><div class="desc">現在の連続プラス/マイナス日数と、過去に同じ連続日数になった後の翌日成績を集計。</div></div>
+    <div class="card"><div class="title"><h3>大凹み・大幅プラス後</h3><span class="tag active">使用中</span></div><div class="desc">例：-1500枚以下、+3000枚以上など、閾値に達した日の翌日や数日後を集計。</div></div>
+    <div class="card"><div class="title"><h3>類似ケース</h3><span class="tag active">使用中</span></div><div class="desc">差枚、1G差枚、G数、BB確率、RB確率が現在に近い過去日を探し、次の実稼働日の平均・プラス率を見る。</div></div>
+    <div class="card"><div class="title"><h3>店内相対順位</h3><span class="tag active">使用中</span></div><div class="desc">同日に稼働した対象台の中で何位だったか、直近の平均順位、1位率・上位率、店平均との差を評価。</div></div>
+    <div class="card"><div class="title"><h3>稼働品質</h3><span class="tag ref">分析</span></div><div class="desc">6000G以上=超高稼働、4000G以上=高稼働、2000G以上=中稼働、それ未満=低稼働として参考表示。</div></div>
+    <div class="card"><div class="title"><h3>ボーナス内容</h3><span class="tag active">使用中</span></div><div class="desc">BB、REG、合算を見て「REG良好」「合算良好」「BIG先行」「内容あり凹み」などの内容ラベルを付ける。</div></div>
+    <div class="card"><div class="title"><h3>曜日・日付傾向</h3><span class="tag active">使用中</span></div><div class="desc">曜日、末尾日、月の上旬/中旬/下旬などでプラス率・平均差枚・1G差枚を集計。</div></div>
+    <div class="card"><div class="title"><h3>短期加速</h3><span class="tag active">使用中</span></div><div class="desc">直近3実稼働日の1G差枚と、その前3実稼働日を比較して加速・減速を評価。</div></div>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>凹み回復分析</h2>
+  <div class="muted">連続した実稼働日の合計差枚が大きく凹んだ後、そのマイナス分を何実稼働日で取り戻したかを調べる別ロジック。</div>
+  <div class="grid">
+    <div class="card"><div class="title"><h3>期間</h3><span class="tag ref">選択式</span></div><div class="desc">1・3・5・7・10・14・30実稼働日から選択。</div></div>
+    <div class="card"><div class="title"><h3>凹み閾値</h3><span class="tag ref">選択式</span></div><div class="desc">-1000・-2000・-3000・-5000・-7000・-10000枚から選択。</div></div>
+    <div class="card"><div class="title"><h3>回復速度</h3><span class="tag ref">分析</span></div><div class="desc">回復率、回復までの中央値、回復前の追加凹み、1/2/3/5/10/20実稼働日以内の回復率を表示。</div></div>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>その他の分析定義</h2>
+  <div class="grid">
+    <div class="card"><div class="title"><h3>低稼働台の翌日</h3><span class="tag ref">補助</span></div><div class="desc">3台のうち前日G数が少なかった台の翌日成績を比較。低稼働だけで強い加点はしない。</div></div>
+    <div class="card"><div class="title"><h3>合算250超</h3><span class="tag ref">補助</span></div><div class="desc">合算が1/250より重かった日の翌日を台別・帯別に分析。件数を必ず併記。</div></div>
+    <div class="card"><div class="title"><h3>BB 1/1000以上</h3><span class="tag ref">補助</span></div><div class="desc">BIGが極端に重かった日の翌日を別集計。BB0件は別条件として扱う。</div></div>
+    <div class="card"><div class="title"><h3>全台マイナス</h3><span class="tag ref">補助</span></div><div class="desc">3232・3233・3235が同日にすべてマイナスだったケースを抽出し、その後の動きを分析。</div></div>
+    <div class="card"><div class="title"><h3>1000G超・3000G超</h3><span class="tag ref">補助</span></div><div class="desc">台ごとにG数条件をかけて曜日成績を再集計。高稼働日の結果に偏る選択バイアスに注意。</div></div>
+    <div class="card"><div class="title"><h3>通常日推定</h3><span class="tag ref">参考</span></div><div class="desc">月末最終土曜の+1500枚以上や、平日の+3000枚以上などを除外して通常日の基準線を見る参考フィルター。</div></div>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>編集長用の追加定義</h2>
+  <div class="muted">この欄は <code>prediction-definitions.json</code> を読み込み、追加した定義を表示する。序盤データがまだ無いものは「待機中」として区別。</div>
+  <div id="customDefinitions" class="definitionGrid"><div class="card"><div class="desc">定義を読み込んでいます…</div></div></div>
+</section>
+
+<section class="panel">
+  <h2>自動スコアと編集長判断の区別</h2>
+  <div class="tablewrap"><table><thead><tr><th>項目</th><th>現在の扱い</th><th>補足</th></tr></thead><tbody>
+    <tr><td>7/30/90日総合スコア</td><td>自動計算</td><td>上記の固定ウェイトで台間比較。</td></tr>
+    <tr><td>ドローダウン</td><td>30/90日に自動反映</td><td>7日スコアには直接入らない。</td></tr>
+    <tr><td>平日限定</td><td>編集長予想の定義として登録済み</td><td>土日を打たない前提の判断材料。固定ウェイトの長期スコアとは別枠。</td></tr>
+    <tr><td>序盤1000G</td><td>待機中</td><td>500G/1000G時点などの途中差枚データが蓄積されたら有効化。</td></tr>
+    <tr><td>平日＋序盤1000G</td><td>待機中</td><td>序盤1000Gが有効になった時点で複合評価。</td></tr>
+  </tbody></table></div>
+  <div class="note">最終的な「編集長予想」は、自動スコアだけをそのまま順位にするのではなく、条件別の過去件数・曜日・凹み・ボーナス内容なども確認して出す。</div>
+</section>
+
+<div class="footer">注意：ここにある過去条件は、次の遊技結果や設定変更を因果的に予測するものではありません。高G数で絞る分析などは、良い結果だったため長く回されたという選択バイアスを含む場合があります。</div>
+</main>
+<script>
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+(async()=>{
+  const box=document.getElementById('customDefinitions');
+  try{
+    const r=await fetch('./prediction-definitions.json?t='+Date.now(),{cache:'no-store'}); if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json(); const defs=Array.isArray(d.definitions)?d.definitions:[];
+    box.innerHTML=defs.map(x=>{
+      const pending=x.status==='pending_intraday_data'; const metrics=Array.isArray(x.metrics)?x.metrics:[];
+      const scope=Array.isArray(x.scope)?x.scope.join('・'):'';
+      return `<div class="card"><div class="title"><h3>${esc(x.name)}</h3><span class="tag ${pending?'pending':'active'}">${pending?'待機中':'登録済み'}</span></div><div class="statusline">${x.useInForecast?'<span class="tag score">予想定義</span>':'<span class="tag ref">データ待ち</span>'}${scope?`<span class="tag">${esc(scope)}</span>`:''}</div><div class="desc">${esc(x.purpose||'')}</div><div class="metriclist">${metrics.map(m=>'・'+esc(m)).join('<br>')}</div>${x.activationCondition?`<div class="source">有効化条件：${esc(x.activationCondition)}</div>`:''}</div>`;
+    }).join('') || '<div class="card"><div class="desc">追加定義はありません。</div></div>';
+  }catch(e){box.innerHTML='<div class="card"><div class="desc">追加定義を読み込めませんでした。</div></div>';}
+})();
+</script>
+</body>
+</html>
