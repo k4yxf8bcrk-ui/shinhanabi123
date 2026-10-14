@@ -1,0 +1,59 @@
+name: Analyze weekday strength over 3000G
+
+on:
+  push:
+    paths:
+      - 'weekday-over3000.trigger'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Analyze
+        run: |
+          python - <<'PY'
+          import json
+          from statistics import mean, median
+          from datetime import datetime, timezone
+          with open('data.json', encoding='utf-8') as f:
+              data=json.load(f)
+          records=data.get('records',[])
+          machines=['3232','3233','3235']
+          order=['月','火','水','木','金','土','日']
+          out={'generatedAt':datetime.now(timezone.utc).isoformat(),'sourceGeneratedAt':data.get('generatedAt'),'definition':'Each machine is filtered independently; only records with games > 3000 are included.','machines':{}}
+          for m in machines:
+              rs=[r for r in records if str(r.get('machineNo',''))==m and float(r.get('games',0) or 0)>3000]
+              out['machines'][m]={'totalN':len(rs),'weekdays':{}}
+              for wd in order:
+                  ws=[r for r in rs if str(r.get('weekday',''))==wd]
+                  diffs=[float(r.get('diff',0) or 0) for r in ws]
+                  games=[float(r.get('games',0) or 0) for r in ws]
+                  n=len(ws)
+                  total_diff=sum(diffs); total_games=sum(games)
+                  out['machines'][m]['weekdays'][wd]={
+                      'n':n,
+                      'avgDiff':round(mean(diffs),2) if n else None,
+                      'medianDiff':round(median(diffs),2) if n else None,
+                      'plusRate':sum(1 for x in diffs if x>0)/n if n else None,
+                      'avgGames':round(mean(games),2) if n else None,
+                      'medianGames':round(median(games),2) if n else None,
+                      'yenPerGame':round(total_diff/total_games*20,3) if total_games else None,
+                  }
+          with open('weekday-over3000-analysis.json','w',encoding='utf-8') as f:
+              json.dump(out,f,ensure_ascii=False,indent=2)
+          PY
+      - name: Commit result
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add weekday-over3000-analysis.json
+          git diff --cached --quiet || git commit -m "Update weekday over3000 analysis"
+          git push
