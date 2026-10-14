@@ -1,0 +1,211 @@
+{
+  "generatedAt": "2026-10-14T14:23:43.815089+00:00",
+  "sourceGeneratedAt": "2026-10-13T23:12:40.313Z",
+  "definition": "Each machine is filtered independently; only records with games > 3000 are included.",
+  "machines": {
+    "3232": {
+      "totalN": 76,
+      "weekdays": {
+        "月": {
+          "n": 8,
+          "avgDiff": 709.5,
+          "medianDiff": 1020.0,
+          "plusRate": 0.75,
+          "avgGames": 5244.75,
+          "medianGames": 5243.0,
+          "yenPerGame": 2.706
+        },
+        "火": {
+          "n": 10,
+          "avgDiff": -111.4,
+          "medianDiff": -34.0,
+          "plusRate": 0.4,
+          "avgGames": 4610.8,
+          "medianGames": 4448.0,
+          "yenPerGame": -0.483
+        },
+        "水": {
+          "n": 9,
+          "avgDiff": 414.44,
+          "medianDiff": 228.0,
+          "plusRate": 0.6666666666666666,
+          "avgGames": 3999.33,
+          "medianGames": 3862.0,
+          "yenPerGame": 2.073
+        },
+        "木": {
+          "n": 7,
+          "avgDiff": 538.71,
+          "medianDiff": 406.0,
+          "plusRate": 0.8571428571428571,
+          "avgGames": 5219.57,
+          "medianGames": 5901.0,
+          "yenPerGame": 2.064
+        },
+        "金": {
+          "n": 11,
+          "avgDiff": 256.45,
+          "medianDiff": 238.0,
+          "plusRate": 0.7272727272727273,
+          "avgGames": 5122.91,
+          "medianGames": 4964.0,
+          "yenPerGame": 1.001
+        },
+        "土": {
+          "n": 15,
+          "avgDiff": 435.13,
+          "medianDiff": 406.0,
+          "plusRate": 0.6,
+          "avgGames": 5584.13,
+          "medianGames": 5571.0,
+          "yenPerGame": 1.558
+        },
+        "日": {
+          "n": 16,
+          "avgDiff": 446.69,
+          "medianDiff": 318.0,
+          "plusRate": 0.5625,
+          "avgGames": 6014.69,
+          "medianGames": 5902.5,
+          "yenPerGame": 1.485
+        }
+      }
+    },
+    "3233": {
+      "totalN": 76,
+      "weekdays": {
+        "月": {
+          "n": 12,
+          "avgDiff": 452.83,
+          "medianDiff": 228.0,
+          "plusRate": 0.5833333333333334,
+          "avgGames": 5268.5,
+          "medianGames": 5034.5,
+          "yenPerGame": 1.719
+        },
+        "火": {
+          "n": 4,
+          "avgDiff": 271.5,
+          "medianDiff": 309.0,
+          "plusRate": 0.5,
+          "avgGames": 4696.0,
+          "medianGames": 4707.0,
+          "yenPerGame": 1.156
+        },
+        "水": {
+          "n": 9,
+          "avgDiff": 111.11,
+          "medianDiff": 159.0,
+          "plusRate": 0.5555555555555556,
+          "avgGames": 3967.44,
+          "medianGames": 3890.0,
+          "yenPerGame": 0.56
+        },
+        "木": {
+          "n": 10,
+          "avgDiff": 687.2,
+          "medianDiff": 750.5,
+          "plusRate": 0.8,
+          "avgGames": 5030.4,
+          "medianGames": 4982.0,
+          "yenPerGame": 2.732
+        },
+        "金": {
+          "n": 11,
+          "avgDiff": 144.09,
+          "medianDiff": 574.0,
+          "plusRate": 0.5454545454545454,
+          "avgGames": 6078.64,
+          "medianGames": 5510.0,
+          "yenPerGame": 0.474
+        },
+        "土": {
+          "n": 16,
+          "avgDiff": 930.12,
+          "medianDiff": 924.0,
+          "plusRate": 0.8125,
+          "avgGames": 6346.06,
+          "medianGames": 6608.5,
+          "yenPerGame": 2.931
+        },
+        "日": {
+          "n": 14,
+          "avgDiff": 1174.64,
+          "medianDiff": 962.0,
+          "plusRate": 0.8571428571428571,
+          "avgGames": 6069.93,
+          "medianGames": 6036.0,
+          "yenPerGame": 3.87
+        }
+      }
+    },
+    "3235": {
+      "totalN": 81,
+      "weekdays": {
+        "月": {
+          "n": 7,
+          "avgDiff": 1514.86,
+          "medianDiff": 1753.0,
+          "plusRate": 1.0,
+          "avgGames": 6140.57,
+          "medianGames": 5774.0,
+          "yenPerGame": 4.934
+        },
+        "火": {
+          "n": 16,
+          "avgDiff": 630.12,
+          "medianDiff": 425.0,
+          "plusRate": 0.5625,
+          "avgGames": 5170.12,
+          "medianGames": 4559.0,
+          "yenPerGame": 2.438
+        },
+        "水": {
+          "n": 7,
+          "avgDiff": 1128.86,
+          "medianDiff": 926.0,
+          "plusRate": 0.8571428571428571,
+          "avgGames": 5338.14,
+          "medianGames": 5046.0,
+          "yenPerGame": 4.229
+        },
+        "木": {
+          "n": 8,
+          "avgDiff": 988.5,
+          "medianDiff": 595.0,
+          "plusRate": 0.875,
+          "avgGames": 5289.25,
+          "medianGames": 4981.0,
+          "yenPerGame": 3.738
+        },
+        "金": {
+          "n": 10,
+          "avgDiff": 400.5,
+          "medianDiff": 469.0,
+          "plusRate": 0.8,
+          "avgGames": 5991.3,
+          "medianGames": 5842.5,
+          "yenPerGame": 1.337
+        },
+        "土": {
+          "n": 18,
+          "avgDiff": 137.06,
+          "medianDiff": -253.0,
+          "plusRate": 0.3888888888888889,
+          "avgGames": 4695.89,
+          "medianGames": 3937.5,
+          "yenPerGame": 0.584
+        },
+        "日": {
+          "n": 15,
+          "avgDiff": 46.0,
+          "medianDiff": -150.0,
+          "plusRate": 0.4666666666666667,
+          "avgGames": 5113.07,
+          "medianGames": 5172.0,
+          "yenPerGame": 0.18
+        }
+      }
+    }
+  }
+}
