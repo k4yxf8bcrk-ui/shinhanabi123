@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-15T06:00:00+09:00",
+  "policy": {
+    "combineDefinitions": true,
+    "weightBySampleSize": true,
+    "weightByReliability": true,
+    "avoidSingleRuleDecision": true,
+    "note": "最終予想は複数定義を総合し、サンプル数と再現性が低い条件は補助扱いにする。"
+  },
+  "definitions": [
+    {
+      "id": "weekday_only",
+      "name": "平日限定分析",
+      "status": "active",
+      "scope": ["月", "火", "水", "木", "金"],
+      "exclude": ["土", "日", "0G日"],
+      "metrics": [
+        "台別プラス率",
+        "平均差枚",
+        "中央値差枚",
+        "1Gあたり差枚",
+        "20円換算差枚効率",
+        "平均G数",
+        "BB確率",
+        "RB確率",
+        "合算確率",
+        "平日内の曜日別傾向"
+      ],
+      "useInForecast": true,
+      "purpose": "土日に打たない前提で、実戦対象となる平日だけの傾向を予想材料にする。"
+    },
+    {
+      "id": "early_1000g",
+      "name": "序盤1000G分析",
+      "status": "pending_intraday_data",
+      "scope": ["1G〜1000G"],
+      "metrics": [
+        "500G時点差枚",
+        "1000G時点差枚",
+        "1000G以内最大凹み",
+        "初回差枚0以上到達G",
+        "+300枚到達G",
+        "-250枚到達有無",
+        "-500枚到達有無",
+        "1000G以内プラス到達率",
+        "1000G以内+300枚到達率",
+        "序盤最大凹み-500枚以内率"
+      ],
+      "derived": {
+        "earlyCoinPlay": "1000G以内に差枚+300枚以上へ到達したケースを、早期に持ちコイン遊技へ移行できた参考ケースとして扱う",
+        "lowCashBurden": "1000G以内最大凹みが-500枚以内のケースを、序盤投資負担が比較的軽い参考ケースとして扱う"
+      },
+      "useInForecast": false,
+      "activationCondition": "過去日の途中経過データ（500G/1000G付近またはゲーム数ごとの差枚推移）が蓄積されたら有効化する。",
+      "purpose": "最終差枚だけでなく、序盤に持ちコインへ入りやすい台を優先評価する。"
+    },
+    {
+      "id": "weekday_early1000_combo",
+      "name": "平日限定＋序盤1000G複合評価",
+      "status": "pending_intraday_data",
+      "conditions": [
+        "月〜金のみ",
+        "0G日除外",
+        "序盤1000Gデータが存在する日だけを対象"
+      ],
+      "metrics": [
+        "平日1000G以内プラス到達率",
+        "平日1000G以内+300枚到達率",
+        "平日序盤最大凹み-500枚以内率",
+        "平日初回プラス到達G中央値",
+        "台別・曜日別の序盤資金負担"
+      ],
+      "useInForecast": false,
+      "activationCondition": "early_1000g が有効化された時点で同時に有効化する。",
+      "purpose": "ユーザーの実戦条件（土日を打たず、序盤の追加投資を抑えたい）に合わせた優先順位を作る。"
+    }
+  ]
+}
