@@ -1,0 +1,38 @@
+name: Apply Gemini consensus UI
+
+on:
+  push:
+    paths:
+      - 'gemini-ui.trigger'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch public index
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          tag='<script src="./public-gemini-consensus.js?v=20261015a"></script>'
+          if 'public-gemini-consensus.js' not in s:
+              s=s.replace('</body>', tag+'\n</body>')
+              p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit
+        run: |
+          if git diff --quiet; then
+            echo 'No changes'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Load Gemini consensus and accuracy UI'
+          git push
