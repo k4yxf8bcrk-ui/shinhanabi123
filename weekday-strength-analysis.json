@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T13:57:11.469232+00:00",
+  "generatedAt": "2026-10-14T13:58:52.481905+00:00",
   "sourceGeneratedAt": "2026-10-13T23:12:40.313Z",
   "definition": "Overall weekday strength uses only calendar days where 3232, 3233 and 3235 all have games > 0. Machine stats use that machine active days only.",
   "weekdayRanking": [
@@ -18,7 +18,9 @@
       "medianTotalDiff": 54.0,
       "positiveDayRate": 0.5,
       "allNegativeRate": 0.22727272727272727,
-      "avgPerMachineDiff": 85.39
+      "avgPerMachineDiff": 85.39,
+      "avgTotalGames": 9194.0,
+      "avgPerMachineGames": 3064.67
     },
     "火": {
       "n": 23,
@@ -26,7 +28,9 @@
       "medianTotalDiff": -147.0,
       "positiveDayRate": 0.4782608695652174,
       "allNegativeRate": 0.30434782608695654,
-      "avgPerMachineDiff": -81.57
+      "avgPerMachineDiff": -81.57,
+      "avgTotalGames": 8567.83,
+      "avgPerMachineGames": 2855.94
     },
     "水": {
       "n": 22,
@@ -34,7 +38,9 @@
       "medianTotalDiff": -194.0,
       "positiveDayRate": 0.4090909090909091,
       "allNegativeRate": 0.2727272727272727,
-      "avgPerMachineDiff": -5.12
+      "avgPerMachineDiff": -5.12,
+      "avgTotalGames": 7482.36,
+      "avgPerMachineGames": 2494.12
     },
     "木": {
       "n": 21,
@@ -42,7 +48,9 @@
       "medianTotalDiff": 206.0,
       "positiveDayRate": 0.6190476190476191,
       "allNegativeRate": 0.14285714285714285,
-      "avgPerMachineDiff": 132.1
+      "avgPerMachineDiff": 132.1,
+      "avgTotalGames": 8229.33,
+      "avgPerMachineGames": 2743.11
     },
     "金": {
       "n": 18,
@@ -50,7 +58,9 @@
       "medianTotalDiff": -188.0,
       "positiveDayRate": 0.5,
       "allNegativeRate": 0.2222222222222222,
-      "avgPerMachineDiff": -87.56
+      "avgPerMachineDiff": -87.56,
+      "avgTotalGames": 11496.11,
+      "avgPerMachineGames": 3832.04
     },
     "土": {
       "n": 22,
@@ -58,7 +68,9 @@
       "medianTotalDiff": 661.5,
       "positiveDayRate": 0.5909090909090909,
       "allNegativeRate": 0.09090909090909091,
-      "avgPerMachineDiff": 211.98
+      "avgPerMachineDiff": 211.98,
+      "avgTotalGames": 13007.86,
+      "avgPerMachineGames": 4335.95
     },
     "日": {
       "n": 21,
@@ -66,7 +78,9 @@
       "medianTotalDiff": 303.0,
       "positiveDayRate": 0.5714285714285714,
       "allNegativeRate": 0.14285714285714285,
-      "avgPerMachineDiff": 272.71
+      "avgPerMachineDiff": 272.71,
+      "avgTotalGames": 13649.57,
+      "avgPerMachineGames": 4549.86
     }
   },
   "machines": {
@@ -75,43 +89,57 @@
         "n": 24,
         "avgDiff": -63.25,
         "medianDiff": -376.5,
-        "plusRate": 0.3333333333333333
+        "plusRate": 0.3333333333333333,
+        "avgGames": 2788.33,
+        "medianGames": 2059.0
       },
       "火": {
         "n": 25,
         "avgDiff": -192.56,
         "medianDiff": -182.0,
-        "plusRate": 0.36
+        "plusRate": 0.36,
+        "avgGames": 2662.08,
+        "medianGames": 2459.0
       },
       "水": {
         "n": 24,
         "avgDiff": 26.17,
         "medianDiff": -82.5,
-        "plusRate": 0.4166666666666667
+        "plusRate": 0.4166666666666667,
+        "avgGames": 2644.79,
+        "medianGames": 2644.0
       },
       "木": {
         "n": 23,
         "avgDiff": -13.26,
         "medianDiff": -61.0,
-        "plusRate": 0.4782608695652174
+        "plusRate": 0.4782608695652174,
+        "avgGames": 2587.65,
+        "medianGames": 1761.0
       },
       "金": {
         "n": 21,
         "avgDiff": -85.76,
         "medianDiff": -283.0,
-        "plusRate": 0.38095238095238093
+        "plusRate": 0.38095238095238093,
+        "avgGames": 3441.0,
+        "medianGames": 3066.0
       },
       "土": {
         "n": 24,
         "avgDiff": 98.25,
         "medianDiff": -174.0,
-        "plusRate": 0.4166666666666667
+        "plusRate": 0.4166666666666667,
+        "avgGames": 4165.88,
+        "medianGames": 4385.5
       },
       "日": {
         "n": 23,
         "avgDiff": 210.74,
         "medianDiff": -94.0,
-        "plusRate": 0.43478260869565216
+        "plusRate": 0.43478260869565216,
+        "avgGames": 4880.7,
+        "medianGames": 4803.0
       }
     },
     "3233": {
@@ -119,43 +147,57 @@
         "n": 22,
         "avgDiff": 175.32,
         "medianDiff": 33.5,
-        "plusRate": 0.5
+        "plusRate": 0.5,
+        "avgGames": 3448.41,
+        "medianGames": 3197.5
       },
       "火": {
         "n": 23,
         "avgDiff": -306.74,
         "medianDiff": -276.0,
-        "plusRate": 0.2608695652173913
+        "plusRate": 0.2608695652173913,
+        "avgGames": 1982.43,
+        "medianGames": 1420.0
       },
       "水": {
         "n": 22,
         "avgDiff": -128.73,
         "medianDiff": -318.0,
-        "plusRate": 0.3181818181818182
+        "plusRate": 0.3181818181818182,
+        "avgGames": 2350.77,
+        "medianGames": 1879.0
       },
       "木": {
         "n": 21,
         "avgDiff": 227.24,
         "medianDiff": -65.0,
-        "plusRate": 0.47619047619047616
+        "plusRate": 0.47619047619047616,
+        "avgGames": 3045.86,
+        "medianGames": 2478.0
       },
       "金": {
         "n": 18,
         "avgDiff": -81.0,
         "medianDiff": -306.0,
-        "plusRate": 0.3888888888888889
+        "plusRate": 0.3888888888888889,
+        "avgGames": 4291.33,
+        "medianGames": 4649.0
       },
       "土": {
         "n": 22,
         "avgDiff": 616.55,
         "medianDiff": 182.5,
-        "plusRate": 0.6363636363636364
+        "plusRate": 0.6363636363636364,
+        "avgGames": 5073.45,
+        "medianGames": 5461.5
       },
       "日": {
         "n": 21,
         "avgDiff": 573.19,
         "medianDiff": 326.0,
-        "plusRate": 0.6190476190476191
+        "plusRate": 0.6190476190476191,
+        "avgGames": 4678.76,
+        "medianGames": 4289.0
       }
     },
     "3235": {
@@ -163,43 +205,57 @@
         "n": 24,
         "avgDiff": 223.96,
         "medianDiff": -46.5,
-        "plusRate": 0.4583333333333333
+        "plusRate": 0.4583333333333333,
+        "avgGames": 3137.92,
+        "medianGames": 2395.5
       },
       "火": {
         "n": 25,
         "avgDiff": 345.76,
         "medianDiff": -53.0,
-        "plusRate": 0.44
+        "plusRate": 0.44,
+        "avgGames": 3979.84,
+        "medianGames": 4017.0
       },
       "水": {
         "n": 24,
         "avgDiff": 158.12,
         "medianDiff": -155.0,
-        "plusRate": 0.375
+        "plusRate": 0.375,
+        "avgGames": 2794.38,
+        "medianGames": 2373.0
       },
       "木": {
         "n": 23,
         "avgDiff": 127.74,
         "medianDiff": -294.0,
-        "plusRate": 0.4782608695652174
+        "plusRate": 0.4782608695652174,
+        "avgGames": 2986.22,
+        "medianGames": 2504.0
       },
       "金": {
         "n": 21,
         "avgDiff": -59.86,
         "medianDiff": 6.0,
-        "plusRate": 0.5238095238095238
+        "plusRate": 0.5238095238095238,
+        "avgGames": 3857.86,
+        "medianGames": 2993.0
       },
       "土": {
         "n": 24,
         "avgDiff": -2.21,
         "medianDiff": -253.0,
-        "plusRate": 0.3333333333333333
+        "plusRate": 0.3333333333333333,
+        "avgGames": 4053.0,
+        "medianGames": 3548.0
       },
       "日": {
         "n": 23,
         "avgDiff": -140.96,
         "medianDiff": -429.0,
-        "plusRate": 0.34782608695652173
+        "plusRate": 0.34782608695652173,
+        "avgGames": 4069.57,
+        "medianGames": 3879.0
       }
     }
   }
