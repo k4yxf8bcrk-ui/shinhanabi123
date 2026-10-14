@@ -1,0 +1,45 @@
+name: Analyze under1000G plus days
+
+on:
+  push:
+    paths:
+      - 'under1000.trigger'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Analyze
+        run: |
+          python - <<'PY'
+          import json
+          from collections import defaultdict
+          with open('data.json',encoding='utf-8') as f:
+              data=json.load(f)
+          machines=['3232','3233','3235']
+          out={'sourceGeneratedAt':data.get('generatedAt'),'definition':'Per machine, records with 0 < games <= 1000. Plus means diff > 0.','machines':{}}
+          total_n=total_plus=0
+          for m in machines:
+              rs=[r for r in data.get('records',[]) if str(r.get('machineNo',''))==m and 0 < float(r.get('games',0) or 0) <= 1000]
+              plus=[r for r in rs if float(r.get('diff',0) or 0)>0]
+              out['machines'][m]={'n':len(rs),'plusCount':len(plus),'plusRate':(len(plus)/len(rs) if rs else None)}
+              total_n += len(rs); total_plus += len(plus)
+          out['combined']={'n':total_n,'plusCount':total_plus,'plusRate':(total_plus/total_n if total_n else None)}
+          with open('under1000-plus-analysis.json','w',encoding='utf-8') as f:
+              json.dump(out,f,ensure_ascii=False,indent=2)
+          PY
+      - name: Commit result
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add under1000-plus-analysis.json
+          git diff --cached --quiet || git commit -m "Update under1000 plus analysis"
+          git push
