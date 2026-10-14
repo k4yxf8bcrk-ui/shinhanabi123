@@ -1,0 +1,105 @@
+name: Analyze weekday strength over 1000G
+
+on:
+  push:
+    paths:
+      - 'weekday-over1000.trigger'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Analyze weekday strength over 1000G
+        run: |
+          python - <<'PY'
+          import json
+          from collections import defaultdict
+          from statistics import mean, median
+          from datetime import datetime, timezone
+
+          with open('data.json', encoding='utf-8') as f:
+              data=json.load(f)
+          records=data.get('records',[])
+          machines=['3232','3233','3235']
+          order=['月','火','水','木','金','土','日']
+
+          by_date=defaultdict(dict)
+          for r in records:
+              m=str(r.get('machineNo',''))
+              if m in machines:
+                  by_date[str(r.get('date',''))][m]=r
+
+          overall={}
+          for wd in order:
+              days=[]
+              for date, mm in by_date.items():
+                  if not all(m in mm and float(mm[m].get('games',0) or 0)>1000 for m in machines):
+                      continue
+                  rows=[mm[m] for m in machines]
+                  if str(rows[0].get('weekday','')) != wd:
+                      continue
+                  total_diff=sum(float(x.get('diff',0) or 0) for x in rows)
+                  total_games=sum(float(x.get('games',0) or 0) for x in rows)
+                  diffs=[float(x.get('diff',0) or 0) for x in rows]
+                  days.append((date,total_diff,total_games,diffs))
+              n=len(days)
+              td=[x[1] for x in days]
+              tg=[x[2] for x in days]
+              overall[wd]={
+                  'n':n,
+                  'avgTotalDiff':round(mean(td),2) if n else None,
+                  'medianTotalDiff':round(median(td),2) if n else None,
+                  'positiveDayRate':sum(1 for x in td if x>0)/n if n else None,
+                  'allNegativeRate':sum(1 for _,_,_,ds in days if all(v<0 for v in ds))/n if n else None,
+                  'avgPerMachineDiff':round(mean(td)/3,2) if n else None,
+                  'avgTotalGames':round(mean(tg),2) if n else None,
+                  'avgPerMachineGames':round(mean(tg)/3,2) if n else None,
+                  'yenPerGame':round((sum(td)/sum(tg))*20,3) if n and sum(tg) else None
+              }
+
+          machine_stats={}
+          for m in machines:
+              machine_stats[m]={}
+              rs=[r for r in records if str(r.get('machineNo',''))==m and float(r.get('games',0) or 0)>1000]
+              for wd in order:
+                  xs=[r for r in rs if str(r.get('weekday',''))==wd]
+                  n=len(xs)
+                  diffs=[float(r.get('diff',0) or 0) for r in xs]
+                  games=[float(r.get('games',0) or 0) for r in xs]
+                  machine_stats[m][wd]={
+                      'n':n,
+                      'avgDiff':round(mean(diffs),2) if n else None,
+                      'medianDiff':round(median(diffs),2) if n else None,
+                      'plusRate':sum(1 for x in diffs if x>0)/n if n else None,
+                      'avgGames':round(mean(games),2) if n else None,
+                      'medianGames':round(median(games),2) if n else None,
+                      'yenPerGame':round((sum(diffs)/sum(games))*20,3) if n and sum(games) else None
+                  }
+
+          ranking=sorted(order,key=lambda wd:(overall[wd]['yenPerGame'] if overall[wd]['yenPerGame'] is not None else -10**18),reverse=True)
+          out={
+              'generatedAt':datetime.now(timezone.utc).isoformat(),
+              'sourceGeneratedAt':data.get('generatedAt'),
+              'definition':'Only records with games > 1000 are included. Overall weekday stats require all 3 machines (3232,3233,3235) to each exceed 1000G on the same day.',
+              'weekdayRankingByYenPerGame':ranking,
+              'overall':overall,
+              'machines':machine_stats
+          }
+          with open('weekday-over1000-analysis.json','w',encoding='utf-8') as f:
+              json.dump(out,f,ensure_ascii=False,indent=2)
+          PY
+      - name: Commit result
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add weekday-over1000-analysis.json
+          git diff --cached --quiet || git commit -m "Update weekday over1000 analysis"
+          git push
