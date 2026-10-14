@@ -46,6 +46,16 @@
     <div id="trendBox" class="trendBox"></div>
   </section>
 
+  <details id="logicFold" class="panel" style="padding:0;overflow:hidden">
+    <summary style="cursor:pointer;padding:18px;display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:900;list-style:none">
+      <span>予想・分析ロジック一覧 <span class="muted" style="font-weight:500;margin-left:8px">現在の条件該当状況も確認</span></span>
+      <span style="font-size:11px;color:#6b3fa0;background:#f0e8ff;border-radius:999px;padding:4px 9px;white-space:nowrap">クリックで開閉</span>
+    </summary>
+    <div style="border-top:1px solid #e2e5e9;background:#fff">
+      <iframe src="./logic.html" title="予想・分析ロジック一覧" loading="lazy" style="width:100%;height:78vh;min-height:720px;border:0;display:block;background:#fff"></iframe>
+    </div>
+  </details>
+
   <section id="tablePanel" class="panel" hidden>
     <h2>日別データ</h2>
     <div class="tableWrap"><table><thead><tr><th>日付</th><th>曜</th><th>台番</th><th>G数</th><th>差枚</th><th>BB</th><th>RB</th><th>合算</th><th>BB確率</th><th>RB確率</th></tr></thead><tbody id="tbody"></tbody></table></div>
