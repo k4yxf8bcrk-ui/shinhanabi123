@@ -1,0 +1,185 @@
+name: Build editor prediction analysis
+on:
+  push:
+    paths:
+      - editor-analysis.trigger
+permissions:
+  contents: write
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Build editor analysis
+        run: |
+          git pull --rebase origin main || true
+          python - <<'PY'
+          import json, statistics, math
+          from pathlib import Path
+          from datetime import date, timedelta, datetime, timezone
+
+          ACTIVE=['3232','3233','3235']
+          WJ=['月','火','水','木','金','土','日']
+          data=json.loads(Path('data.json').read_text(encoding='utf-8'))
+          raw=data.get('records',[])
+
+          # Latest row wins for duplicate date/machine entries. This matches the public daily view better
+          # than summing snapshots accidentally collected more than once.
+          ded={}
+          for r in raw:
+            m=str(r.get('machineNo','')); d=str(r.get('date',''))
+            if m not in ACTIVE or not d: continue
+            k=(d,m)
+            old=ded.get(k)
+            if old is None or str(r.get('collectedAt','')) >= str(old.get('collectedAt','')):
+              ded[k]=r
+
+          rows={m:[] for m in ACTIVE}
+          for (d,m),r in ded.items():
+            g=float(r.get('games') or 0); diff=float(r.get('diff') or 0); bb=float(r.get('bb') or 0); rb=float(r.get('rb') or 0)
+            rows[m].append({'date':d,'weekday':r.get('weekday',''),'machineNo':m,'games':g,'diff':diff,'bb':bb,'rb':rb})
+          for m in ACTIVE: rows[m].sort(key=lambda x:x['date'])
+          latest=max((x['date'] for m in ACTIVE for x in rows[m] if x['games']>0),default='')
+          target=(date.fromisoformat(latest)+timedelta(days=1)) if latest else date.today()
+          target_s=target.isoformat(); target_w=WJ[target.weekday()]
+
+          def active(a): return [x for x in a if x['games']>0]
+          def prob(g,c): return g/c if c>0 else None
+          def perG(x): return x['diff']/x['games'] if x['games']>0 else 0
+          def median(v): return statistics.median(v) if v else None
+          def stat(a):
+            a=active(a)
+            if not a: return {'n':0,'games':0,'diff':0,'avgDiff':None,'medianDiff':None,'winRate':None,'perG':None,'bbProb':None,'rbProb':None,'totalProb':None,'avgGames':None}
+            g=sum(x['games'] for x in a); d=sum(x['diff'] for x in a); bb=sum(x['bb'] for x in a); rb=sum(x['rb'] for x in a)
+            return {'n':len(a),'games':round(g),'diff':round(d),'avgDiff':d/len(a),'medianDiff':median([x['diff'] for x in a]),'winRate':sum(x['diff']>0 for x in a)/len(a),'perG':d/g if g else None,'bbProb':prob(g,bb),'rbProb':prob(g,rb),'totalProb':prob(g,bb+rb),'avgGames':g/len(a)}
+          def consecutive(a):
+            a=active(a)
+            if not a:return {'type':'none','days':0,'sumDiff':0}
+            sign=1 if a[-1]['diff']>0 else -1 if a[-1]['diff']<0 else 0
+            if sign==0:return {'type':'flat','days':0,'sumDiff':0}
+            b=[]
+            for x in reversed(a):
+              s=1 if x['diff']>0 else -1 if x['diff']<0 else 0
+              if s==sign:b.append(x)
+              else:break
+            return {'type':'plus' if sign>0 else 'minus','days':len(b),'sumDiff':round(sum(x['diff'] for x in b))}
+          def band(d):
+            if d<=-2000:return '<=-2000'
+            if d<=-1500:return '-1500~-1999'
+            if d<=-1000:return '-1000~-1499'
+            if d<=-500:return '-500~-999'
+            if d<0:return '-1~-499'
+            if d>=3000:return '>=+3000'
+            if d>=2000:return '+2000~+2999'
+            if d>=1000:return '+1000~+1999'
+            if d>=500:return '+500~+999'
+            return '0~+499'
+          def next_after(a,pred):
+            a=active(a); out=[]
+            for i in range(len(a)-1):
+              d0=date.fromisoformat(a[i]['date']); d1=date.fromisoformat(a[i+1]['date'])
+              if d1-d0!=timedelta(days=1): continue
+              if pred(a[i]): out.append(a[i+1])
+            s=stat(out); s['plus1000Rate']=sum(x['diff']>=1000 for x in out)/len(out) if out else None; s['minus1000Rate']=sum(x['diff']<=-1000 for x in out)/len(out) if out else None
+            return s
+          def cross_events(a,sign,threshold):
+            a=active(a); out=[]; run=0; total=0
+            for i,x in enumerate(a[:-1]):
+              if i and date.fromisoformat(x['date'])-date.fromisoformat(a[i-1]['date'])!=timedelta(days=1): run=0; total=0
+              ok=x['diff']<0 if sign=='minus' else x['diff']>0
+              prev=abs(total)
+              if ok:
+                run+=1; total+=x['diff']
+              else:
+                run=0; total=0
+              depth=abs(total)
+              if run>=2 and depth>=threshold and prev<threshold:
+                y=a[i+1]
+                if date.fromisoformat(y['date'])-date.fromisoformat(x['date'])==timedelta(days=1): out.append(y)
+            return stat(out)
+          def ewma(a,span=7):
+            a=active(a)
+            if not a:return None
+            alpha=2/(span+1); z=a[0]['diff']
+            for x in a[1:]: z=alpha*x['diff']+(1-alpha)*z
+            return z
+          def similar(a,k=12):
+            a=active(a)
+            if len(a)<4:return {'n':0,'avgNext':None,'plusRate':None,'medianNext':None,'cases':[]}
+            cur=a[-1]
+            def f(x):
+              bp=prob(x['games'],x['bb']) or 1200; rp=prob(x['games'],x['rb']) or 1200; tp=prob(x['games'],x['bb']+x['rb']) or 600
+              return [x['diff']/1800, x['games']/5000, bp/350, rp/450, tp/180]
+            cf=f(cur); cand=[]
+            for i,x in enumerate(a[:-1]):
+              if date.fromisoformat(a[i+1]['date'])-date.fromisoformat(x['date'])!=timedelta(days=1): continue
+              ff=f(x); dist=sum((u-v)**2 for u,v in zip(cf,ff))**0.5
+              cand.append((dist,x,a[i+1]))
+            cand.sort(key=lambda z:z[0]); cand=cand[:k]; nxt=[z[2]['diff'] for z in cand]
+            return {'n':len(cand),'avgNext':statistics.mean(nxt) if nxt else None,'plusRate':sum(v>0 for v in nxt)/len(nxt) if nxt else None,'medianNext':median(nxt),'cases':[{'date':x['date'],'diff':round(x['diff']),'nextDiff':round(y['diff']),'distance':round(d,3)} for d,x,y in cand[:6]]}
+
+          out={'generatedAt':datetime.now(timezone.utc).isoformat(),'sourceGeneratedAt':data.get('generatedAt'),'rawRecordCount':len(raw),'dedupCount':len(ded),'latestSourceDate':latest,'targetDate':target_s,'targetWeekday':target_w,'machines':{}}
+          for m in ACTIVE:
+            a=active(rows[m]); last=a[-1]; cs=consecutive(a); bp=prob(last['games'],last['bb']); rp=prob(last['games'],last['rb']); tp=prob(last['games'],last['bb']+last['rb'])
+            item={
+              'latest':last,'latestBand':band(last['diff']),'streak':cs,'ewma7Diff':ewma(a[-40:],7),
+              'recent5':stat(a[-5:]),'recent7':stat(a[-7:]),'recent10':stat(a[-10:]),'recent30':stat(a[-30:]),'all':stat(a),
+              'targetWeekday':stat([x for x in a if x['weekday']==target_w]),
+              'targetWeekday1000':stat([x for x in a if x['weekday']==target_w and x['games']>=1000]),
+              'targetWeekday2000':stat([x for x in a if x['weekday']==target_w and x['games']>=2000]),
+              'afterLatestBand':next_after(a,lambda x,b=band(last['diff']):band(x['diff'])==b),
+              'afterPlus500':next_after(a,lambda x:x['diff']>=500),
+              'afterPlus1000':next_after(a,lambda x:x['diff']>=1000),
+              'afterPlus2000':next_after(a,lambda x:x['diff']>=2000),
+              'afterMinus500':next_after(a,lambda x:x['diff']<=-500),
+              'afterMinus1000':next_after(a,lambda x:x['diff']<=-1000),
+              'afterBig250_2000G':next_after(a,lambda x:x['games']>=2000 and x['bb']>0 and x['games']/x['bb']<=250),
+              'afterReg300_2000G':next_after(a,lambda x:x['games']>=2000 and x['rb']>0 and x['games']/x['rb']<=300),
+              'afterReg350_2000G':next_after(a,lambda x:x['games']>=2000 and x['rb']>0 and x['games']/x['rb']<=350),
+              'afterBig250Reg350_2000G':next_after(a,lambda x:x['games']>=2000 and x['bb']>0 and x['rb']>0 and x['games']/x['bb']<=250 and x['games']/x['rb']<=350),
+              'afterTotal130_2000G':next_after(a,lambda x:x['games']>=2000 and x['bb']+x['rb']>0 and x['games']/(x['bb']+x['rb'])<=130),
+              'minusRunCross':{str(t):cross_events(a,'minus',t) for t in [500,750,1000,1250,1500,1750,2000,2500,3000]},
+              'plusRunCross':{str(t):cross_events(a,'plus',t) for t in [500,1000,1500,2000,2500,3000]},
+              'similarLatest':similar(a,12),
+              'latestProb':{'bb':bp,'rb':rp,'total':tp}
+            }
+            out['machines'][m]=item
+
+          # Compact cross-machine comparison score: deliberately shrink small-n conditional rates toward 50%.
+          def shrink(rate,n,k=20):
+            if rate is None:return .5
+            return (rate*n+.5*k)/(n+k)
+          rawscore={}
+          for m,x in out['machines'].items():
+            wd=x['targetWeekday2000']; sim=x['similarLatest']; bandx=x['afterLatestBand']; r7=x['recent7']
+            # favor target weekday and robust conditional history; recent performance is only a smaller component
+            s=0
+            s+=30*shrink(wd['winRate'],wd['n'],25)
+            s+=20*shrink(bandx['winRate'],bandx['n'],25)
+            s+=15*shrink(sim['plusRate'],sim['n'],20)
+            s+=15*(.5+max(-.45,min(.45,(r7['perG'] or 0)/.45)))
+            # latest bonus quality, capped; strong bonus day does not automatically imply continuation
+            lp=x['latestProb']; quality=0
+            quality += .5 if lp['total'] and lp['total']<=150 else 0
+            quality += .25 if lp['rb'] and lp['rb']<=350 else 0
+            quality += .25 if lp['bb'] and lp['bb']<=280 else 0
+            s+=10*quality
+            st=x['streak']; cross=None
+            if st['type']=='minus':
+              depth=abs(st['sumDiff']); th=max([t for t in [500,750,1000,1250,1500,1750,2000,2500,3000] if depth>=t],default=None); cross=x['minusRunCross'].get(str(th)) if th else None
+            elif st['type']=='plus':
+              depth=abs(st['sumDiff']); th=max([t for t in [500,1000,1500,2000,2500,3000] if depth>=t],default=None); cross=x['plusRunCross'].get(str(th)) if th else None
+            s+=10*shrink(cross['winRate'],cross['n'],25) if cross else 5
+            rawscore[m]=s
+          out['modelScore']=rawscore
+          out['ranking']=sorted(ACTIVE,key=lambda m:rawscore[m],reverse=True)
+          Path('editor-analysis.json').write_text(json.dumps(out,ensure_ascii=False,indent=2),encoding='utf-8')
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add editor-analysis.json
+          git commit -m "Build editor prediction analysis" || true
+          git pull --rebase origin main
+          git push
