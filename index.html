@@ -136,5 +136,6 @@ function setup(){const machines=[...new Set(RECORDS.map(r=>String(r.machineNo)))
 (async()=>{try{const [res,edRes,ghRes]=await Promise.all([fetch('./data.json?ts='+Date.now(),{cache:'no-store'}),fetch('./editor.json?ts='+Date.now(),{cache:'no-store'}).catch(()=>null),fetch('./gemini-history.json?ts='+Date.now(),{cache:'no-store'}).catch(()=>null)]);if(!res.ok)throw new Error('data.json '+res.status);const data=await res.json();RECORDS=Array.isArray(data.records)?data.records:[];GENERATED_AT=data.generatedAt||'';AI_ANALYSIS=data.aiAnalysis||null;AI_ACCURACY=data.aiAccuracy||null;AI_HISTORY_PUBLIC=Array.isArray(data.aiHistory)?data.aiHistory:[];if(edRes&&edRes.ok){try{EDITOR_CHIEF=await edRes.json();}catch(_){EDITOR_CHIEF=null;}}if(ghRes&&ghRes.ok){try{const gh=await ghRes.json();GEMINI_HISTORY=Array.isArray(gh)?gh:(Array.isArray(gh.history)?gh.history:[]);}catch(_){GEMINI_HISTORY=[];}}if(!RECORDS.length)throw new Error('公開データがまだありません。拡張から「今すぐ最新版を公開」を実行してください。');setup();}catch(e){const box=$('loadStatus');box.classList.add('error');box.innerHTML='公開データを読み込めませんでした。<br>'+String(e.message||e)+'<br><span class="muted">初回設定直後の場合は、GitHub Pagesの公開設定と data.json の配置を確認してください。</span>';}})();
 </script>
 <script src="./public-dip-nextday.js?v=20261015b"></script>
+<script src="./public-rise-fall-follow.js?v=20261015a"></script>
 </body>
 </html>
