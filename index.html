@@ -93,7 +93,7 @@ document.title='新ハナビ分析｜'+STORE_NAME;
 if(STORE_ID==='morita'){
   const notice=document.getElementById('storeNotice');
   notice.hidden=false;
-  notice.textContent='ABC森田：公開ページで確認できた2026年5月〜8月のうち10日分・5台（計50件）を収録しました。日付の欠損が多く、全期間のデータではありません。グラフは収録日の差枚だけをつないでおり、最近の状況や設定傾向を表しません。最新データの自動取得は未設定です。';
+  notice.textContent='ABC森田：初期データ0件から取得を開始します。Chrome拡張の店舗選択でABC浜松森田町店を選び、取得・公開するとこちらへ反映されます。雄踏店データとは混ざりません。';
   const logic=document.getElementById('logicFold');
   if(logic)logic.hidden=true;
 }
@@ -169,8 +169,8 @@ function setup(){const machines=[...new Set(RECORDS.map(r=>String(r.machineNo)))
   $('predictionPanel').hidden=false;
   $('predictionHeading').textContent='ABC森田・編集長予想は準備中';
   $('predictionExplainer').textContent='確認できた日付が少なく古いため、現時点では未来の予想順位を表示しません。';
-  $('predictionTarget').textContent='最新の確認日：2026-08-09';
-  $('predictionGrid').innerHTML='<div class="predictionCard">806〜810番台の過去の実績を台番・月・グラフで確認できます。記録のない日は未取得であり、差枚0枚と扱わないようご注意ください。</div>';
+  $('predictionTarget').textContent=RECORDS.length?'最新データあり（分析準備中）':'取得前・データ0件';
+  $('predictionGrid').innerHTML='<div class="predictionCard">新ハナビのデータ取得を開始すると、ここで台別の実績を確認できます。データ未取得の日を0Gとして補完しません。</div>';
   $('consensusBox').innerHTML='';
   $('aiBox').innerHTML='';
   $('aiAccuracyBox').innerHTML='';
@@ -179,7 +179,7 @@ function setup(){const machines=[...new Set(RECORDS.map(r=>String(r.machineNo)))
 }else{renderPredictions();renderAiAccuracy();renderEditorChief();}
 render();}
 [machineSel,monthSel,modeSel].forEach(x=>x.addEventListener('change',render));window.addEventListener('resize',()=>{if(RECORDS.length)render();});canvas.addEventListener('mousemove',e=>{if(!points.length)return;const r=canvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;let best=null,dist=1e9;for(const p of points){const d=(p.x-mx)*(p.x-mx)+(p.y-my)*(p.y-my);if(d<dist){dist=d;best=p;}}if(best&&dist<225){const d=best.d;tooltip.style.display='block';tooltip.style.left=Math.min(r.width-175,best.x+12)+'px';tooltip.style.top=Math.max(6,best.y-72)+'px';tooltip.innerHTML=(d.date||d.label)+'<br>日別差枚 '+signed(d.diff)+'枚<br>'+(modeSel.value==='cumulative'?'累計差枚 '+signed(d.value)+'枚':'差枚 '+signed(d.value)+'枚');}else tooltip.style.display='none';});canvas.addEventListener('mouseleave',()=>tooltip.style.display='none');
-(async()=>{try{const [res,edRes,ghRes]=await Promise.all([fetch(STORE_DATA_URL+'?ts='+Date.now(),{cache:'no-store'}),fetch(STORE_EDITOR_URL+'?ts='+Date.now(),{cache:'no-store'}).catch(()=>null),(STORE_ID==='yuto'?fetch('./gemini-history.json?ts='+Date.now(),{cache:'no-store'}).catch(()=>null):Promise.resolve(null))]);if(!res.ok)throw new Error('data.json '+res.status);const data=await res.json();RECORDS=Array.isArray(data.records)?data.records:[];GENERATED_AT=data.generatedAt||'';AI_ANALYSIS=data.aiAnalysis||null;AI_ACCURACY=data.aiAccuracy||null;AI_HISTORY_PUBLIC=Array.isArray(data.aiHistory)?data.aiHistory:[];if(edRes&&edRes.ok){try{EDITOR_CHIEF=await edRes.json();}catch(_){EDITOR_CHIEF=null;}}if(ghRes&&ghRes.ok){try{const gh=await ghRes.json();GEMINI_HISTORY=Array.isArray(gh)?gh:(Array.isArray(gh.history)?gh.history:[]);}catch(_){GEMINI_HISTORY=[];}}if(!RECORDS.length)throw new Error('公開データがまだありません。拡張から「今すぐ最新版を公開」を実行してください。');setup();}catch(e){const box=$('loadStatus');box.classList.add('error');box.innerHTML='公開データを読み込めませんでした。<br>'+String(e.message||e)+'<br><span class="muted">初回設定直後の場合は、GitHub Pagesの公開設定と data.json の配置を確認してください。</span>';}})();
+(async()=>{try{const [res,edRes,ghRes]=await Promise.all([fetch(STORE_DATA_URL+'?ts='+Date.now(),{cache:'no-store'}),fetch(STORE_EDITOR_URL+'?ts='+Date.now(),{cache:'no-store'}).catch(()=>null),(STORE_ID==='yuto'?fetch('./gemini-history.json?ts='+Date.now(),{cache:'no-store'}).catch(()=>null):Promise.resolve(null))]);if(!res.ok)throw new Error('data.json '+res.status);const data=await res.json();RECORDS=Array.isArray(data.records)?data.records:[];GENERATED_AT=data.generatedAt||'';AI_ANALYSIS=data.aiAnalysis||null;AI_ACCURACY=data.aiAccuracy||null;AI_HISTORY_PUBLIC=Array.isArray(data.aiHistory)?data.aiHistory:[];if(edRes&&edRes.ok){try{EDITOR_CHIEF=await edRes.json();}catch(_){EDITOR_CHIEF=null;}}if(ghRes&&ghRes.ok){try{const gh=await ghRes.json();GEMINI_HISTORY=Array.isArray(gh)?gh:(Array.isArray(gh.history)?gh.history:[]);}catch(_){GEMINI_HISTORY=[];}}if(!RECORDS.length&&STORE_ID==='yuto')throw new Error('公開データがまだありません。拡張から「今すぐ最新版を公開」を実行してください。');setup();}catch(e){const box=$('loadStatus');box.classList.add('error');box.innerHTML='公開データを読み込めませんでした。<br>'+String(e.message||e)+'<br><span class="muted">初回設定直後の場合は、GitHub Pagesの公開設定と data.json の配置を確認してください。</span>';}})();
 </script>
 <script>
 // 追加分析スクリプトは雄踏店専用の歴史データを参照するため、ABC森田では読み込まない。
