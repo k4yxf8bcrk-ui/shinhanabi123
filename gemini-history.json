@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-20T00:37:47.076Z",
+  "updatedAt": "2026-10-20T22:57:31.781Z",
   "history": [
     {
       "generatedAt": "2026-10-13T23:02:15.128Z",
@@ -152,9 +152,32 @@
       "targetDate": "2026-10-19"
     },
     {
-      "targetDate": "2026-10-20",
-      "sourceLatestDate": "2026-10-19",
       "generatedAt": "2026-10-20T00:35:36.319Z",
+      "predictions": [],
+      "ranking": [
+        {
+          "confidence": "高め",
+          "machineNo": "3235",
+          "rank": 1
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3232",
+          "rank": 2
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3233",
+          "rank": 3
+        }
+      ],
+      "sourceLatestDate": "2026-10-19",
+      "targetDate": "2026-10-20"
+    },
+    {
+      "targetDate": "2026-10-21",
+      "sourceLatestDate": "2026-10-20",
+      "generatedAt": "2026-10-20T22:55:22.440Z",
       "ranking": [
         {
           "machineNo": "3235",
@@ -175,19 +198,19 @@
       "predictions": [
         {
           "machineNo": "3235",
-          "score": 47.3,
+          "score": 45.8,
           "label": "中立",
           "confidence": "高め"
         },
         {
           "machineNo": "3232",
-          "score": 44.5,
+          "score": 41.1,
           "label": "ややマイナス寄り",
           "confidence": "高め"
         },
         {
           "machineNo": "3233",
-          "score": 38.7,
+          "score": 35.5,
           "label": "マイナス寄り",
           "confidence": "高め"
         }
