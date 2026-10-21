@@ -1,6 +1,6 @@
 {
   "schemaVersion": 4,
-  "generatedAt": "2026-10-20T22:57:31.781Z",
+  "generatedAt": "2026-10-21T21:15:30.544Z",
   "records": [
     {
       "date": "2025-09-11",
@@ -5838,6 +5838,110 @@
       "bbProb": 482,
       "rbProb": 344.3,
       "collectedAt": "2026-10-05T02:26:22.242Z"
+    },
+    {
+      "date": "2026-01-02",
+      "weekday": "金",
+      "machineNo": "3231",
+      "games": 439,
+      "diff": -629,
+      "bb": 0,
+      "rb": 0,
+      "totalProb": 0,
+      "bbProb": 0,
+      "rbProb": 0,
+      "collectedAt": "2026-10-21T21:00:25.268Z"
+    },
+    {
+      "date": "2026-01-02",
+      "weekday": "金",
+      "machineNo": "3232",
+      "games": 3845,
+      "diff": -1015,
+      "bb": 8,
+      "rb": 13,
+      "totalProb": 183.1,
+      "bbProb": 480.6,
+      "rbProb": 295.8,
+      "collectedAt": "2026-10-21T21:00:25.268Z"
+    },
+    {
+      "date": "2026-01-02",
+      "weekday": "金",
+      "machineNo": "3233",
+      "games": 1099,
+      "diff": -135,
+      "bb": 4,
+      "rb": 2,
+      "totalProb": 183.2,
+      "bbProb": 274.8,
+      "rbProb": 549.5,
+      "collectedAt": "2026-10-21T21:00:25.268Z"
+    },
+    {
+      "date": "2026-01-02",
+      "weekday": "金",
+      "machineNo": "3235",
+      "games": 775,
+      "diff": -418,
+      "bb": 1,
+      "rb": 3,
+      "totalProb": 193.8,
+      "bbProb": 775,
+      "rbProb": 258.3,
+      "collectedAt": "2026-10-21T21:00:25.268Z"
+    },
+    {
+      "date": "2026-01-03",
+      "weekday": "土",
+      "machineNo": "3231",
+      "games": 3108,
+      "diff": -171,
+      "bb": 10,
+      "rb": 10,
+      "totalProb": 155.4,
+      "bbProb": 310.8,
+      "rbProb": 310.8,
+      "collectedAt": "2026-10-21T21:07:46.789Z"
+    },
+    {
+      "date": "2026-01-03",
+      "weekday": "土",
+      "machineNo": "3232",
+      "games": 2971,
+      "diff": -347,
+      "bb": 9,
+      "rb": 6,
+      "totalProb": 198.1,
+      "bbProb": 330.1,
+      "rbProb": 495.2,
+      "collectedAt": "2026-10-21T21:07:46.789Z"
+    },
+    {
+      "date": "2026-01-03",
+      "weekday": "土",
+      "machineNo": "3233",
+      "games": 5114,
+      "diff": -1421,
+      "bb": 12,
+      "rb": 16,
+      "totalProb": 182.6,
+      "bbProb": 426.2,
+      "rbProb": 319.6,
+      "collectedAt": "2026-10-21T21:07:46.789Z"
+    },
+    {
+      "date": "2026-01-03",
+      "weekday": "土",
+      "machineNo": "3235",
+      "games": 4240,
+      "diff": 300,
+      "bb": 16,
+      "rb": 8,
+      "totalProb": 176.7,
+      "bbProb": 265,
+      "rbProb": 530,
+      "collectedAt": "2026-10-21T21:07:46.789Z"
     },
     {
       "date": "2026-01-08",
@@ -15990,7 +16094,7 @@
       "totalProb": 174.4,
       "bbProb": 697.7,
       "rbProb": 232.6,
-      "collectedAt": "2026-10-20T22:52:05.528Z"
+      "collectedAt": "2026-10-21T21:08:34.766Z"
     },
     {
       "date": "2026-10-20",
@@ -16003,7 +16107,7 @@
       "totalProb": 130.2,
       "bbProb": 173.5,
       "rbProb": 520.6,
-      "collectedAt": "2026-10-20T22:52:05.528Z"
+      "collectedAt": "2026-10-21T21:08:34.766Z"
     },
     {
       "date": "2026-10-20",
@@ -16016,74 +16120,49 @@
       "totalProb": 288.6,
       "bbProb": 1154.5,
       "rbProb": 384.8,
-      "collectedAt": "2026-10-20T22:52:05.528Z"
+      "collectedAt": "2026-10-21T21:08:34.766Z"
+    },
+    {
+      "date": "2026-10-21",
+      "weekday": "水",
+      "machineNo": "3232",
+      "games": 2824,
+      "diff": -706,
+      "bb": 8,
+      "rb": 3,
+      "totalProb": 256.7,
+      "bbProb": 353,
+      "rbProb": 941.3,
+      "collectedAt": "2026-10-21T21:08:13.554Z"
+    },
+    {
+      "date": "2026-10-21",
+      "weekday": "水",
+      "machineNo": "3233",
+      "games": 1268,
+      "diff": -383,
+      "bb": 4,
+      "rb": 2,
+      "totalProb": 211.3,
+      "bbProb": 317,
+      "rbProb": 634,
+      "collectedAt": "2026-10-21T21:08:13.554Z"
+    },
+    {
+      "date": "2026-10-21",
+      "weekday": "水",
+      "machineNo": "3235",
+      "games": 2636,
+      "diff": -461,
+      "bb": 8,
+      "rb": 7,
+      "totalProb": 175.7,
+      "bbProb": 329.5,
+      "rbProb": 376.6,
+      "collectedAt": "2026-10-21T21:08:13.554Z"
     }
   ],
-  "aiAnalysis": {
-    "generatedAt": "2026-10-20T22:55:22.440Z",
-    "sourceLatestDate": "2026-10-20",
-    "targetDate": "2026-10-21",
-    "summary": "直近7日平均プラスで中長期トレンドが強い右肩上がりの3235が優勢です。3232と3233は直近7日勝率が3割未満と低迷しトレンドも右肩下がりですが、3233は前日反発を見せるなど台ごとに挙動の差異が確認されます。",
-    "ranking": [
-      {
-        "machineNo": "3235",
-        "view": "直近急落による悪化加速が見られるものの、全体トレンドは強く直近7日平均も良好なため最上位評価です。",
-        "weekdayTrend": "水曜は勝率35.8%・平均-26枚と全曜日中最低水準で、金曜（勝率52.9%）と比べ苦手傾向です。",
-        "streakView": "2日連続下降（-1808枚）中。過去同条件の翌日実績は50回中勝率54%、平均+284枚です。",
-        "recentView": "直近7日は勝率57.1%・平均+395枚と好調、直近30日も平均+167枚です。",
-        "graphTrend": "強い右肩上がりで安値から7398枚戻した高値圏（位置80.4%）ですが、直近3日平均-294枚と高値から1808枚下落し悪化加速中です（振幅1143）。",
-        "confidence": "高め",
-        "plusFactors": [
-          "直近7日平均+395枚・勝率57.1%と好調",
-          "2連敗後の翌日実績は勝率54%・平均+284枚"
-        ],
-        "minusFactors": [
-          "直近3日間で下落が加速し1808枚下落",
-          "水曜日は勝率35.8%・平均-26枚と低迷"
-        ]
-      },
-      {
-        "machineNo": "3232",
-        "view": "グラフは右肩下がりで直近成績も振るいませんが、末尾1の実績が唯一プラス域に留まる点が支えです。",
-        "weekdayTrend": "水曜は勝率32.1%・平均-31枚と苦手傾向で、日曜（勝率50%）や土曜（49.1%）に劣ります。",
-        "streakView": "1日下降（-750枚）中。過去同条件の翌日実績は89回中勝率42.7%、平均+196枚です。",
-        "recentView": "直近7日は勝率28.6%・平均-259枚、直近30日も平均-21枚と軟調です。",
-        "graphTrend": "全体は右肩下がりですが直近3日平均-79枚と上昇加速傾向にあり、位置は62.9%の高値寄り。高値から1814枚下落しています。",
-        "confidence": "高め",
-        "plusFactors": [
-          "末尾1の日は勝率48.9%・平均+127枚と良好",
-          "直近3日の傾きは上昇加速の傾向"
-        ],
-        "minusFactors": [
-          "直近7日の勝率が28.6%と低迷",
-          "水曜は勝率32.1%・平均-31枚と低調傾向"
-        ]
-      },
-      {
-        "machineNo": "3233",
-        "view": "前日反発で位置は高値圏ですが、直近7日の勝率が極めて低くトレンドも右肩下がりのため慎重に見ます。",
-        "weekdayTrend": "水曜は勝率41.5%・平均-22枚と低調。土曜（勝率54.7%）など週末と比べ劣勢です。",
-        "streakView": "1日上昇（+1308枚）中。過去同条件の翌日実績は86回中勝率47.7%、平均+299枚です。",
-        "recentView": "直近7日は勝率14.3%と極めて低迷、直近30日勝率も26.7%に留まります。",
-        "graphTrend": "右肩下がり基調の中、前日の反発により直近3日平均+81枚へ上昇加速し、安値から9157枚戻した高値圏（89.5%）に位置します。",
-        "confidence": "高め",
-        "plusFactors": [
-          "前日+1308枚で上昇加速し高値圏へ復帰",
-          "1日上昇後の翌日実績は平均+299枚"
-        ],
-        "minusFactors": [
-          "直近7日の勝率が14.3%と著しく低迷",
-          "末尾1の日は勝率28.9%・平均-199枚"
-        ]
-      }
-    ],
-    "watchPoints": [
-      "全台とも水曜日の平均差枚がマイナス傾向にある点",
-      "3235の急下落からの下げ止まり有無",
-      "3233の前日反発が継続するかどうか"
-    ],
-    "caution": "過去の集計値に基づく傾向分析であり、当日の出玉や特定挙動を保証するものではありません。各数値にはブレが生じる可能性があります。"
-  },
+  "aiAnalysis": null,
   "aiHistory": [
     {
       "generatedAt": "2026-10-13T23:02:15.128Z",
@@ -16235,32 +16314,9 @@
       "targetDate": "2026-10-19"
     },
     {
-      "generatedAt": "2026-10-20T00:35:36.319Z",
-      "predictions": [],
-      "ranking": [
-        {
-          "confidence": "高め",
-          "machineNo": "3235",
-          "rank": 1
-        },
-        {
-          "confidence": "高め",
-          "machineNo": "3232",
-          "rank": 2
-        },
-        {
-          "confidence": "高め",
-          "machineNo": "3233",
-          "rank": 3
-        }
-      ],
+      "targetDate": "2026-10-20",
       "sourceLatestDate": "2026-10-19",
-      "targetDate": "2026-10-20"
-    },
-    {
-      "targetDate": "2026-10-21",
-      "sourceLatestDate": "2026-10-20",
-      "generatedAt": "2026-10-20T22:55:22.440Z",
+      "generatedAt": "2026-10-20T00:38:18.292Z",
       "ranking": [
         {
           "machineNo": "3235",
@@ -16281,36 +16337,71 @@
       "predictions": [
         {
           "machineNo": "3235",
-          "score": 45.8,
+          "score": 47.3,
           "label": "中立",
           "confidence": "高め"
         },
         {
           "machineNo": "3232",
-          "score": 41.1,
+          "score": 44.5,
           "label": "ややマイナス寄り",
           "confidence": "高め"
         },
         {
           "machineNo": "3233",
-          "score": 35.5,
+          "score": 38.7,
           "label": "マイナス寄り",
           "confidence": "高め"
         }
       ]
+    },
+    {
+      "generatedAt": "2026-10-20T22:55:22.440Z",
+      "predictions": [],
+      "ranking": [
+        {
+          "confidence": "高め",
+          "machineNo": "3235",
+          "rank": 1
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3232",
+          "rank": 2
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3233",
+          "rank": 3
+        }
+      ],
+      "sourceLatestDate": "2026-10-20",
+      "targetDate": "2026-10-21"
     }
   ],
   "aiAccuracy": {
-    "evaluated": 5,
+    "evaluated": 6,
     "plusHits": 1,
-    "plusRate": 0.2,
+    "plusRate": 0.16666666666666666,
     "bestHits": 1,
-    "bestRate": 0.2,
+    "bestRate": 0.16666666666666666,
     "top2Hits": 2,
-    "top2Rate": 0.4,
-    "avgTopDiff": -274,
-    "pending": 1,
+    "top2Rate": 0.3333333333333333,
+    "avgTopDiff": -305.1666666666667,
+    "pending": 0,
     "recent": [
+      {
+        "targetDate": "2026-10-21",
+        "topMachine": "3235",
+        "topDiff": -461,
+        "plusHit": false,
+        "bestHit": false,
+        "anyTop2Plus": false,
+        "actualBest": [
+          "3233"
+        ],
+        "generatedAt": "2026-10-20T22:55:22.440Z"
+      },
       {
         "targetDate": "2026-10-20",
         "topMachine": "3235",
@@ -16321,7 +16412,7 @@
         "actualBest": [
           "3233"
         ],
-        "generatedAt": "2026-10-20T00:35:36.319Z"
+        "generatedAt": "2026-10-20T00:38:18.292Z"
       },
       {
         "targetDate": "2026-10-19",
