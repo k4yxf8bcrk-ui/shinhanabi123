@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-20T22:57:31.781Z",
+  "updatedAt": "2026-10-21T21:15:30.544Z",
   "history": [
     {
       "generatedAt": "2026-10-13T23:02:15.128Z",
@@ -152,32 +152,9 @@
       "targetDate": "2026-10-19"
     },
     {
-      "generatedAt": "2026-10-20T00:35:36.319Z",
-      "predictions": [],
-      "ranking": [
-        {
-          "confidence": "高め",
-          "machineNo": "3235",
-          "rank": 1
-        },
-        {
-          "confidence": "高め",
-          "machineNo": "3232",
-          "rank": 2
-        },
-        {
-          "confidence": "高め",
-          "machineNo": "3233",
-          "rank": 3
-        }
-      ],
+      "targetDate": "2026-10-20",
       "sourceLatestDate": "2026-10-19",
-      "targetDate": "2026-10-20"
-    },
-    {
-      "targetDate": "2026-10-21",
-      "sourceLatestDate": "2026-10-20",
-      "generatedAt": "2026-10-20T22:55:22.440Z",
+      "generatedAt": "2026-10-20T00:38:18.292Z",
       "ranking": [
         {
           "machineNo": "3235",
@@ -198,23 +175,46 @@
       "predictions": [
         {
           "machineNo": "3235",
-          "score": 45.8,
+          "score": 47.3,
           "label": "中立",
           "confidence": "高め"
         },
         {
           "machineNo": "3232",
-          "score": 41.1,
+          "score": 44.5,
           "label": "ややマイナス寄り",
           "confidence": "高め"
         },
         {
           "machineNo": "3233",
-          "score": 35.5,
+          "score": 38.7,
           "label": "マイナス寄り",
           "confidence": "高め"
         }
       ]
+    },
+    {
+      "generatedAt": "2026-10-20T22:55:22.440Z",
+      "predictions": [],
+      "ranking": [
+        {
+          "confidence": "高め",
+          "machineNo": "3235",
+          "rank": 1
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3232",
+          "rank": 2
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3233",
+          "rank": 3
+        }
+      ],
+      "sourceLatestDate": "2026-10-20",
+      "targetDate": "2026-10-21"
     }
   ]
 }
