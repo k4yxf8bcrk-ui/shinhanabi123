@@ -1,6 +1,6 @@
 {
   "schemaVersion": 4,
-  "generatedAt": "2026-10-21T21:15:30.544Z",
+  "generatedAt": "2026-10-21T21:17:59.307Z",
   "records": [
     {
       "date": "2025-09-11",
@@ -16162,7 +16162,71 @@
       "collectedAt": "2026-10-21T21:08:13.554Z"
     }
   ],
-  "aiAnalysis": null,
+  "aiAnalysis": {
+    "generatedAt": "2026-10-21T21:17:22.756Z",
+    "sourceLatestDate": "2026-10-21",
+    "targetDate": "2026-10-22",
+    "summary": "3台ともスコアはマイナス寄りで、直近の下降や勝率低下が見られます。中でも3235番台は30日全体でプラスを保ちつつ末尾実績も良好ですが、短期的には下落傾向にあります。",
+    "ranking": [
+      {
+        "machineNo": "3235",
+        "view": "直近は3連敗と下降中ですが、30日間の平均差枚はプラスを維持しています。",
+        "weekdayTrend": "木曜は勝率37.7%・平均+1枚と控えめです。土曜や金曜が得意な傾向です。",
+        "streakView": "現在3連敗中（-2269枚）。過去の3連敗後は50%の勝率で平均+107枚です。",
+        "recentView": "直近7日は勝率42.9%・平均+254枚、30日は勝率40%です。",
+        "graphTrend": "位置は75.4%の高値寄りですが、直近3日平均-756枚、モメンタム-1250と下落が加速し高値から2269枚凹んでいます。",
+        "confidence": "高め",
+        "plusFactors": [
+          "直近30日の平均差枚が+199枚とプラス",
+          "末尾2の勝率が51.3%で平均+133枚"
+        ],
+        "minusFactors": [
+          "現在3連敗中で下落のモメンタムが加速",
+          "木曜日の勝率が37.7%と低調傾向"
+        ]
+      },
+      {
+        "machineNo": "3232",
+        "view": "直近の指標がマイナスに傾いており、短期的な勢いも鈍化しています。",
+        "weekdayTrend": "木曜は勝率43.4%・平均+55枚と並水準。土日が得意で水曜が苦手です。",
+        "streakView": "現在2連敗中（-1456枚）。過去の2連敗後は勝率42.3%・平均+93枚です。",
+        "recentView": "直近7日は勝率28.6%・平均-300枚と低調です。",
+        "graphTrend": "強い右肩下がりで中間圏（48.4%）に位置。直近3日平均-383枚、高値から2520枚下落していますが下落勢いは鈍化中です。",
+        "confidence": "高め",
+        "plusFactors": [
+          "木曜は勝率43.4%で平均差枚もプラス",
+          "通算（375日）の平均差枚は+99枚"
+        ],
+        "minusFactors": [
+          "直近7日の勝率が28.6%と低迷",
+          "末尾2の勝率が28.2%・平均-255枚"
+        ]
+      },
+      {
+        "machineNo": "3233",
+        "view": "高値圏に位置し上昇モメンタムは見られますが、直近勝率の低さが目立ちます。",
+        "weekdayTrend": "木曜は勝率35.8%・平均+28枚と低調。土日は高水準な実績です。",
+        "streakView": "現在1連敗中（-383枚）。過去の1連敗後は勝率44.8%・平均+134枚です。",
+        "recentView": "直近7日の勝率は14.3%と大きく落ち込んでいます。",
+        "graphTrend": "高値圏（85.7%）に位置し直近3日平均+151枚、モメンタム+504と上昇加速も見られますが、7日平均は-141枚です。",
+        "confidence": "高め",
+        "plusFactors": [
+          "直近30日の平均差枚が+292枚と高水準",
+          "末尾2の平均差枚が+281枚と良好"
+        ],
+        "minusFactors": [
+          "直近7日の勝率が14.3%と極めて低い",
+          "木曜の勝率が35.8%と振るわない傾向"
+        ]
+      }
+    ],
+    "watchPoints": [
+      "全台が現在連敗中であり、短期下落からの反転があるか",
+      "3235番台の高値寄りからのさらなる下落拡大の有無",
+      "3233番台の極端に低い直近7日勝率の推移"
+    ],
+    "caution": "過去の統計傾向に基づいた機械的集計であり、今後の挙動や結果を保証するものではありません。台選びの参考材料の一つとして判断してください。"
+  },
   "aiHistory": [
     {
       "generatedAt": "2026-10-13T23:02:15.128Z",
@@ -16314,46 +16378,46 @@
       "targetDate": "2026-10-19"
     },
     {
-      "targetDate": "2026-10-20",
-      "sourceLatestDate": "2026-10-19",
       "generatedAt": "2026-10-20T00:38:18.292Z",
-      "ranking": [
-        {
-          "machineNo": "3235",
-          "rank": 1,
-          "confidence": "高め"
-        },
-        {
-          "machineNo": "3232",
-          "rank": 2,
-          "confidence": "高め"
-        },
-        {
-          "machineNo": "3233",
-          "rank": 3,
-          "confidence": "高め"
-        }
-      ],
       "predictions": [
         {
-          "machineNo": "3235",
-          "score": 47.3,
+          "confidence": "高め",
           "label": "中立",
-          "confidence": "高め"
+          "machineNo": "3235",
+          "score": 47.3
         },
         {
-          "machineNo": "3232",
-          "score": 44.5,
+          "confidence": "高め",
           "label": "ややマイナス寄り",
-          "confidence": "高め"
+          "machineNo": "3232",
+          "score": 44.5
         },
         {
-          "machineNo": "3233",
-          "score": 38.7,
+          "confidence": "高め",
           "label": "マイナス寄り",
-          "confidence": "高め"
+          "machineNo": "3233",
+          "score": 38.7
         }
-      ]
+      ],
+      "ranking": [
+        {
+          "confidence": "高め",
+          "machineNo": "3235",
+          "rank": 1
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3232",
+          "rank": 2
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3233",
+          "rank": 3
+        }
+      ],
+      "sourceLatestDate": "2026-10-19",
+      "targetDate": "2026-10-20"
     },
     {
       "generatedAt": "2026-10-20T22:55:22.440Z",
@@ -16377,6 +16441,48 @@
       ],
       "sourceLatestDate": "2026-10-20",
       "targetDate": "2026-10-21"
+    },
+    {
+      "targetDate": "2026-10-22",
+      "sourceLatestDate": "2026-10-21",
+      "generatedAt": "2026-10-21T21:17:22.756Z",
+      "ranking": [
+        {
+          "machineNo": "3235",
+          "rank": 1,
+          "confidence": "高め"
+        },
+        {
+          "machineNo": "3232",
+          "rank": 2,
+          "confidence": "高め"
+        },
+        {
+          "machineNo": "3233",
+          "rank": 3,
+          "confidence": "高め"
+        }
+      ],
+      "predictions": [
+        {
+          "machineNo": "3235",
+          "score": 44.7,
+          "label": "ややマイナス寄り",
+          "confidence": "高め"
+        },
+        {
+          "machineNo": "3232",
+          "score": 40.2,
+          "label": "ややマイナス寄り",
+          "confidence": "高め"
+        },
+        {
+          "machineNo": "3233",
+          "score": 36.1,
+          "label": "マイナス寄り",
+          "confidence": "高め"
+        }
+      ]
     }
   ],
   "aiAccuracy": {
@@ -16388,7 +16494,7 @@
     "top2Hits": 2,
     "top2Rate": 0.3333333333333333,
     "avgTopDiff": -305.1666666666667,
-    "pending": 0,
+    "pending": 1,
     "recent": [
       {
         "targetDate": "2026-10-21",
