@@ -89,6 +89,31 @@ body.graphFocusOpen{overflow:hidden}
 .regBiasBox .regBiasMachine .tiny{font-size:10px}
 @media(max-width:620px){.regBiasBox .regBiasMachines{grid-template-columns:1fr}.regBiasBox .regBiasMachine{padding:8px 10px}}
 
+
+/* AIと編集長：予想1位/2位/3位の実績を並べて比較 */
+.rankAuditBox{margin-top:13px;background:#fff;border:1px solid #cbd9ee;border-radius:12px;padding:13px;line-height:1.6}
+.rankAuditBox:empty{display:none}
+.rankAuditBox h3{margin:0 0 5px;font-size:16px}
+.rankAuditGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:12px}
+.rankAuditCard{background:#f8fafc;border:1px solid #e0e6ef;border-radius:10px;padding:12px;min-width:0}
+.rankAuditCard h4{font-size:15px;margin:0 0 4px}
+.rankAuditTable{min-width:0!important;width:100%;table-layout:fixed;border-collapse:collapse;margin-top:7px}
+.rankAuditTable th,.rankAuditTable td{padding:7px 3px;border-bottom:1px solid #e4e8f0;text-align:center!important;white-space:normal;font-size:12px;vertical-align:middle;position:static}
+.rankAuditTable th{font-size:10px;color:#505a6a;background:#edf2fa}
+.rankAuditTable th:first-child,.rankAuditTable td:first-child{width:44px}
+.rankAuditTable td strong{font-size:14px;display:block;font-variant-numeric:tabular-nums}
+.rankAuditTable td small{font-size:10px;color:#64748b;display:block}
+.rankAuditTable .rankAuditBest{background:#eaf3ff}
+.rankAuditNote{font-size:11px;color:#546075;margin-top:8px}
+.rankAuditDetails{margin-top:12px;border:1px solid #e2e8f0;border-radius:9px;background:#fff}
+.rankAuditDetails summary{padding:9px 11px;cursor:pointer;font-weight:700;font-size:12px}
+.rankAuditDetailScroll{overflow-x:auto;padding:0 9px 8px}
+.rankAuditDetailTable{width:100%;min-width:410px;table-layout:auto;border-collapse:collapse}
+.rankAuditDetailTable th,.rankAuditDetailTable td{padding:5px 6px;text-align:left!important;font-size:11px;white-space:nowrap;position:static}
+.rankAuditDetailTable td small{display:inline;font-size:10px}
+@media(max-width:920px){.rankAuditGrid{grid-template-columns:1fr}}
+@media(max-width:480px){.rankAuditBox{padding:10px}.rankAuditCard{padding:8px}.rankAuditTable td strong{font-size:13px}.rankAuditTable th,.rankAuditTable td{font-size:11px;padding:7px 2px}}
+
 </style>
 </head>
 <body>
@@ -119,6 +144,7 @@ body.graphFocusOpen{overflow:hidden}
     <div id="editorChiefBox" class="editorChiefBox"></div>
     <div id="regBiasBox" class="regBiasBox" aria-label="REGとBIGの偏りによる翌日実績"></div>
     <div id="editorChiefAccuracy" class="aiAccuracyBox editorChiefAccuracy"></div>
+    <div id="rankAuditBox" class="rankAuditBox" aria-label="Geminiと編集長の順位別的中率"></div>
     <div class="tiny" style="margin-top:9px">参考スコアは実際の勝率ではありません。未来の結果を保証するものではありません。</div>
   </section>
 
@@ -322,6 +348,79 @@ function renderPredictions(){
   $('predictionPanel').hidden=false;
 }
 
+
+/* 予想順位1〜3位の答え合わせ。3台すべての結果と稼働がある日だけ使用する。
+   未確定日・一部欠損・0Gを除き、同じ条件で順位間の成績を比較する。 */
+function threeRankAccuracy(history){
+  const rows=new Map(RECORDS.map(r=>[String(r.date)+'|'+String(r.machineNo),r]));
+  const seen=new Set(),days=[],pending=[];
+  const sorted=(Array.isArray(history)?history:[]).slice().sort((a,b)=>String(a.targetDate).localeCompare(String(b.targetDate)));
+  for(const h of sorted){
+    const date=String(h.targetDate||'');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||seen.has(date))continue;
+    seen.add(date);
+    const raw=Array.isArray(h.ranking)?h.ranking:[];
+    if(raw.length!==3)continue;
+    const ranked=raw.map((x,i)=>({m:String(x.machineNo||''),rank:Number(x.rank)||i+1})).sort((a,b)=>a.rank-b.rank);
+    if(ranked.some((x,i)=>!x.m||x.rank!==i+1)||new Set(ranked.map(x=>x.m)).size!==3)continue;
+    if(h.sourceLatestDate&&String(h.sourceLatestDate)>=date)continue;
+    const actual=ranked.map(x=>rows.get(date+'|'+x.m));
+    if(actual.some(x=>!x||!(Number(x.games)>0))){
+      pending.push(date);
+      continue;
+    }
+    const max=Math.max(...actual.map(x=>Number(x.diff)||0));
+    const outcomes=ranked.map((x,i)=>({
+      m:x.m,
+      diff:Number(actual[i].diff)||0,
+      plus:Number(actual[i].diff)>0,
+      first:(Number(actual[i].diff)||0)===max
+    }));
+    days.push({date,outcomes});
+  }
+  const byRank=[0,1,2].map(i=>{
+    const results=days.map(d=>d.outcomes[i]);
+    const n=results.length,plus=results.filter(x=>x.plus).length,top=results.filter(x=>x.first).length;
+    const total=results.reduce((v,x)=>v+x.diff,0);
+    return{rank:i+1,n,plus,top,rate:n?plus/n:0,topRate:n?top/n:0,avg:n?total/n:0};
+  });
+  return{days,pending,byRank};
+}
+function renderRankAudit(){
+  const box=$('rankAuditBox');if(!box)return;
+  const sources=[
+    {name:'Gemini AI',history:mergedGeminiHistory()},
+    {name:'編集長',history:editorHistory()}
+  ];
+  const audits=sources.map(src=>({...src,report:threeRankAccuracy(src.history)}));
+  const pct=x=>(100*x).toFixed(1)+'%';
+  const card=a=>{
+    const stats=a.report.byRank,n=a.report.days.length;
+    if(!n)return'<div class="rankAuditCard"><h4>'+esc(a.name)+'</h4><div class="muted">3台の結果が確定した予想はまだありません。</div></div>';
+    const bestRate=Math.max(...stats.map(x=>x.rate));
+    const best=stats.filter(x=>Math.abs(x.rate-bestRate)<1e-10).map(x=>x.rank+'位').join('・');
+    const body=stats.map(x=>'<tr'+(Math.abs(x.rate-bestRate)<1e-10?' class="rankAuditBest"':'')+'>'+
+       '<td>'+x.rank+'位</td>'+
+       '<td><strong>'+pct(x.rate)+'</strong><small>'+x.plus+'/'+x.n+'プラス</small></td>'+
+       '<td><strong>'+pct(x.topRate)+'</strong><small>'+x.top+'/'+x.n+'回</small></td>'+
+       '<td><strong class="'+(x.avg>=0?'blue':'red')+'">'+signed(x.avg)+'</strong><small>枚／日</small></td></tr>').join('');
+    const dates=a.report.days.slice().reverse().map(d=>'<tr><td>'+esc(shortDate(d.date))+'</td>'+
+      d.outcomes.map(x=>'<td>'+esc(x.m)+' <span class="'+(x.diff>=0?'blue':'red')+'">'+signed(x.diff)+'枚</span></td>').join('')+'</tr>').join('');
+    return'<div class="rankAuditCard"><h4>'+esc(a.name)+' <span class="tiny">答え合わせ済み '+n+'回</span></h4>'+
+      '<div class="muted">現時点でプラス率が最も高い予想順位：'+best+'</div>'+
+      '<table class="rankAuditTable"><thead><tr><th>予想</th><th>プラス率</th><th>差枚トップ率</th><th>平均差枚</th></tr></thead><tbody>'+body+'</tbody></table>'+
+      '<details class="rankAuditDetails"><summary>日付別の1〜3位と実際の差枚を見る</summary>'+
+      '<div class="rankAuditDetailScroll"><table class="rankAuditDetailTable"><thead><tr><th>日付</th><th>予想1位</th><th>予想2位</th><th>予想3位</th></tr></thead><tbody>'+dates+'</tbody></table></div></details>'+
+      '<div class="rankAuditNote">'+esc(shortDate(a.report.days[0].date))+'〜'+esc(shortDate(a.report.days[n-1].date))+
+      ' / 未確定・稼働なし '+a.report.pending.length+'件</div></div>';
+  };
+  box.innerHTML='<h3>AI・編集長の予想は何位が一番勝っている？</h3>'+
+    '<div class="muted">予想1位・2位・3位をそれぞれ答え合わせ。3台すべての結果がそろい、3台とも稼働した日のみを対象にしています。</div>'+
+    '<div class="rankAuditGrid">'+audits.map(card).join('')+'</div>'+
+    '<div class="rankAuditNote">プラス率＝その順位で選んだ台が当日プラス差枚だった割合。差枚トップ率＝予想3台の中で差枚が最も大きかった割合（マイナスでもトップ扱い、同率トップも含む）。'+
+    '平均差枚はその順位の実際の差枚平均。両者の対象日数が異なる場合があります。過去の回数が少ないため、次に勝つ確率や逆順位の優位性を示すものではありません。最新データの更新時に再集計されます。</div>';
+}
+
 function renderAiAccuracy(){
   const box=$('aiAccuracyBox');if(!box)return;
   const g=geminiAccuracy();
@@ -408,7 +507,8 @@ function setup(){const machines=[...new Set(RECORDS.map(r=>String(r.machineNo)))
   $('editorChiefBox').innerHTML='<h3>編集長分析 <span class="editorBadge">ABC森田専用</span></h3><div class="muted">雄踏店の予想は表示しません。日別の記録が蓄積したら、ABC森田のデータだけで編集長予想を作成します。</div>';
   $('editorChiefAccuracy').innerHTML='';
   $('regBiasBox').innerHTML='';
-}else{renderPredictions();renderAiAccuracy();renderEditorChief();renderRegBiasAnalysis();}
+  $('rankAuditBox').innerHTML='';
+}else{renderPredictions();renderAiAccuracy();renderEditorChief();renderRegBiasAnalysis();renderRankAudit();}
 const focusParams=new URLSearchParams(window.location.search);
 if(focusParams.get('focus')==='1'){
   const requestedMode=focusParams.get('focusMode');
