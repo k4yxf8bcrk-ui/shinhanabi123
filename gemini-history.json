@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-22T22:42:37.411Z",
+  "updatedAt": "2026-10-22T23:03:04.434Z",
   "history": [
     {
       "generatedAt": "2026-10-13T23:02:15.128Z",
@@ -175,46 +175,46 @@
       "targetDate": "2026-10-20"
     },
     {
-      "targetDate": "2026-10-21",
-      "sourceLatestDate": "2026-10-20",
       "generatedAt": "2026-10-20T22:55:22.440Z",
-      "ranking": [
-        {
-          "machineNo": "3235",
-          "rank": 1,
-          "confidence": "高め"
-        },
-        {
-          "machineNo": "3232",
-          "rank": 2,
-          "confidence": "高め"
-        },
-        {
-          "machineNo": "3233",
-          "rank": 3,
-          "confidence": "高め"
-        }
-      ],
       "predictions": [
         {
-          "machineNo": "3235",
-          "score": 45.8,
+          "confidence": "高め",
           "label": "中立",
-          "confidence": "高め"
+          "machineNo": "3235",
+          "score": 45.8
         },
         {
-          "machineNo": "3232",
-          "score": 41.1,
+          "confidence": "高め",
           "label": "ややマイナス寄り",
-          "confidence": "高め"
+          "machineNo": "3232",
+          "score": 41.1
         },
         {
-          "machineNo": "3233",
-          "score": 35.5,
+          "confidence": "高め",
           "label": "マイナス寄り",
-          "confidence": "高め"
+          "machineNo": "3233",
+          "score": 35.5
         }
-      ]
+      ],
+      "ranking": [
+        {
+          "confidence": "高め",
+          "machineNo": "3235",
+          "rank": 1
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3232",
+          "rank": 2
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3233",
+          "rank": 3
+        }
+      ],
+      "sourceLatestDate": "2026-10-20",
+      "targetDate": "2026-10-21"
     },
     {
       "generatedAt": "2026-10-21T21:17:22.756Z",
@@ -238,6 +238,48 @@
       ],
       "sourceLatestDate": "2026-10-21",
       "targetDate": "2026-10-22"
+    },
+    {
+      "targetDate": "2026-10-23",
+      "sourceLatestDate": "2026-10-22",
+      "generatedAt": "2026-10-22T23:02:56.526Z",
+      "ranking": [
+        {
+          "machineNo": "3235",
+          "rank": 1,
+          "confidence": "高め"
+        },
+        {
+          "machineNo": "3232",
+          "rank": 2,
+          "confidence": "高め"
+        },
+        {
+          "machineNo": "3233",
+          "rank": 3,
+          "confidence": "高め"
+        }
+      ],
+      "predictions": [
+        {
+          "machineNo": "3235",
+          "score": 43.5,
+          "label": "ややマイナス寄り",
+          "confidence": "高め"
+        },
+        {
+          "machineNo": "3232",
+          "score": 41.3,
+          "label": "ややマイナス寄り",
+          "confidence": "高め"
+        },
+        {
+          "machineNo": "3233",
+          "score": 36.4,
+          "label": "マイナス寄り",
+          "confidence": "高め"
+        }
+      ]
     }
   ]
 }
