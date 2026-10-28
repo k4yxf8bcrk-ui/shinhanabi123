@@ -201,6 +201,29 @@ body.graphFocusOpen{overflow:hidden}
 .bottomEmpty{font-size:12px;color:#667281;padding:12px}
 @media(max-width:700px){.bottomGrid{grid-template-columns:1fr}.bottomControls label{min-width:130px}.bottomCard strong{font-size:20px}.bottomCard{padding:13px}}
 
+
+/* スマホで数百日が密集するのを防止：期間切替・タップ詳細 */
+.graphRangeBar{display:none;align-items:center;flex-wrap:wrap;gap:5px;margin-top:10px;padding:8px 9px;background:#f7f9fc;border:1px solid #dfe6f1;border-radius:10px}
+.graphRangeBar .graphRangeCaption{flex-basis:100%;font-size:11px;color:#586679;font-weight:800}
+.graphRangeBar button{appearance:none;flex:1 1 auto;min-width:48px;min-height:37px;touch-action:manipulation;background:#fff;border:1px solid #bfcadb;border-radius:8px;font-size:13px;font-weight:850;color:#34506f;padding:7px 5px;cursor:pointer}
+.graphRangeBar button.active{color:#fff;background:#245f9e;border-color:#245f9e}
+.graphRangeBar button:focus-visible{outline:3px solid #e6a83f;outline-offset:2px}
+.graphRangeInfo{font-size:12px;color:#536277;margin:7px 0 5px}
+.graphTapDetail{position:absolute;bottom:7px;left:7px;right:7px;z-index:3;padding:9px 10px;border-radius:8px;background:rgba(23,40,61,.94);color:#fff;font-size:13px;font-weight:700;line-height:1.55;box-shadow:0 2px 12px rgba(0,0,0,.18);pointer-events:none}
+.graphTapDetail[hidden]{display:none!important}
+#graphFocusRangeBar{margin:0;border-radius:0;border-width:0 0 1px}
+@media(pointer:coarse){.graphRangeBar{display:flex}}
+@media(max-width:700px){
+  .graphRangeBar{display:flex}
+  .chartWrap canvas{height:395px}
+  .legend{font-size:11px;line-height:1.6}
+}
+@media(orientation:landscape) and (max-height:550px){
+  #graphFocusRangeBar{padding:3px 8px;gap:4px}
+  #graphFocusRangeBar .graphRangeCaption{display:none}
+  #graphFocusRangeBar button{min-height:29px;padding:3px 5px}
+}
+
 </style>
 </head>
 <body>
@@ -245,7 +268,9 @@ body.graphFocusOpen{overflow:hidden}
     <div class="graphFocusLaunch"><button type="button" id="graphFocusOpen" aria-controls="graphFocusLayer" aria-haspopup="dialog">⛶ グラフだけ表示</button><small>スマホで拡大表示できます。横向きもおすすめです。</small></div>
     <div id="cards" class="cards"></div>
     <div id="repairSummary" class="repairSummary" hidden></div>
-    <div class="chartWrap"><canvas id="chart"></canvas><div id="tooltip" class="tooltip"></div></div>
+    <div id="graphQuickRanges" class="graphRangeBar" aria-label="表示する日数"><span class="graphRangeCaption">スマホ用：グラフの表示期間（タップで切替）</span></div>
+    <div id="graphRangeInfo" class="graphRangeInfo"></div>
+    <div class="chartWrap"><canvas id="chart"></canvas><div id="tooltip" class="tooltip"></div><div id="graphTapDetail" class="graphTapDetail" hidden aria-live="polite"></div></div>
     <div id="legend" class="legend"></div>
     <div id="trendBox" class="trendBox"></div>
   </section>
@@ -339,6 +364,7 @@ body.graphFocusOpen{overflow:hidden}
       <label for="graphFocusMonth">期間<select id="graphFocusMonth"></select></label>
       <label for="graphFocusMode">グラフ<select id="graphFocusMode"></select></label>
     </div>
+    <div id="graphFocusRangeBar" class="graphRangeBar" aria-label="拡大グラフの表示期間"><span class="graphRangeCaption">表示期間</span></div>
     <div id="focusChartSlot"></div>
     <div id="graphFocusStats" class="graphFocusStats" aria-label="選択中のグラフの実績"></div>
     <div id="graphFocusFoot" class="graphFocusFoot">点に触れると差枚を確認できます</div>
@@ -658,6 +684,38 @@ function renderRepairSummary(rows){
 }
 function series(ds){const mode=modeSel.value;if(mode==='monthly'){const m=new Map();for(const d of ds)m.set(d.date.slice(0,7),(m.get(d.date.slice(0,7))||0)+d.diff);return[...m].sort().map(([label,value])=>({label,value,diff:value,date:label}));}if(mode==='daily')return ds.map(d=>({label:shortDate(d.date),value:d.diff,diff:d.diff,date:d.date,repair:d.repair,repairMachines:d.repairMachines}));let sum=0;return ds.map(d=>{sum+=d.diff;return{label:shortDate(d.date),value:sum,diff:d.diff,date:d.date,repair:d.repair,repairMachines:d.repairMachines};});}
 
+
+/* スマホでは直近30日を優先表示。期間切替は元データや累積値を変更しない。 */
+let graphMobileRange=(window.matchMedia('(pointer: coarse)').matches||window.matchMedia('(max-width:700px)').matches)?'30':'ALL';
+const GRAPH_RANGES=[['7','7日'],['14','14日'],['30','30日'],['90','90日'],['ALL','全期間']];
+function graphWindowSeries(all){
+  if(!Array.isArray(all)||modeSel.value==='monthly'||graphMobileRange==='ALL')return all;
+  const count=Number(graphMobileRange);
+  return Number.isInteger(count)&&count>0?all.slice(-count):all;
+}
+function graphRangeControls(){
+  for(const key of ['graphQuickRanges','graphFocusRangeBar']){
+    const box=$(key);
+    if(!box)return;
+    const caption=key==='graphFocusRangeBar'?'期間表示':'スマホ用：表示する日数';
+    box.innerHTML='<span class="graphRangeCaption">'+caption+'</span>'+
+      GRAPH_RANGES.map(([value,label])=>'<button type="button" data-range="'+value+'" aria-pressed="'+(graphMobileRange===value?'true':'false')+'" class="'+(graphMobileRange===value?'active':'')+'">'+label+'</button>').join('');
+    box.querySelectorAll('button[data-range]').forEach(button=>button.addEventListener('click',()=>{
+      graphMobileRange=button.dataset.range;
+      graphZoomResetState();
+      tooltip.style.display='none';
+      const info=$('graphTapDetail');if(info){info.hidden=true;info.textContent='';}
+      graphRangeControls();draw(daily(filtered()));renderGraphFocusStats();
+    }));
+  }
+  const source=$('graphRangeInfo');
+  if(source){
+    source.textContent=modeSel.value==='monthly'?'月別グラフには日数切替を適用しません。':
+      graphMobileRange==='ALL'?'表示：選択中の全期間。スマホでは「30日」がおすすめです。':
+      '表示：直近'+graphMobileRange+'日分のグラフ。累積値は上の「期間」の開始日からの差枚合計です。';
+  }
+}
+
 const graphZoom={scale:1,start:0};
 function graphZoomMax(n){return Math.max(1,Math.min(12,n/3));}
 function graphZoomResetState(){graphZoom.scale=1;graphZoom.start=0;}
@@ -686,7 +744,7 @@ function graphZoomSeries(all){
 }
 function graphZoomSet(scale,anchor=.5,fromStart=graphZoom.start,fromScale=graphZoom.scale){
   if(!document.body.classList.contains('graphFocusOpen'))return;
-  const n=series(daily(filtered())).length;
+  const n=graphWindowSeries(series(daily(filtered()))).length;
   if(n<4)return;
   const next=Math.max(1,Math.min(graphZoomMax(n),scale));
   const a=Math.max(0,Math.min(1,anchor));
@@ -695,12 +753,12 @@ function graphZoomSet(scale,anchor=.5,fromStart=graphZoom.start,fromScale=graphZ
   graphZoom.start=Math.max(0,Math.min(n-Math.max(1,Math.round(span)),fromStart+(oldSpan-span)*a));
   draw(daily(filtered()));
 }
-function draw(ds){const allData=series(ds),data=graphZoomSeries(allData),phoneGraph=window.matchMedia('(pointer: coarse)').matches&&Math.min(window.innerWidth,window.innerHeight)<=650,landscapePhone=phoneGraph&&window.innerWidth>window.innerHeight,phonePortrait=phoneGraph&&!landscapePhone,densePhone=phonePortrait&&data.length>100,pointRadius=landscapePhone?2.8:(phonePortrait?(data.length>100?.95:data.length>35?1.75:2.5):4),rect=canvas.getBoundingClientRect(),W=Math.max(320,Math.floor(rect.width||1000)),H=document.body.classList.contains('graphFocusOpen')?Math.max(160,Math.floor(canvas.getBoundingClientRect().height||430)):430,dpr=Math.max(1,devicePixelRatio||1);canvas.width=W*dpr;canvas.height=H*dpr;const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,W,H);points=[];if(!data.length){c.fillStyle='#6b7280';c.font='14px system-ui';c.fillText('データなし',24,40);$('legend').textContent='';return;}const p=phonePortrait?{l:55,r:12,t:13,b:30}:{l:68,r:24,t:24,b:48},w=W-p.l-p.r,h=H-p.t-p.b;let min=Math.min(...data.map(d=>d.value)),max=Math.max(...data.map(d=>d.value));
-const zoomYAxis=document.body.classList.contains('graphFocusOpen')&&graphZoom.scale>1.001&&modeSel.value!=='daily';
+function draw(ds){const allData=graphWindowSeries(series(ds)),data=graphZoomSeries(allData),phoneGraph=window.matchMedia('(pointer: coarse)').matches&&Math.min(window.innerWidth,window.innerHeight)<=650,landscapePhone=phoneGraph&&window.innerWidth>window.innerHeight,phonePortrait=phoneGraph&&!landscapePhone,densePhone=phonePortrait&&data.length>100,pointRadius=landscapePhone?3.2:(phonePortrait?(data.length>100?1.3:data.length>35?2.6:3.2):4),rect=canvas.getBoundingClientRect(),W=Math.max(320,Math.floor(rect.width||1000)),H=document.body.classList.contains('graphFocusOpen')?Math.max(160,Math.floor(canvas.getBoundingClientRect().height||430)):430,dpr=Math.max(1,devicePixelRatio||1);canvas.width=W*dpr;canvas.height=H*dpr;const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,W,H);points=[];if(!data.length){c.fillStyle='#6b7280';c.font='14px system-ui';c.fillText('データなし',24,40);$('legend').textContent='';return;}const p=phonePortrait?{l:62,r:12,t:17,b:35}:{l:68,r:24,t:24,b:48},w=W-p.l-p.r,h=H-p.t-p.b;let min=Math.min(...data.map(d=>d.value)),max=Math.max(...data.map(d=>d.value));
+const zoomYAxis=modeSel.value!=='daily'&&((document.body.classList.contains('graphFocusOpen')&&graphZoom.scale>1.001)||(!document.body.classList.contains('graphFocusOpen')&&graphMobileRange!=='ALL'&&modeSel.value==='cumulative'));
 if(!zoomYAxis){min=Math.min(0,min);max=Math.max(0,max);}
 if(max===min){max+=100;min-=100;}
 if(zoomYAxis){const pad=(max-min)*.06;min-=pad;max+=pad;}
-const range=max-min||1,x=i=>p.l+(data.length===1?w/2:i*w/(data.length-1)),y=v=>p.t+(max-v)*h/range;c.strokeStyle='#e4e8ee';c.fillStyle='#6b7280';c.font=phonePortrait?'10px system-ui':'12px system-ui';for(let i=0;i<=4;i++){const val=max-range*i/4,yy=p.t+h*i/4;c.beginPath();c.moveTo(p.l,yy);c.lineTo(p.l+w,yy);c.stroke();c.textAlign='right';c.textBaseline='middle';c.fillText(Math.round(val).toLocaleString('ja-JP'),p.l-8,yy);}if(min<0&&max>0){c.strokeStyle='#9aa0a6';c.beginPath();c.moveTo(p.l,y(0));c.lineTo(p.l+w,y(0));c.stroke();}const mode=modeSel.value;if(mode==='daily'){const bw=Math.max(2,Math.min(14,w/Math.max(1,data.length)*.72)),y0=y(0);data.forEach((d,i)=>{const yy=y(d.value);c.fillStyle=d.repair?'#8b9ab0':d.value>=0?'#1a73e8':'#d93025';c.fillRect(x(i)-bw/2,d.repair?y0-2:Math.min(yy,y0),bw,d.repair?4:Math.max(1,Math.abs(y0-yy)));});}else if(mode==='cumulative'){for(let i=1;i<data.length;i++){c.strokeStyle=data[i].repair?'#7d8da3':data[i].diff>0?'#1a73e8':data[i].diff<0?'#d93025':'#9aa0a6';c.setLineDash(data[i].repair?[4,4]:[]);c.lineWidth=phonePortrait?1.45:2.5;c.beginPath();c.moveTo(x(i-1),y(data[i-1].value));c.lineTo(x(i),y(data[i].value));c.stroke();c.setLineDash([]);}data.forEach((d,i)=>{c.beginPath();c.fillStyle=d.repair?'#7d8da3':d.diff>0?'#1a73e8':d.diff<0?'#d93025':'#9aa0a6';c.arc(x(i),y(d.value),pointRadius,0,Math.PI*2);c.fill();if(!densePhone){c.strokeStyle='#fff';c.lineWidth=phonePortrait?.6:1;c.stroke();}});}else{c.strokeStyle='#1a73e8';c.lineWidth=phonePortrait?1.45:2.5;c.beginPath();data.forEach((d,i)=>i?c.lineTo(x(i),y(d.value)):c.moveTo(x(i),y(d.value)));c.stroke();data.forEach((d,i)=>{c.beginPath();c.fillStyle=d.value>=0?'#1a73e8':'#d93025';c.arc(x(i),y(d.value),pointRadius,0,Math.PI*2);c.fill();});}const maxLabels=Math.min(6,Math.max(2,Math.floor(w/(phonePortrait?115:150)))),step=Math.max(1,Math.ceil((data.length-1)/Math.max(1,maxLabels-1)));c.fillStyle='#6b7280';c.font=phonePortrait?'10px system-ui':'11px system-ui';c.textAlign='center';c.textBaseline='top';data.forEach((d,i)=>{if(phonePortrait?(i===0||i===data.length-1||(i%step===0&&i+Math.max(1,Math.round(step*.45))<data.length-1)):(i%step===0||i===data.length-1))c.fillText(d.label,x(i),p.t+h+(phonePortrait?8:10));});points=data.map((d,i)=>({x:x(i),y:y(d.value),d}));const ex=extremes(ds),st=streaks(ds);$('legend').innerHTML=(ex?'<span class="blue">最大差枚 '+signed(ex.hi.diff)+'枚 '+shortDate(ex.hi.date)+'</span> / <span class="red">最大マイナス '+signed(ex.lo.diff)+'枚 '+shortDate(ex.lo.date)+'</span> / ':'')+'<span class="blue">最長上昇 '+st.bestUp.days+'日 ('+signed(st.bestUp.diff)+'枚) '+shortDate(st.bestUp.start)+'〜'+shortDate(st.bestUp.end)+'</span> / <span class="red">最長下降 '+st.bestDn.days+'日 ('+signed(st.bestDn.diff)+'枚) '+shortDate(st.bestDn.start)+'〜'+shortDate(st.bestDn.end)+'</span>';}
+const range=max-min||1,x=i=>p.l+(data.length===1?w/2:i*w/(data.length-1)),y=v=>p.t+(max-v)*h/range;c.strokeStyle='#e4e8ee';c.fillStyle='#6b7280';c.font=phonePortrait?'11px system-ui':'12px system-ui';for(let i=0;i<=4;i++){const val=max-range*i/4,yy=p.t+h*i/4;c.beginPath();c.moveTo(p.l,yy);c.lineTo(p.l+w,yy);c.stroke();c.textAlign='right';c.textBaseline='middle';c.fillText(Math.round(val).toLocaleString('ja-JP'),p.l-8,yy);}if(min<0&&max>0){c.strokeStyle='#9aa0a6';c.beginPath();c.moveTo(p.l,y(0));c.lineTo(p.l+w,y(0));c.stroke();}const mode=modeSel.value;if(mode==='daily'){const bw=Math.max(2,Math.min(14,w/Math.max(1,data.length)*.72)),y0=y(0);data.forEach((d,i)=>{const yy=y(d.value);c.fillStyle=d.repair?'#8b9ab0':d.value>=0?'#1a73e8':'#d93025';c.fillRect(x(i)-bw/2,d.repair?y0-2:Math.min(yy,y0),bw,d.repair?4:Math.max(1,Math.abs(y0-yy)));});}else if(mode==='cumulative'){for(let i=1;i<data.length;i++){c.strokeStyle=data[i].repair?'#7d8da3':data[i].diff>0?'#1a73e8':data[i].diff<0?'#d93025':'#9aa0a6';c.setLineDash(data[i].repair?[4,4]:[]);c.lineWidth=phonePortrait?1.45:2.5;c.beginPath();c.moveTo(x(i-1),y(data[i-1].value));c.lineTo(x(i),y(data[i].value));c.stroke();c.setLineDash([]);}data.forEach((d,i)=>{c.beginPath();c.fillStyle=d.repair?'#7d8da3':d.diff>0?'#1a73e8':d.diff<0?'#d93025':'#9aa0a6';c.arc(x(i),y(d.value),pointRadius,0,Math.PI*2);c.fill();if(!densePhone){c.strokeStyle='#fff';c.lineWidth=phonePortrait?.6:1;c.stroke();}});}else{c.strokeStyle='#1a73e8';c.lineWidth=phonePortrait?1.45:2.5;c.beginPath();data.forEach((d,i)=>i?c.lineTo(x(i),y(d.value)):c.moveTo(x(i),y(d.value)));c.stroke();data.forEach((d,i)=>{c.beginPath();c.fillStyle=d.value>=0?'#1a73e8':'#d93025';c.arc(x(i),y(d.value),pointRadius,0,Math.PI*2);c.fill();});}const maxLabels=Math.min(6,Math.max(2,Math.floor(w/(phonePortrait?90:150)))),step=Math.max(1,Math.ceil((data.length-1)/Math.max(1,maxLabels-1)));c.fillStyle='#6b7280';c.font=phonePortrait?'11px system-ui':'11px system-ui';c.textAlign='center';c.textBaseline='top';data.forEach((d,i)=>{if(phonePortrait?(i===0||i===data.length-1||(i%step===0&&i+Math.max(1,Math.round(step*.45))<data.length-1)):(i%step===0||i===data.length-1))c.fillText(d.label,x(i),p.t+h+(phonePortrait?8:10));});points=data.map((d,i)=>({x:x(i),y:y(d.value),d}));const ex=extremes(ds),st=streaks(ds);$('legend').innerHTML=(ex?'<span class="blue">最大差枚 '+signed(ex.hi.diff)+'枚 '+shortDate(ex.hi.date)+'</span> / <span class="red">最大マイナス '+signed(ex.lo.diff)+'枚 '+shortDate(ex.lo.date)+'</span> / ':'')+'<span class="blue">最長上昇 '+st.bestUp.days+'日 ('+signed(st.bestUp.diff)+'枚) '+shortDate(st.bestUp.start)+'〜'+shortDate(st.bestUp.end)+'</span> / <span class="red">最長下降 '+st.bestDn.days+'日 ('+signed(st.bestDn.diff)+'枚) '+shortDate(st.bestDn.start)+'〜'+shortDate(st.bestDn.end)+'</span>';}
 
 
 function bottomWindowState(rows,endIndex,windowDays){
@@ -956,6 +1014,7 @@ if(focusParams.get('focus')==='1'){
   if(requestedMonth&&[...monthSel.options].some(x=>x.value===requestedMonth))monthSel.value=requestedMonth;
 }
 render();
+graphRangeControls();
 setupWeekdaySection();
 setupBottomPanel();
 if(focusParams.get('focus')==='1')requestAnimationFrame(graphFocusOpen);
@@ -1000,6 +1059,7 @@ function focusSyncFromMain(){
 function graphFocusOpen(){
   if(!graphFocusLayer.hidden)return;
   graphZoomResetState();
+  graphRangeControls();
   focusSyncFromMain();
   graphFocusLayer.hidden=false;
   graphFocusSlot.appendChild(chartWrap);
@@ -1056,7 +1116,7 @@ canvas.addEventListener('pointermove',e=>{
       graphZoomPinch.anchor,graphZoomPinch.start,graphZoomPinch.scale);
     tooltip.style.display='none';e.preventDefault();
   }else if(graphZoomTouches.size===1&&graphZoomDrag?.scale>1.001){
-    const n=series(daily(filtered())).length;
+    const n=graphWindowSeries(series(daily(filtered()))).length;
     const span=n/graphZoomDrag.scale;
     graphZoom.start=Math.max(0,Math.min(n-Math.max(1,Math.round(span)),
       graphZoomDrag.start+(graphZoomDrag.x-e.clientX)*span/Math.max(1,canvas.clientWidth-80)));
@@ -1099,7 +1159,35 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-[machineSel,monthSel,modeSel].forEach(x=>x.addEventListener('change',()=>{render();if(x===monthSel&&$('weekdayPeriodSel')?.value==='CHART')renderWeekdaySection();}));window.addEventListener('resize',()=>{if(RECORDS.length)render();});function showChartTooltip(e){if(graphZoomTouches.size>=2||graphZoomPinch)return;if(!points.length)return;const r=canvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;let best=null,dist=1e9;for(const p of points){const d=(p.x-mx)*(p.x-mx)+(p.y-my)*(p.y-my);if(d<dist){dist=d;best=p;}}if(best&&dist<225){const d=best.d;tooltip.style.display='block';tooltip.style.left=Math.min(r.width-175,best.x+12)+'px';tooltip.style.top=Math.max(6,best.y-72)+'px';tooltip.innerHTML=esc(d.date||d.label)+(d.repair?'<br><strong>修理中（0G）</strong>':d.repairMachines&&d.repairMachines.length?'<br>修理中：'+esc(d.repairMachines.join('・'))+'番台':'')+'<br>日別差枚 '+signed(d.diff)+'枚<br>'+(modeSel.value==='cumulative'?'累計差枚 '+signed(d.value)+'枚':'差枚 '+signed(d.value)+'枚');}else tooltip.style.display='none';}
+[machineSel,monthSel,modeSel].forEach(x=>x.addEventListener('change',()=>{const info=$('graphTapDetail');if(info)info.hidden=true;render();graphRangeControls();if(x===monthSel&&$('weekdayPeriodSel')?.value==='CHART')renderWeekdaySection();}));window.addEventListener('resize',()=>{if(RECORDS.length)render();});function showChartTooltip(e){
+ if(graphZoomTouches.size>=2||graphZoomPinch)return;
+ if(!points.length)return;
+ const r=canvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+ const touch=e.pointerType==='touch'||e.pointerType==='pen';
+ let best=null,dist=Infinity;
+ for(const p of points){
+   const dx=p.x-mx,dy=p.y-my;
+   const dd=touch?Math.abs(dx):dx*dx+dy*dy;
+   if(dd<dist){best=p;dist=dd;}
+ }
+ if(!best||(touch?dist>Math.max(30,r.width/Math.max(2,points.length-1)):dist>=225)){
+   if(!touch)tooltip.style.display='none';
+   return;
+ }
+ const d=best.d,summary=(d.date||d.label)+(d.repair?' 修理中（0G）':d.repairMachines&&d.repairMachines.length?' 修理中：'+d.repairMachines.join('・')+'番台':'')+
+   ' ／ 日別 '+signed(d.diff)+'枚 ／ '+(modeSel.value==='cumulative'?'累計 '+signed(d.value)+'枚':modeSel.value==='monthly'?'月別 '+signed(d.value)+'枚':'差枚 '+signed(d.value)+'枚');
+ if(touch){
+   tooltip.style.display='none';
+   const info=$('graphTapDetail');
+   if(info){info.textContent=summary;info.hidden=false;}
+ }else{
+   tooltip.style.display='block';
+   tooltip.style.left=Math.max(3,Math.min(r.width-180,best.x+12))+'px';
+   tooltip.style.top=Math.max(6,best.y-72)+'px';
+   tooltip.innerHTML=esc(d.date||d.label)+(d.repair?'<br><strong>修理中（0G）</strong>':d.repairMachines&&d.repairMachines.length?'<br>修理中：'+esc(d.repairMachines.join('・'))+'番台':'')+
+     '<br>日別差枚 '+signed(d.diff)+'枚<br>'+(modeSel.value==='cumulative'?'累計差枚 '+signed(d.value)+'枚':'差枚 '+signed(d.value)+'枚');
+ }
+}
 canvas.addEventListener('mousemove',showChartTooltip);
 canvas.addEventListener('pointerdown',showChartTooltip);
 canvas.addEventListener('pointermove',e=>{if(e.pointerType==='touch')showChartTooltip(e);});canvas.addEventListener('mouseleave',()=>tooltip.style.display='none');
