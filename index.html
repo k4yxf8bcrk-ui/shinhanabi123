@@ -224,6 +224,25 @@ body.graphFocusOpen{overflow:hidden}
   #graphFocusRangeBar button{min-height:29px;padding:3px 5px}
 }
 
+
+/* 初期状態はすべて閉じる */
+.foldToolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;padding:12px 14px;margin-top:14px;border:1px solid #d6e0ed;border-radius:12px;background:#fff}
+.foldToolbar[hidden]{display:none!important}
+.foldToolbar p{font-size:12px;line-height:1.5;color:#536274;margin:0}
+.foldToolbar .foldButtons{display:flex;gap:7px;flex-wrap:wrap}
+.foldToolbar button{background:#f3f7fc;border:1px solid #b9cbe1;border-radius:9px;color:#214c7c;padding:9px 12px;font-weight:800;font-size:13px;cursor:pointer;min-height:40px}
+.foldedPanel.foldClosed>:not(.foldHead){display:none!important}
+.foldedPanel.foldClosed{padding:9px 13px!important;box-shadow:0 1px 5px rgba(0,0,0,.025)}
+.foldedPanel>.foldHead{appearance:none;display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;font:inherit;font-weight:900;font-size:16px;text-align:left;color:#25364b;background:transparent;border:0;border-radius:8px;cursor:pointer;padding:7px 4px;min-height:42px}
+.foldedPanel>.foldHead .foldTitle{min-width:0;line-height:1.5}
+.foldedPanel>.foldHead .foldSign{display:inline-flex;align-items:center;justify-content:center;flex:0 0 28px;width:28px;height:28px;border-radius:9px;background:#e9f0f9;color:#285d91;font-size:19px;font-weight:900}
+.foldedPanel>.foldHead:hover{background:#f4f7fb}
+.foldedPanel>.foldHead:focus-visible,.foldToolbar button:focus-visible{outline:3px solid #7caaec;outline-offset:2px}
+.foldedPanel:not(.foldClosed)>.foldHead{padding-bottom:10px;border-bottom:1px solid #e2e9f0;border-radius:0;margin-bottom:11px}
+.foldedPanel>h2{display:none}
+.foldedPanel .predictionHead h2,.foldedPanel .bottomHeader h2,.foldedPanel .weekdayHead h2{display:none}
+@media(max-width:560px){.foldToolbar{gap:8px;padding:10px}.foldToolbar p{flex:1 1 100%}.foldToolbar .foldButtons{display:grid;grid-template-columns:1fr 1fr;width:100%}.foldToolbar button{min-height:44px}.foldedPanel>.foldHead{font-size:15px;min-height:45px}.foldedPanel.foldClosed{padding:8px 11px!important}}
+
 </style>
 </head>
 <body>
@@ -244,6 +263,13 @@ body.graphFocusOpen{overflow:hidden}
   </section>
   <div id="storeNotice" class="storeNotice" hidden></div>
   <div id="loadStatus" class="panel status">選択した店舗のデータを読み込んでいます…</div>
+  <nav id="accordionToolbar" class="foldToolbar" aria-label="分析項目の開閉操作" hidden>
+    <p>見たい項目をタップして開けます。初期状態はすべて閉じています。</p>
+    <div class="foldButtons">
+      <button type="button" id="accordionOpenAll">すべて開く</button>
+      <button type="button" id="accordionCloseAll">すべて閉じる</button>
+    </div>
+  </nav>
 
   <section id="predictionPanel" class="panel predictionPanel" hidden>
     <div class="predictionHead"><div><h2 id="predictionHeading">台別の自動参考予想</h2><div id="predictionExplainer" class="muted">過去データの条件別実績を比較した参考スコア</div></div><div id="predictionTarget" class="muted"></div></div>
@@ -1006,6 +1032,63 @@ function setup(){const machines=[...new Set(RECORDS.map(r=>String(r.machineNo)))
   $('regBiasBox').innerHTML='';
   $('rankAuditBox').innerHTML='';
 }else{renderPredictions();renderAiAccuracy();renderEditorChief();renderRegBiasAnalysis();renderRankAudit();}
+
+/* 本体・編集長予想・曜日別・底圏・日別、および外部JS追加の分析パネルを初期状態で閉じる */
+const FOLD_SECTION_LABELS={
+  predictionPanel:'予想・Gemini AI・編集長の分析',
+  mainPanel:'台データ・スランプグラフ',
+  bottomPanel:'底圏分析（30・60・90日）',
+  weekdayPanel:'曜日別データ',
+  tablePanel:'日別データ'
+};
+function makeFoldable(section){
+  if(!section||section.classList.contains('foldedPanel'))return;
+  const title=FOLD_SECTION_LABELS[section.id]||section.querySelector('h2')?.textContent?.trim()||section.getAttribute('aria-label')||'分析データ';
+  section.classList.add('foldedPanel','foldClosed');
+  const button=document.createElement('button');
+  button.type='button';
+  button.className='foldHead';
+  button.setAttribute('aria-expanded','false');
+  const name=document.createElement('span');name.className='foldTitle';name.textContent=title;
+  const sign=document.createElement('span');sign.className='foldSign';sign.setAttribute('aria-hidden','true');sign.textContent='＋';
+  button.append(name,sign);
+  section.insertBefore(button,section.firstChild);
+  button.addEventListener('click',()=>setFoldOpen(section,section.classList.contains('foldClosed')));
+}
+function setFoldOpen(section,open){
+  if(!section)return;
+  const button=section.querySelector(':scope > .foldHead');
+  if(!button)return;
+  section.classList.toggle('foldClosed',!open);
+  button.setAttribute('aria-expanded',open?'true':'false');
+  const sign=button.querySelector('.foldSign');
+  if(sign)sign.textContent=open?'−':'＋';
+  if(open&&section.id==='mainPanel'){
+    // 非表示中のCanvasは幅が取得できないため、展開後に描画し直す
+    requestAnimationFrame(()=>{if(!section.classList.contains('foldClosed')){draw(daily(filtered()));renderGraphFocusStats();}});
+  }
+}
+function foldAllSections(open){
+  document.querySelectorAll('main.wrap > section.panel.foldedPanel').forEach(section=>{
+    if(!section.hidden)setFoldOpen(section,open);
+  });
+  const logic=$('logicFold');
+  if(logic&&!logic.hidden)logic.open=open;
+}
+function setupFoldedPanels(){
+  const main=document.querySelector('main.wrap');
+  if(!main)return;
+  const attach=()=>main.querySelectorAll(':scope > section.panel:not(.foldedPanel)').forEach(makeFoldable);
+  attach();
+  const logic=$('logicFold');if(logic)logic.open=false;
+  $('accordionToolbar').hidden=false;
+  $('accordionOpenAll').addEventListener('click',()=>foldAllSections(true));
+  $('accordionCloseAll').addEventListener('click',()=>foldAllSections(false));
+  // 追加スクリプトが後から挿入する分析パネルにも自動適用
+  const observer=new MutationObserver(()=>attach());
+  observer.observe(main,{childList:true});
+}
+
 const focusParams=new URLSearchParams(window.location.search);
 if(focusParams.get('focus')==='1'){
   const requestedMode=focusParams.get('focusMode');
@@ -1017,6 +1100,7 @@ render();
 graphRangeControls();
 setupWeekdaySection();
 setupBottomPanel();
+setupFoldedPanels();
 if(focusParams.get('focus')==='1')requestAnimationFrame(graphFocusOpen);
 }
 
