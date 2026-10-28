@@ -114,6 +114,19 @@ body.graphFocusOpen{overflow:hidden}
 @media(max-width:920px){.rankAuditGrid{grid-template-columns:1fr}}
 @media(max-width:480px){.rankAuditBox{padding:10px}.rankAuditCard{padding:8px}.rankAuditTable td strong{font-size:13px}.rankAuditTable th,.rankAuditTable td{font-size:11px;padding:7px 2px}}
 
+
+/* 予想日とデータ基準日を明示する（編集長・Gemini AI・自動予想で共通） */
+.forecastDateBanner{display:flex;flex-direction:column;gap:5px;margin:9px 0 13px;padding:12px 14px;border:2px solid #c6d5eb;border-radius:12px;background:#fff;color:#17243b}
+.forecastDateBanner .forecastDateType{font-size:12px;font-weight:800;color:#536378}
+.forecastDateBanner .forecastDateMain{display:block;font-size:clamp(18px,4.3vw,24px);font-weight:900;line-height:1.3;letter-spacing:.01em}
+.forecastDateBanner .forecastDateStatus{font-size:12px;font-weight:800;color:#1f4d79}
+.forecastDateBanner .forecastDateSource{font-size:12px;color:#556474;line-height:1.5}
+.forecastDateBanner.forecast-past{border-color:#e2bd80;background:#fffaf2}
+.forecastDateBanner.forecast-past .forecastDateStatus{color:#905313}
+.forecastDateBanner.forecast-today{border-color:#8eb8e7;background:#f6faff}
+.forecastDateBanner.forecast-future{border-color:#c9d4e4}
+@media(max-width:600px){.forecastDateBanner{padding:11px 12px}.forecastDateBanner .forecastDateMain{font-size:19px}}
+
 </style>
 </head>
 <body>
@@ -136,7 +149,8 @@ body.graphFocusOpen{overflow:hidden}
   <div id="loadStatus" class="panel status">選択した店舗のデータを読み込んでいます…</div>
 
   <section id="predictionPanel" class="panel predictionPanel" hidden>
-    <div class="predictionHead"><div><h2 id="predictionHeading">今日 / 次回の参考予想</h2><div id="predictionExplainer" class="muted">過去データの条件別実績を比較した参考スコア</div></div><div id="predictionTarget" class="muted"></div></div>
+    <div class="predictionHead"><div><h2 id="predictionHeading">台別の自動参考予想</h2><div id="predictionExplainer" class="muted">過去データの条件別実績を比較した参考スコア</div></div><div id="predictionTarget" class="muted"></div></div>
+    <div id="forecastPanelDate"></div>
     <div id="predictionGrid" class="predictionGrid"></div>
     <div id="consensusBox" class="aiBox"></div>
     <div id="aiBox" class="aiBox"></div>
@@ -328,11 +342,42 @@ function mergedGeminiHistory(){const map=new Map();const add=list=>{for(const h 
 function geminiAccuracy(){const hist=mergedGeminiHistory(),out=[];for(const h of hist){const rows=RECORDS.filter(r=>String(r.date)===String(h.targetDate));if(!rows.length)continue;const actual=new Map();for(const r of rows)actual.set(String(r.machineNo),(actual.get(String(r.machineNo))||0)+(Number(r.diff)||0));const ranked=(h.ranking||[]).filter(x=>actual.has(String(x.machineNo)));if(!ranked.length)continue;const top=ranked[0],topDiff=actual.get(String(top.machineNo))||0,maxDiff=Math.max(...actual.values()),top2=ranked.slice(0,2);out.push({targetDate:String(h.targetDate),topMachine:String(top.machineNo),topDiff,plusHit:topDiff>0,bestHit:topDiff===maxDiff,top2Plus:top2.some(x=>(actual.get(String(x.machineNo))||0)>0)});}const n=out.length;return{n,plusHits:out.filter(x=>x.plusHit).length,bestHits:out.filter(x=>x.bestHit).length,top2Hits:out.filter(x=>x.top2Plus).length,avg:n?out.reduce((a,x)=>a+x.topDiff,0)/n:0,pendingDates:hist.filter(h=>!RECORDS.some(r=>String(r.date)===String(h.targetDate))).map(h=>String(h.targetDate)),recent:out.slice(-10).reverse()};}
 function rankPoint(i,n){if(n<=1)return 70;return 100-i*(60/(n-1));}
 function renderConsensus(ps,latestDate){const box=$('consensusBox');if(!box)return;const machines=ps.map(p=>String(p.m)),stats=new Map(ps.map(p=>[String(p.m),Number(p.score)||0]));const sources=[{name:'統計',weight:50,type:'score',map:stats}];const aiRanks=AI_ANALYSIS?.sourceLatestDate===latestDate&&Array.isArray(AI_ANALYSIS.ranking)?AI_ANALYSIS.ranking.filter(x=>machines.includes(String(x.machineNo))):[];if(aiRanks.length)sources.push({name:'Gemini',weight:25,type:'rank',ranking:aiRanks});const ed=EDITOR_CHIEF?.latest,edRanks=ed?.sourceLatestDate===latestDate&&Array.isArray(ed.ranking)?ed.ranking.filter(x=>machines.includes(String(x.machineNo))):[];if(edRanks.length)sources.push({name:'編集長',weight:25,type:'rank',ranking:edRanks});const items=machines.map(m=>{let sum=0,w=0,detail=[];for(const src of sources){let v=null;if(src.type==='score'){v=src.map.get(m);detail.push(src.name+' '+Math.round(v)+'点');}else{const i=src.ranking.findIndex(x=>String(x.machineNo)===m);if(i>=0){v=rankPoint(i,src.ranking.length);detail.push(src.name+' '+(i+1)+'位');}}if(Number.isFinite(v)){sum+=v*src.weight;w+=src.weight;}}return{m,score:w?sum/w:0,detail};}).sort((a,b)=>b.score-a.score);box.innerHTML='<h3>総合参考順位 <span class="editorBadge">統計＋Gemini＋編集長</span></h3><div class="muted">利用できる情報を合成。基本比率は統計50・Gemini25・編集長25で、欠けている情報は残りで再配分します。</div><div class="aiRank">'+items.map((x,i)=>'<div class="aiRankCard"><div class="aiRankHead"><span class="rankNo">'+(i+1)+'位</span><span class="machineStrong">'+esc(x.m)+'</span><span class="conf">総合 '+x.score.toFixed(1)+'</span></div><div class="tiny">'+x.detail.map(esc).join(' / ')+'</div></div>').join('')+'</div><div class="tiny" style="margin-top:7px">総合スコアは勝率ではありません。Gemini・編集長は順位情報を補助票として使います。</div>'; }
+
+/* 西暦・曜日・基準日を常に別表示。ブラウザのローカル時刻ではなく日本時間で判定する。 */
+function forecastDateJP(d){
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d||''));
+  if(!m)return '日付未設定';
+  return m[1]+'年'+Number(m[2])+'月'+Number(m[3])+'日（'+weekdayJa(d)+'）';
+}
+function forecastTodayJST(){
+  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+  const values={};for(const p of parts)values[p.type]=p.value;
+  return values.year+'-'+values.month+'-'+values.day;
+}
+function forecastDateHtml(targetDate,sourceDate,sourceName){
+  const target=String(targetDate||'');
+  const valid=/^\d{4}-\d{2}-\d{2}$/.test(target);
+  const today=forecastTodayJST();
+  const state=!valid?'unknown':target<today?'past':target===today?'today':'future';
+  const stateLabel=state==='past'?'過去の予想（本日分ではありません）':state==='today'?'本日の予想':state==='future'?'今後の予想':'対象日未設定';
+  const dataDate=/^\d{4}-\d{2}-\d{2}$/.test(String(sourceDate||''))?forecastDateJP(sourceDate):'未確認';
+  const latestData=RECORDS.reduce((s,r)=>String(r.date)>s?String(r.date):s,'');
+  const behind=sourceDate&&latestData&&String(sourceDate)<latestData;
+  return '<div class="forecastDateBanner forecast-'+state+'">'+
+    '<span class="forecastDateType">'+esc(sourceName||'予想')+'の対象日</span>'+
+    '<strong class="forecastDateMain">'+esc(forecastDateJP(target))+'</strong>'+
+    '<span class="forecastDateStatus">'+esc(stateLabel)+'</span>'+
+    '<div class="forecastDateSource">分析データ：'+esc(dataDate)+'まで'+(behind?' ／ この予想より新しい台データがあります':'')+'</div>'+
+    '</div>';
+}
+
 function renderPredictions(){
   const latestDate=RECORDS.reduce((m,r)=>!m||String(r.date)>m?String(r.date):m,''),ms=[...new Set(RECORDS.filter(r=>String(r.date)===latestDate).map(r=>String(r.machineNo)))].sort((a,b)=>Number(a)-Number(b)),ps=ms.map(machinePrediction).filter(Boolean).sort((a,b)=>b.score-a.score);
   if(!ps.length)return;
   const target=addDays(latestDate,1),today=new Date(),todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-  $('predictionTarget').textContent=(target===todayStr?'今日 ':'次回 ')+target+'（'+weekdayJa(target)+'） / 最新 '+latestDate;
+  $('predictionTarget').textContent='データ基準：'+latestDate+'まで';
+  const targetDateBox=$('forecastPanelDate');
+  if(targetDateBox)targetDateBox.innerHTML=forecastDateHtml(target,latestDate,'自動参考予想');
   const metric=(k,v,sub)=>'<div class="predMetric"><span>'+esc(k)+'</span><strong>'+esc(v)+'</strong>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>';
   $('predictionGrid').innerHTML=ps.map((p,i)=>{
     const dir=p.c&&p.c.sign>0?'↑':p.c&&p.c.sign<0?'↓':'→',streakMain=p.c&&p.c.sign?(dir+p.c.days+'日 '+signed(p.c.diff)+'枚'):'-',streakDates=p.c&&p.c.sign?(shortDate(p.c.start)+'〜'+shortDate(p.c.end)):'';
@@ -343,8 +388,8 @@ function renderPredictions(){
   if(malformed){box.innerHTML='<h3>AI分析</h3><div class="muted">前回のAI回答が途中で切れているため表示していません。v5.7で再分析してください。</div>';}
   else if(AI_ANALYSIS&&AI_ANALYSIS.sourceLatestDate===latestDate&&!compositionChanged){
     const ranks=rawRanks.filter(x=>!x.machineNo||activeSet.has(String(x.machineNo))),watch=Array.isArray(AI_ANALYSIS.watchPoints)?AI_ANALYSIS.watchPoints:[];
-    box.innerHTML='<h3>AI分析</h3><div>'+esc(AI_ANALYSIS.summary||'')+'</div>'+(ranks.length?'<div class="aiRank">'+ranks.map((x,i)=>'<div class="aiRankCard"><div class="aiRankHead"><span class="rankNo">'+(i+1)+'位</span><span class="machineStrong">'+esc(x.machineNo||'')+'</span>'+(x.confidence?'<span class="conf">信頼度 '+esc(x.confidence)+'</span>':'')+'</div><div>'+esc(x.view||'')+'</div>'+(x.weekdayTrend?'<div class="aiDetail"><span>曜日傾向</span><span>'+esc(x.weekdayTrend)+'</span></div>':'')+(x.streakView?'<div class="aiDetail"><span>連勝/連敗</span><span>'+esc(x.streakView)+'</span></div>':'')+(x.recentView?'<div class="aiDetail"><span>直近</span><span>'+esc(x.recentView)+'</span></div>':'')+(x.graphTrend?'<div class="aiDetail"><span>グラフ傾向</span><span>'+esc(x.graphTrend)+'</span></div>':'')+(Array.isArray(x.plusFactors)&&x.plusFactors.length?'<div class="factors plus"><span>良い材料</span>'+x.plusFactors.map(v=>'<em>'+esc(v)+'</em>').join('')+'</div>':'')+(Array.isArray(x.minusFactors)&&x.minusFactors.length?'<div class="factors minus"><span>悪い材料</span>'+x.minusFactors.map(v=>'<em>'+esc(v)+'</em>').join('')+'</div>':'')+'</div>').join('')+'</div>':'')+(watch.length?'<div class="aiWatch"><b>今日見るポイント</b><ul>'+watch.map(v=>'<li>'+esc(v)+'</li>').join('')+'</ul></div>':'')+(AI_ANALYSIS.caution?'<div class="muted" style="margin-top:8px">'+esc(AI_ANALYSIS.caution)+'</div>':'');
-  }else{box.innerHTML='<h3>AI分析</h3><div class="muted">'+(compositionChanged?'台構成が変わったため、撤去済み台を除外してAI分析を再実行してください。':'最新データに対するAI分析はまだありません。')+'</div>';}
+    box.innerHTML='<h3>Gemini AI分析</h3>'+forecastDateHtml(AI_ANALYSIS.targetDate,AI_ANALYSIS.sourceLatestDate,'Gemini AI予想')+'<div>'+esc(AI_ANALYSIS.summary||'')+'</div>'+(ranks.length?'<div class="aiRank">'+ranks.map((x,i)=>'<div class="aiRankCard"><div class="aiRankHead"><span class="rankNo">'+(i+1)+'位</span><span class="machineStrong">'+esc(x.machineNo||'')+'</span>'+(x.confidence?'<span class="conf">信頼度 '+esc(x.confidence)+'</span>':'')+'</div><div>'+esc(x.view||'')+'</div>'+(x.weekdayTrend?'<div class="aiDetail"><span>曜日傾向</span><span>'+esc(x.weekdayTrend)+'</span></div>':'')+(x.streakView?'<div class="aiDetail"><span>連勝/連敗</span><span>'+esc(x.streakView)+'</span></div>':'')+(x.recentView?'<div class="aiDetail"><span>直近</span><span>'+esc(x.recentView)+'</span></div>':'')+(x.graphTrend?'<div class="aiDetail"><span>グラフ傾向</span><span>'+esc(x.graphTrend)+'</span></div>':'')+(Array.isArray(x.plusFactors)&&x.plusFactors.length?'<div class="factors plus"><span>良い材料</span>'+x.plusFactors.map(v=>'<em>'+esc(v)+'</em>').join('')+'</div>':'')+(Array.isArray(x.minusFactors)&&x.minusFactors.length?'<div class="factors minus"><span>悪い材料</span>'+x.minusFactors.map(v=>'<em>'+esc(v)+'</em>').join('')+'</div>':'')+'</div>').join('')+'</div>':'')+(watch.length?'<div class="aiWatch"><b>今日見るポイント</b><ul>'+watch.map(v=>'<li>'+esc(v)+'</li>').join('')+'</ul></div>':'')+(AI_ANALYSIS.caution?'<div class="muted" style="margin-top:8px">'+esc(AI_ANALYSIS.caution)+'</div>':'');
+  }else{box.innerHTML='<h3>Gemini AI分析</h3>'+(AI_ANALYSIS?.targetDate?forecastDateHtml(AI_ANALYSIS.targetDate,AI_ANALYSIS.sourceLatestDate,'Gemini AI予想'):'')+'<div class="muted">'+(compositionChanged?'台構成が変わったため、撤去済み台を除外してAI分析を再実行してください。':'最新データに対するAI分析はまだありません。')+'</div>';}
   $('predictionPanel').hidden=false;
 }
 
@@ -443,7 +488,7 @@ function editorAccuracy(){
 function renderEditorChief(){
   const box=$('editorChiefBox'),acc=$('editorChiefAccuracy');if(!box||!acc)return;const ed=EDITOR_CHIEF||{},l=ed.latest;
   if(!l?.summary||!Array.isArray(l.ranking)||!l.ranking.length){box.innerHTML='<h3>編集長分析 <span class="editorBadge">ChatGPT</span></h3><div class="muted">まだ編集長予想はありません。チャットで「今日の編集長予想を公開して」と伝えると更新できます。</div>';}
-  else{const latestDate=RECORDS.reduce((m,r)=>!m||String(r.date)>m?String(r.date):m,''),stale=l.sourceLatestDate&&l.sourceLatestDate!==latestDate,r=l.ranking.slice(0,10),watch=Array.isArray(l.watchPoints)?l.watchPoints:[];box.innerHTML='<h3>編集長分析 <span class="editorBadge">ChatGPT</span>'+(stale?'<span class="tiny">新しいデータあり・再分析推奨</span>':'')+'</h3><div>'+esc(l.shortSummary||l.summary||'')+'</div>'+(l.comment?'<details class="editorComment"><summary>編集長コメントを読む</summary><div class="editorCommentBody">'+String(l.comment).split(/\n\s*\n/).filter(Boolean).map(v=>'<p>'+esc(v)+'</p>').join('')+'</div></details>':'')+'<div class="aiRank">'+r.map((x,i)=>'<div class="aiRankCard"><div class="aiRankHead"><span class="rankNo">'+(i+1)+'位</span><span class="machineStrong">'+esc(x.machineNo||'')+'</span>'+(Number.isFinite(Number(x.analysisScore))?'<span class="conf">参考指数 '+Math.round(Number(x.analysisScore))+'点</span>':'')+(x.confidence?'<span class="conf">参考度 '+esc(x.confidence)+'</span>':'')+'</div><div>'+esc(x.view||'')+'</div>'+(x.graphTrend?'<div class="aiDetail"><span>グラフ</span><span>'+esc(x.graphTrend)+'</span></div>':'')+(x.recentView?'<div class="aiDetail"><span>直近</span><span>'+esc(x.recentView)+'</span></div>':'')+(x.dataView?'<div class="aiDetail"><span>最新データ</span><span>'+esc(x.dataView)+'</span></div>':'')+(x.regBiasView?'<div class="aiDetail"><span>REG先行翌日</span><span>'+esc(x.regBiasView)+'</span></div>':'')+(Array.isArray(x.plusFactors)&&x.plusFactors.length?'<div class="factors plus"><span>良い材料</span>'+x.plusFactors.map(v=>'<em>'+esc(v)+'</em>').join('')+'</div>':'')+(Array.isArray(x.minusFactors)&&x.minusFactors.length?'<div class="factors minus"><span>注意材料</span>'+x.minusFactors.map(v=>'<em>'+esc(v)+'</em>').join('')+'</div>':'')+'</div>').join('')+'</div>'+(watch.length?'<div class="aiWatch"><b>今日見るポイント</b><ul>'+watch.map(v=>'<li>'+esc(v)+'</li>').join('')+'</ul></div>':'')+(l.caution?'<div class="muted" style="margin-top:8px">'+esc(l.caution)+'</div>':'')+'<div class="tiny" style="margin-top:7px">分析日時：'+(l.generatedAt?new Date(l.generatedAt).toLocaleString('ja-JP'):'-')+'</div>';}
+  else{const latestDate=RECORDS.reduce((m,r)=>!m||String(r.date)>m?String(r.date):m,''),stale=l.sourceLatestDate&&l.sourceLatestDate!==latestDate,r=l.ranking.slice(0,10),watch=Array.isArray(l.watchPoints)?l.watchPoints:[];box.innerHTML='<h3>編集長分析 <span class="editorBadge">ChatGPT</span>'+(stale?'<span class="tiny">新しいデータあり・再分析推奨</span>':'')+'</h3>'+forecastDateHtml(l.targetDate,l.sourceLatestDate,'編集長予想')+'<div>'+esc(l.shortSummary||l.summary||'')+'</div>'+(l.comment?'<details class="editorComment"><summary>編集長コメントを読む</summary><div class="editorCommentBody">'+String(l.comment).split(/\n\s*\n/).filter(Boolean).map(v=>'<p>'+esc(v)+'</p>').join('')+'</div></details>':'')+'<div class="aiRank">'+r.map((x,i)=>'<div class="aiRankCard"><div class="aiRankHead"><span class="rankNo">'+(i+1)+'位</span><span class="machineStrong">'+esc(x.machineNo||'')+'</span>'+(Number.isFinite(Number(x.analysisScore))?'<span class="conf">参考指数 '+Math.round(Number(x.analysisScore))+'点</span>':'')+(x.confidence?'<span class="conf">参考度 '+esc(x.confidence)+'</span>':'')+'</div><div>'+esc(x.view||'')+'</div>'+(x.graphTrend?'<div class="aiDetail"><span>グラフ</span><span>'+esc(x.graphTrend)+'</span></div>':'')+(x.recentView?'<div class="aiDetail"><span>直近</span><span>'+esc(x.recentView)+'</span></div>':'')+(x.dataView?'<div class="aiDetail"><span>最新データ</span><span>'+esc(x.dataView)+'</span></div>':'')+(x.regBiasView?'<div class="aiDetail"><span>REG先行翌日</span><span>'+esc(x.regBiasView)+'</span></div>':'')+(Array.isArray(x.plusFactors)&&x.plusFactors.length?'<div class="factors plus"><span>良い材料</span>'+x.plusFactors.map(v=>'<em>'+esc(v)+'</em>').join('')+'</div>':'')+(Array.isArray(x.minusFactors)&&x.minusFactors.length?'<div class="factors minus"><span>注意材料</span>'+x.minusFactors.map(v=>'<em>'+esc(v)+'</em>').join('')+'</div>':'')+'</div>').join('')+'</div>'+(watch.length?'<div class="aiWatch"><b>今日見るポイント</b><ul>'+watch.map(v=>'<li>'+esc(v)+'</li>').join('')+'</ul></div>':'')+(l.caution?'<div class="muted" style="margin-top:8px">'+esc(l.caution)+'</div>':'')+'<div class="tiny" style="margin-top:7px">分析日時：'+(l.generatedAt?new Date(l.generatedAt).toLocaleString('ja-JP'):'-')+'</div>';}
   const a=editorAccuracy();if(!a.n){acc.innerHTML='<h3>編集長の的中率 <span class="editorBadge">編集長</span></h3><div class="muted">まだ答え合わせできる編集長予想がありません。'+(a.pending?' 未確定 '+a.pending+'件':'')+'</div>';return;}const pct=x=>(x/a.n*100).toFixed(1)+'%',note=a.n<5?'まだ件数が少ないため参考値です。':a.n<20?'件数はまだ少なめです。':'蓄積した編集長予想の実績です。';acc.innerHTML='<h3>編集長の的中率 <span class="editorBadge">'+a.n+'回</span></h3><div class="aiAccGrid"><div class="aiAccCard"><span>1位予想がプラス</span><strong>'+pct(a.plusHits)+'</strong><small>'+a.plusHits+'/'+a.n+'</small></div><div class="aiAccCard"><span>1位が最大差枚</span><strong>'+pct(a.bestHits)+'</strong><small>'+a.bestHits+'/'+a.n+'</small></div><div class="aiAccCard"><span>編集長1位の平均差枚</span><strong class="'+(a.avg>=0?'blue':'red')+'">'+signed(a.avg)+'枚</strong><small>答え合わせ済み</small></div><div class="aiAccCard"><span>上位2台どちらかプラス</span><strong>'+pct(a.top2Hits)+'</strong><small>'+a.top2Hits+'/'+a.n+'</small></div></div>'+(a.recent.length?'<div class="aiAccRecent"><span>直近</span>'+a.recent.map(x=>'<em class="'+(x.plusHit?'hit':'miss')+'">'+shortDate(x.targetDate)+' '+esc(x.topMachine)+' '+signed(x.topDiff)+'枚</em>').join('')+'</div>':'')+'<div class="tiny" style="margin-top:7px">'+note+(a.pending?' / 未確定 '+a.pending+'件':'')+'。「プラス的中」は編集長1位台がその日にプラスだったかで判定。</div>';
 }
 
