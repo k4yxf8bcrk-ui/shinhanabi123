@@ -139,6 +139,40 @@ body.graphFocusOpen{overflow:hidden}
 .repairItem small{display:block;color:#667085;line-height:1.6}
 .repairLabel{display:inline-block;padding:3px 7px;border-radius:7px;background:#e8edf5;color:#3c5067;font-weight:800;font-size:11px;white-space:nowrap}
 .repairRow{background:#f1f5fa}.repairRow td{color:#526275}
+
+/* 曜日別実績（グラフと別の台番・集計期間を指定できる） */
+.weekdayPanel{border-color:#cfdaea}
+.weekdayHead{display:flex;justify-content:space-between;align-items:start;gap:12px;flex-wrap:wrap}
+.weekdayHead p{margin:5px 0 0;font-size:12px;color:#697386;line-height:1.55}
+.weekdayControls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.weekdayControls label{font-size:12px;font-weight:800;display:flex;flex-direction:column;gap:5px}
+.weekdayControls select{font-size:14px;padding:9px 10px}
+.weekdayMeta{font-size:12px;color:#5b6575;margin:8px 0 11px;line-height:1.6}
+.weekdayCards{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
+.weekdayCard{appearance:none;border:1px solid #dee4ed;border-radius:10px;background:#fff;color:inherit;text-align:left;min-width:0;padding:10px 8px;cursor:pointer;font:inherit;display:flex;flex-direction:column;gap:5px}
+.weekdayCard:hover{border-color:#8caedc}
+.weekdayCard:focus-visible{outline:3px solid #8ab4f8;outline-offset:2px}
+.weekdayCard.active{border:2px solid #3576bc;background:#eef5ff;padding:9px 7px}
+.weekdayCard .weekdayName{font-size:16px;font-weight:900}
+.weekdayCard .weekdayRate{font-size:19px;font-weight:900;font-variant-numeric:tabular-nums}
+.weekdayCard .weekdayDiff{font-size:13px;font-weight:800}
+.weekdayCard small{font-size:11px;color:#606b78;line-height:1.35}
+.weekdaySubheading{font-size:14px;font-weight:900;margin:18px 0 8px}
+.weekdayTableScroll{overflow-x:auto;max-height:510px;overflow-y:auto;border:1px solid #e1e5ee;border-radius:10px}
+.weekdayTable{width:100%;min-width:650px;font-size:12px;border-collapse:collapse}
+.weekdayTable th,.weekdayTable td{padding:9px 8px;font-size:12px;white-space:nowrap}
+.weekdayTable th{text-align:right}
+.weekdayTable th:first-child,.weekdayTable td:first-child{text-align:left}
+.weekdayTable .compareCell{line-height:1.5;min-width:135px}
+.weekdayTable .compareCell small{display:block;font-size:11px;color:#697386}
+.weekdayTable .compareCell strong{font-size:13px}
+.weekdayTable .weekdaySelectedRow{background:#edf5ff}
+.weekdayMore{margin-top:10px;padding:9px 13px;background:#fff;border:1px solid #b8c6dc;border-radius:9px;color:#1d4d81;font-size:12px;font-weight:800;cursor:pointer}
+.weekdayMore[hidden]{display:none}
+.weekdayEmpty{color:#657083;font-size:13px;padding:12px 0}
+@media(max-width:920px){.weekdayCards{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:560px){.weekdayControls{grid-template-columns:1fr 1fr}.weekdayControls label:last-child{grid-column:1/-1}.weekdayCards{grid-template-columns:repeat(2,minmax(0,1fr))}.weekdayCard{padding:12px}.weekdayCard.active{padding:11px}.weekdayCard .weekdayRate{font-size:20px}}
+
 </style>
 </head>
 <body>
@@ -186,6 +220,46 @@ body.graphFocusOpen{overflow:hidden}
     <div class="chartWrap"><canvas id="chart"></canvas><div id="tooltip" class="tooltip"></div></div>
     <div id="legend" class="legend"></div>
     <div id="trendBox" class="trendBox"></div>
+  </section>
+
+
+  <section id="weekdayPanel" class="panel weekdayPanel" hidden aria-label="曜日別の実績">
+    <div class="weekdayHead">
+      <div><h2>曜日別データ</h2><p>曜日ごとの勝率・差枚・稼働日数と、3台の比較ができます。</p></div>
+      <div id="weekdayUpdated" class="muted"></div>
+    </div>
+    <div class="weekdayControls">
+      <label for="weekdayMachineSel">台番<select id="weekdayMachineSel"></select></label>
+      <label for="weekdayPeriodSel">集計期間
+        <select id="weekdayPeriodSel">
+          <option value="90">直近90日</option>
+          <option value="30">直近30日</option>
+          <option value="180">直近180日</option>
+          <option value="ALL">全期間</option>
+          <option value="CHART">グラフで選択中の期間</option>
+        </select>
+      </label>
+      <label for="weekdayDaySel">日別履歴を表示する曜日
+        <select id="weekdayDaySel">
+          <option value="all">全曜日</option>
+          <option value="0">日曜日</option>
+          <option value="1">月曜日</option>
+          <option value="2">火曜日</option>
+          <option value="3">水曜日</option>
+          <option value="4">木曜日</option>
+          <option value="5">金曜日</option>
+          <option value="6">土曜日</option>
+        </select>
+      </label>
+    </div>
+    <div id="weekdayMeta" class="weekdayMeta"></div>
+    <div id="weekdayCards" class="weekdayCards"></div>
+    <h3 class="weekdaySubheading">台番別・曜日の比較</h3>
+    <div id="weekdayCompare"></div>
+    <h3 class="weekdaySubheading" id="weekdayHistoryHeading">日別の実績</h3>
+    <div id="weekdayHistory"></div>
+    <button type="button" id="weekdayMore" class="weekdayMore" hidden>すべての履歴を表示</button>
+    <p class="weekdayMeta">勝率は「差枚がプラスだった稼働日 ÷ 稼働日」。修理中・0Gは稼働日から除外します。全台合計の勝率は同日の対象台の差枚を合計して判定します。過去の曜日実績が次回の結果を保証するものではありません。</p>
   </section>
 
   <details id="logicFold" class="panel" style="padding:0;overflow:hidden">
@@ -580,6 +654,120 @@ if(!zoomYAxis){min=Math.min(0,min);max=Math.max(0,max);}
 if(max===min){max+=100;min-=100;}
 if(zoomYAxis){const pad=(max-min)*.06;min-=pad;max+=pad;}
 const range=max-min||1,x=i=>p.l+(data.length===1?w/2:i*w/(data.length-1)),y=v=>p.t+(max-v)*h/range;c.strokeStyle='#e4e8ee';c.fillStyle='#6b7280';c.font=phonePortrait?'10px system-ui':'12px system-ui';for(let i=0;i<=4;i++){const val=max-range*i/4,yy=p.t+h*i/4;c.beginPath();c.moveTo(p.l,yy);c.lineTo(p.l+w,yy);c.stroke();c.textAlign='right';c.textBaseline='middle';c.fillText(Math.round(val).toLocaleString('ja-JP'),p.l-8,yy);}if(min<0&&max>0){c.strokeStyle='#9aa0a6';c.beginPath();c.moveTo(p.l,y(0));c.lineTo(p.l+w,y(0));c.stroke();}const mode=modeSel.value;if(mode==='daily'){const bw=Math.max(2,Math.min(14,w/Math.max(1,data.length)*.72)),y0=y(0);data.forEach((d,i)=>{const yy=y(d.value);c.fillStyle=d.repair?'#8b9ab0':d.value>=0?'#1a73e8':'#d93025';c.fillRect(x(i)-bw/2,d.repair?y0-2:Math.min(yy,y0),bw,d.repair?4:Math.max(1,Math.abs(y0-yy)));});}else if(mode==='cumulative'){for(let i=1;i<data.length;i++){c.strokeStyle=data[i].repair?'#7d8da3':data[i].diff>0?'#1a73e8':data[i].diff<0?'#d93025':'#9aa0a6';c.setLineDash(data[i].repair?[4,4]:[]);c.lineWidth=phonePortrait?1.45:2.5;c.beginPath();c.moveTo(x(i-1),y(data[i-1].value));c.lineTo(x(i),y(data[i].value));c.stroke();c.setLineDash([]);}data.forEach((d,i)=>{c.beginPath();c.fillStyle=d.repair?'#7d8da3':d.diff>0?'#1a73e8':d.diff<0?'#d93025':'#9aa0a6';c.arc(x(i),y(d.value),pointRadius,0,Math.PI*2);c.fill();if(!densePhone){c.strokeStyle='#fff';c.lineWidth=phonePortrait?.6:1;c.stroke();}});}else{c.strokeStyle='#1a73e8';c.lineWidth=phonePortrait?1.45:2.5;c.beginPath();data.forEach((d,i)=>i?c.lineTo(x(i),y(d.value)):c.moveTo(x(i),y(d.value)));c.stroke();data.forEach((d,i)=>{c.beginPath();c.fillStyle=d.value>=0?'#1a73e8':'#d93025';c.arc(x(i),y(d.value),pointRadius,0,Math.PI*2);c.fill();});}const maxLabels=Math.min(6,Math.max(2,Math.floor(w/(phonePortrait?115:150)))),step=Math.max(1,Math.ceil((data.length-1)/Math.max(1,maxLabels-1)));c.fillStyle='#6b7280';c.font=phonePortrait?'10px system-ui':'11px system-ui';c.textAlign='center';c.textBaseline='top';data.forEach((d,i)=>{if(phonePortrait?(i===0||i===data.length-1||(i%step===0&&i+Math.max(1,Math.round(step*.45))<data.length-1)):(i%step===0||i===data.length-1))c.fillText(d.label,x(i),p.t+h+(phonePortrait?8:10));});points=data.map((d,i)=>({x:x(i),y:y(d.value),d}));const ex=extremes(ds),st=streaks(ds);$('legend').innerHTML=(ex?'<span class="blue">最大差枚 '+signed(ex.hi.diff)+'枚 '+shortDate(ex.hi.date)+'</span> / <span class="red">最大マイナス '+signed(ex.lo.diff)+'枚 '+shortDate(ex.lo.date)+'</span> / ':'')+'<span class="blue">最長上昇 '+st.bestUp.days+'日 ('+signed(st.bestUp.diff)+'枚) '+shortDate(st.bestUp.start)+'〜'+shortDate(st.bestUp.end)+'</span> / <span class="red">最長下降 '+st.bestDn.days+'日 ('+signed(st.bestDn.diff)+'枚) '+shortDate(st.bestDn.start)+'〜'+shortDate(st.bestDn.end)+'</span>';}
+
+const WEEKDAY_LABELS=['日','月','火','水','木','金','土'];
+let weekdayShowAll=false;
+function weekdayNumber(date){
+  const p=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date||''));
+  return p?new Date(Date.UTC(Number(p[1]),Number(p[2])-1,Number(p[3]))).getUTCDay():null;
+}
+function weekdayPeriodBounds(){
+  const latest=RECORDS.reduce((s,r)=>String(r.date)>s?String(r.date):s,'');
+  const period=$('weekdayPeriodSel').value;
+  if(!latest)return{start:'',end:''};
+  if(period==='ALL'){
+    return{start:RECORDS.reduce((s,r)=>!s||String(r.date)<s?String(r.date):s,''),end:latest};
+  }
+  if(period==='CHART'){
+    const v=monthSel.value,bounds=recentPeriodBounds(v);
+    if(v==='ALL')return{start:RECORDS.reduce((s,r)=>!s||String(r.date)<s?String(r.date):s,''),end:latest};
+    if(bounds)return bounds;
+    const inMonth=RECORDS.filter(r=>String(r.date).startsWith(v)).map(r=>String(r.date)).sort();
+    return{start:inMonth[0]||'',end:inMonth[inMonth.length-1]||''};
+  }
+  const days=Number(period);
+  return{start:addDays(latest,1-days),end:latest};
+}
+function weekdayRowsFor(machine,bounds,activeMachines){
+  const group=machine==='ALL'?activeMachines:[machine];
+  const set=new Set(group);
+  const filteredRows=RECORDS.filter(r=>set.has(String(r.machineNo))&&String(r.date)>=bounds.start&&String(r.date)<=bounds.end);
+  const map=new Map();
+  for(const r of filteredRows){
+    const key=String(r.date);
+    if(!map.has(key))map.set(key,{date:key,games:0,diff:0,bb:0,rb:0,totalRows:0,repairCount:0});
+    const dst=map.get(key);
+    dst.games+=Number(r.games)||0;dst.diff+=Number(r.diff)||0;dst.bb+=Number(r.bb)||0;dst.rb+=Number(r.rb)||0;dst.totalRows++;
+    if(isRepairRecord(r))dst.repairCount++;
+  }
+  return [...map.values()].sort((a,b)=>a.date.localeCompare(b.date));
+}
+function weekdaySummary(rows,dayIndex){
+  const active=rows.filter(r=>Number(r.games)>0&&(dayIndex===null||weekdayNumber(r.date)===dayIndex));
+  const n=active.length,wins=active.filter(x=>Number(x.diff)>0).length,losses=active.filter(x=>Number(x.diff)<0).length;
+  const diff=active.reduce((s,x)=>s+(Number(x.diff)||0),0);
+  const games=active.reduce((s,x)=>s+(Number(x.games)||0),0);
+  const bb=active.reduce((s,x)=>s+(Number(x.bb)||0),0),rb=active.reduce((s,x)=>s+(Number(x.rb)||0),0);
+  return{n,wins,losses,flat:n-wins-losses,rate:n?100*wins/n:null,diff,avg:n?diff/n:null,avgGames:n?games/n:null,totalGames:games,combined:bb+rb?games/(bb+rb):null};
+}
+function renderWeekdaySection(){
+  const panel=$('weekdayPanel');
+  if(!panel||!RECORDS.length)return;
+  const current=String($('weekdayMachineSel').value),dateBounds=weekdayPeriodBounds();
+  const newest=RECORDS.reduce((s,r)=>String(r.date)>s?String(r.date):s,'');
+  const activeMachines=[...new Set(RECORDS.filter(r=>String(r.date)===newest).map(r=>String(r.machineNo)))].sort((a,b)=>Number(a)-Number(b));
+  const dayValue=$('weekdayDaySel').value,selectedDay=dayValue==='all'?null:Number(dayValue);
+  const allRows=weekdayRowsFor(current,dateBounds,activeMachines);
+  const repairDays=allRows.filter(x=>x.totalRows>0&&x.repairCount>0).length;
+  const shortRange=dateBounds.start&&dateBounds.end?dateBounds.start.replace(/-/g,'/')+'〜'+dateBounds.end.replace(/-/g,'/'):'該当期間なし';
+  const displayMachine=current==='ALL'?activeMachines.join('・')+'番台 合計':current+'番台';
+  $('weekdayUpdated').textContent='データ最終日：'+newest.replace(/-/g,'/');
+  $('weekdayMeta').textContent=displayMachine+' ／ '+shortRange+' ／ 稼働日数をもとに計算'+(repairDays?' ／ 修理中を含む0G記録 '+repairDays+'日（勝率集計から除外）':'');
+  const cards=$('weekdayCards');
+  cards.innerHTML=WEEKDAY_LABELS.map((label,i)=>{
+    const v=weekdaySummary(allRows,i),pct=v.n?v.rate.toFixed(1)+'%':'-';
+    return '<button type="button" class="weekdayCard'+(i===selectedDay?' active':'')+'" data-weekday="'+i+'" aria-pressed="'+(i===selectedDay?'true':'false')+'">'+
+      '<span class="weekdayName">'+label+'曜日</span><span class="weekdayRate">'+pct+'</span>'+
+      '<span class="weekdayDiff '+(v.avg>0?'blue':v.avg<0?'red':'')+'">'+(v.n?signed(v.avg)+'枚/日':'平均差枚 -')+'</span>'+
+      '<small>'+v.wins+'勝'+v.losses+'敗'+(v.flat?' 引分'+v.flat:'')+' / '+v.n+'稼働日</small>'+
+      '<small>累計 '+signed(v.diff)+'枚</small></button>';
+  }).join('');
+  cards.querySelectorAll('button[data-weekday]').forEach(btn=>btn.addEventListener('click',()=>{
+    $('weekdayDaySel').value=btn.dataset.weekday;weekdayShowAll=false;renderWeekdaySection();
+  }));
+  const cmp=$('weekdayCompare');
+  const comparisonDays=selectedDay===null?[0,1,2,3,4,5,6]:[selectedDay];
+  if(!activeMachines.length){
+    cmp.innerHTML='<div class="weekdayEmpty">台番データがありません。</div>';
+  }else{
+    const summaries=activeMachines.map(m=>({m,rows:weekdayRowsFor(m,dateBounds,activeMachines)}));
+    cmp.innerHTML='<div class="weekdayTableScroll"><table class="weekdayTable"><thead><tr><th>曜日</th>'+
+      summaries.map(x=>'<th>'+esc(x.m)+'番台</th>').join('')+'</tr></thead><tbody>'+
+      comparisonDays.map(day=>'<tr><td>'+WEEKDAY_LABELS[day]+'曜日</td>'+
+        summaries.map(x=>{const q=weekdaySummary(x.rows,day);return'<td class="compareCell"><strong>'+ (q.n?q.rate.toFixed(1)+'%':'-')+
+          '</strong><small class="'+(q.avg>0?'blue':q.avg<0?'red':'')+'">平均 '+(q.n?signed(q.avg)+'枚':'-')+
+          '</small><small>'+q.wins+'勝/'+q.n+'稼働日</small></td>';}).join('')+'</tr>').join('')+
+      '</tbody></table></div>';
+  }
+  const chosen=allRows.filter(r=>Number(r.games)>0&&(selectedDay===null||weekdayNumber(r.date)===selectedDay));
+  const history=$('weekdayHistory'),limited=weekdayShowAll?chosen:chosen.slice(-30),full=chosen.length,extra=Math.max(0,full-30);
+  $('weekdayHistoryHeading').textContent='日別の実績：'+(selectedDay===null?'全曜日':WEEKDAY_LABELS[selectedDay]+'曜日')+'（'+full+'稼働日）';
+  if(!full){
+    history.innerHTML='<div class="weekdayEmpty">該当する稼働日のデータはありません。</div>';
+  }else{
+    history.innerHTML='<div class="weekdayTableScroll"><table class="weekdayTable"><thead><tr><th>日付</th><th>曜</th><th>G数</th><th>BIG</th><th>REG</th><th>合算</th><th>差枚</th></tr></thead><tbody>'+
+      limited.slice().reverse().map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+WEEKDAY_LABELS[weekdayNumber(x.date)]+'</td><td>'+fmt(x.games)+'</td><td>'+fmt(x.bb)+'</td><td>'+fmt(x.rb)+'</td><td>'+(x.bb+x.rb?'1/'+(x.games/(x.bb+x.rb)).toFixed(1):'-')+'</td><td class="'+(x.diff>0?'blue':x.diff<0?'red':'')+'">'+signed(x.diff)+'枚</td></tr>').join('')+
+      '</tbody></table></div>';
+  }
+  const more=$('weekdayMore');
+  more.hidden=extra===0;
+  if(extra)more.textContent=weekdayShowAll?'最新30件だけ表示':'さらに'+extra+'件表示（全'+full+'件）';
+  panel.hidden=false;
+}
+function setupWeekdaySection(){
+  const el=$('weekdayMachineSel');
+  const latest=RECORDS.reduce((s,r)=>String(r.date)>s?String(r.date):s,'');
+  const machines=[...new Set(RECORDS.filter(r=>String(r.date)===latest).map(r=>String(r.machineNo)))].sort((a,b)=>Number(a)-Number(b));
+  el.innerHTML='<option value="ALL">現行台すべて合計</option>'+machines.map(m=>'<option value="'+esc(m)+'">'+esc(m)+'番台</option>').join('');
+  el.value=machines.includes('3232')?'3232':machines[0]||'ALL';
+  const rerender=()=>{weekdayShowAll=false;renderWeekdaySection()};
+  el.addEventListener('change',rerender);
+  $('weekdayPeriodSel').addEventListener('change',rerender);
+  $('weekdayDaySel').addEventListener('change',rerender);
+  $('weekdayMore').addEventListener('click',()=>{weekdayShowAll=!weekdayShowAll;renderWeekdaySection()});
+  renderWeekdaySection();
+}
+
 function renderTable(rows){$('tbody').innerHTML=rows.slice().sort((a,b)=>b.date.localeCompare(a.date)||Number(a.machineNo)-Number(b.machineNo)).map(r=>{
  const repair=isRepairRecord(r);
  return '<tr'+(repair?' class="repairRow"':'')+'><td>'+esc(r.date)+'</td><td>'+esc(r.weekday||'')+'</td><td>'+esc(r.machineNo)+'</td><td>'+(repair?'<span class="repairLabel">修理中（0G）</span>':fmt(r.games))+'</td><td class="'+(!repair&&Number(r.diff)>=0?'blue':!repair?'red':'')+'">'+signed(r.diff)+'</td><td>'+r.bb+'</td><td>'+r.rb+'</td><td>'+prob(r.totalProb)+'</td><td>'+prob(r.bbProb)+'</td><td>'+prob(r.rbProb)+'</td></tr>';
@@ -607,6 +795,7 @@ if(focusParams.get('focus')==='1'){
   if(requestedMonth&&[...monthSel.options].some(x=>x.value===requestedMonth))monthSel.value=requestedMonth;
 }
 render();
+setupWeekdaySection();
 if(focusParams.get('focus')==='1')requestAnimationFrame(graphFocusOpen);
 }
 
@@ -748,7 +937,7 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-[machineSel,monthSel,modeSel].forEach(x=>x.addEventListener('change',render));window.addEventListener('resize',()=>{if(RECORDS.length)render();});function showChartTooltip(e){if(graphZoomTouches.size>=2||graphZoomPinch)return;if(!points.length)return;const r=canvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;let best=null,dist=1e9;for(const p of points){const d=(p.x-mx)*(p.x-mx)+(p.y-my)*(p.y-my);if(d<dist){dist=d;best=p;}}if(best&&dist<225){const d=best.d;tooltip.style.display='block';tooltip.style.left=Math.min(r.width-175,best.x+12)+'px';tooltip.style.top=Math.max(6,best.y-72)+'px';tooltip.innerHTML=esc(d.date||d.label)+(d.repair?'<br><strong>修理中（0G）</strong>':d.repairMachines&&d.repairMachines.length?'<br>修理中：'+esc(d.repairMachines.join('・'))+'番台':'')+'<br>日別差枚 '+signed(d.diff)+'枚<br>'+(modeSel.value==='cumulative'?'累計差枚 '+signed(d.value)+'枚':'差枚 '+signed(d.value)+'枚');}else tooltip.style.display='none';}
+[machineSel,monthSel,modeSel].forEach(x=>x.addEventListener('change',()=>{render();if(x===monthSel&&$('weekdayPeriodSel')?.value==='CHART')renderWeekdaySection();}));window.addEventListener('resize',()=>{if(RECORDS.length)render();});function showChartTooltip(e){if(graphZoomTouches.size>=2||graphZoomPinch)return;if(!points.length)return;const r=canvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;let best=null,dist=1e9;for(const p of points){const d=(p.x-mx)*(p.x-mx)+(p.y-my)*(p.y-my);if(d<dist){dist=d;best=p;}}if(best&&dist<225){const d=best.d;tooltip.style.display='block';tooltip.style.left=Math.min(r.width-175,best.x+12)+'px';tooltip.style.top=Math.max(6,best.y-72)+'px';tooltip.innerHTML=esc(d.date||d.label)+(d.repair?'<br><strong>修理中（0G）</strong>':d.repairMachines&&d.repairMachines.length?'<br>修理中：'+esc(d.repairMachines.join('・'))+'番台':'')+'<br>日別差枚 '+signed(d.diff)+'枚<br>'+(modeSel.value==='cumulative'?'累計差枚 '+signed(d.value)+'枚':'差枚 '+signed(d.value)+'枚');}else tooltip.style.display='none';}
 canvas.addEventListener('mousemove',showChartTooltip);
 canvas.addEventListener('pointerdown',showChartTooltip);
 canvas.addEventListener('pointermove',e=>{if(e.pointerType==='touch')showChartTooltip(e);});canvas.addEventListener('mouseleave',()=>tooltip.style.display='none');
