@@ -173,6 +173,34 @@ body.graphFocusOpen{overflow:hidden}
 @media(max-width:920px){.weekdayCards{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:560px){.weekdayControls{grid-template-columns:1fr 1fr}.weekdayControls label:last-child{grid-column:1/-1}.weekdayCards{grid-template-columns:repeat(2,minmax(0,1fr))}.weekdayCard{padding:12px}.weekdayCard.active{padding:11px}.weekdayCard .weekdayRate{font-size:20px}}
 
+
+/* 過去に到達した底圏と、その後の実績を区別して表示する */
+.bottomPanel{border-color:#d5dee8}
+.bottomHeader{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+.bottomHeader p{font-size:12px;color:#607086;margin:6px 0 0;line-height:1.6}
+.bottomControls{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.bottomControls label{display:flex;flex-direction:column;gap:5px;min-width:150px;font-weight:800;font-size:12px;flex:1}
+.bottomControls select{padding:10px;font-size:14px}
+.bottomGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:12px 0}
+.bottomCard{border:1px solid #e0e5ed;border-radius:11px;background:#fbfcfe;padding:12px;min-width:0;line-height:1.5}
+.bottomCard.isSelected{border:2px solid #527dab;background:#f4f8ff;padding:11px}
+.bottomCard h3{font-size:14px;margin:0 0 8px}
+.bottomCard strong{font-size:22px;font-variant-numeric:tabular-nums}
+.bottomCard span{display:block;font-size:12px;margin-top:5px;color:#4e5f72}
+.bottomCard .bottomGauge{height:9px;border-radius:99px;background:#e1e8f0;overflow:hidden;margin-top:11px}
+.bottomCard .bottomGauge i{display:block;height:100%;background:#a17846;border-radius:99px}
+.bottomState{font-size:12px;font-weight:800;color:#7a562a;margin-top:6px}
+.bottomTableScroll{overflow-x:auto;border:1px solid #e1e5ed;border-radius:10px;max-height:540px;overflow-y:auto}
+.bottomTable{width:100%;min-width:710px;border-collapse:collapse}
+.bottomTable th,.bottomTable td{font-size:12px;padding:9px 10px;text-align:right;white-space:nowrap}
+.bottomTable th:first-child,.bottomTable td:first-child{text-align:left}
+.bottomTable small{display:block;color:#677384;font-size:10px;margin-top:3px}
+.bottomPanel .bottomNote{font-size:12px;color:#5e6a7a;line-height:1.7;margin:10px 0}
+.bottomSubTitle{font-size:14px;margin:17px 0 8px}
+.bottomWarning{font-size:12px;font-weight:700;color:#92571d;margin:9px 0}
+.bottomEmpty{font-size:12px;color:#667281;padding:12px}
+@media(max-width:700px){.bottomGrid{grid-template-columns:1fr}.bottomControls label{min-width:130px}.bottomCard strong{font-size:20px}.bottomCard{padding:13px}}
+
 </style>
 </head>
 <body>
@@ -222,6 +250,25 @@ body.graphFocusOpen{overflow:hidden}
     <div id="trendBox" class="trendBox"></div>
   </section>
 
+
+
+  <section id="bottomPanel" class="panel bottomPanel" hidden>
+    <div class="bottomHeader">
+      <div><h2>底圏分析｜30・60・90日</h2><p>今の累積差枚が過去の底から何枚上にいるかと、似た底圏入りの後の実績を検証します。</p></div>
+      <div id="bottomDate" class="muted"></div>
+    </div>
+    <div class="bottomControls">
+      <label for="bottomMachine">分析する台番<select id="bottomMachine"></select></label>
+      <label for="bottomWindow">過去の底圏入りを比較する期間<select id="bottomWindow"><option value="30">30日</option><option value="60">60日</option><option value="90" selected>90日</option></select></label>
+    </div>
+    <div id="bottomOverview" class="bottomGrid"></div>
+    <div id="bottomSampleInfo" class="bottomNote"></div>
+    <h3 class="bottomSubTitle">過去の底圏入り後：1・3・7日の実績</h3>
+    <div id="bottomFollowup"></div>
+    <h3 class="bottomSubTitle">過去の該当日</h3>
+    <div id="bottomCases"></div>
+    <p class="bottomNote">底圏は「その日までの直近N日間における累積差枚の最高点と最安点の差が1,000枚以上あり、当日の位置が下位10%以内」と定義します。期間内の稼働率70%以上、判定当日も稼働している場合に限ります。連続して該当した日は1回とし、7日以内の重複した底圏入りを再計上しません。修理中・欠損日は後日の成績判定に含めません。これは事後の実績比較で、底が確定したことや翌日の反発を意味しません。</p>
+  </section>
 
   <section id="weekdayPanel" class="panel weekdayPanel" hidden aria-label="曜日別の実績">
     <div class="weekdayHead">
@@ -655,6 +702,120 @@ if(max===min){max+=100;min-=100;}
 if(zoomYAxis){const pad=(max-min)*.06;min-=pad;max+=pad;}
 const range=max-min||1,x=i=>p.l+(data.length===1?w/2:i*w/(data.length-1)),y=v=>p.t+(max-v)*h/range;c.strokeStyle='#e4e8ee';c.fillStyle='#6b7280';c.font=phonePortrait?'10px system-ui':'12px system-ui';for(let i=0;i<=4;i++){const val=max-range*i/4,yy=p.t+h*i/4;c.beginPath();c.moveTo(p.l,yy);c.lineTo(p.l+w,yy);c.stroke();c.textAlign='right';c.textBaseline='middle';c.fillText(Math.round(val).toLocaleString('ja-JP'),p.l-8,yy);}if(min<0&&max>0){c.strokeStyle='#9aa0a6';c.beginPath();c.moveTo(p.l,y(0));c.lineTo(p.l+w,y(0));c.stroke();}const mode=modeSel.value;if(mode==='daily'){const bw=Math.max(2,Math.min(14,w/Math.max(1,data.length)*.72)),y0=y(0);data.forEach((d,i)=>{const yy=y(d.value);c.fillStyle=d.repair?'#8b9ab0':d.value>=0?'#1a73e8':'#d93025';c.fillRect(x(i)-bw/2,d.repair?y0-2:Math.min(yy,y0),bw,d.repair?4:Math.max(1,Math.abs(y0-yy)));});}else if(mode==='cumulative'){for(let i=1;i<data.length;i++){c.strokeStyle=data[i].repair?'#7d8da3':data[i].diff>0?'#1a73e8':data[i].diff<0?'#d93025':'#9aa0a6';c.setLineDash(data[i].repair?[4,4]:[]);c.lineWidth=phonePortrait?1.45:2.5;c.beginPath();c.moveTo(x(i-1),y(data[i-1].value));c.lineTo(x(i),y(data[i].value));c.stroke();c.setLineDash([]);}data.forEach((d,i)=>{c.beginPath();c.fillStyle=d.repair?'#7d8da3':d.diff>0?'#1a73e8':d.diff<0?'#d93025':'#9aa0a6';c.arc(x(i),y(d.value),pointRadius,0,Math.PI*2);c.fill();if(!densePhone){c.strokeStyle='#fff';c.lineWidth=phonePortrait?.6:1;c.stroke();}});}else{c.strokeStyle='#1a73e8';c.lineWidth=phonePortrait?1.45:2.5;c.beginPath();data.forEach((d,i)=>i?c.lineTo(x(i),y(d.value)):c.moveTo(x(i),y(d.value)));c.stroke();data.forEach((d,i)=>{c.beginPath();c.fillStyle=d.value>=0?'#1a73e8':'#d93025';c.arc(x(i),y(d.value),pointRadius,0,Math.PI*2);c.fill();});}const maxLabels=Math.min(6,Math.max(2,Math.floor(w/(phonePortrait?115:150)))),step=Math.max(1,Math.ceil((data.length-1)/Math.max(1,maxLabels-1)));c.fillStyle='#6b7280';c.font=phonePortrait?'10px system-ui':'11px system-ui';c.textAlign='center';c.textBaseline='top';data.forEach((d,i)=>{if(phonePortrait?(i===0||i===data.length-1||(i%step===0&&i+Math.max(1,Math.round(step*.45))<data.length-1)):(i%step===0||i===data.length-1))c.fillText(d.label,x(i),p.t+h+(phonePortrait?8:10));});points=data.map((d,i)=>({x:x(i),y:y(d.value),d}));const ex=extremes(ds),st=streaks(ds);$('legend').innerHTML=(ex?'<span class="blue">最大差枚 '+signed(ex.hi.diff)+'枚 '+shortDate(ex.hi.date)+'</span> / <span class="red">最大マイナス '+signed(ex.lo.diff)+'枚 '+shortDate(ex.lo.date)+'</span> / ':'')+'<span class="blue">最長上昇 '+st.bestUp.days+'日 ('+signed(st.bestUp.diff)+'枚) '+shortDate(st.bestUp.start)+'〜'+shortDate(st.bestUp.end)+'</span> / <span class="red">最長下降 '+st.bestDn.days+'日 ('+signed(st.bestDn.diff)+'枚) '+shortDate(st.bestDn.start)+'〜'+shortDate(st.bestDn.end)+'</span>';}
 
+
+function bottomWindowState(rows,endIndex,windowDays){
+  const begin=endIndex-windowDays+1;
+  if(begin<0||endIndex>=rows.length)return null;
+  const slice=rows.slice(begin,endIndex+1);
+  if(slice.length!==windowDays)return null;
+  for(let i=1;i<slice.length;i++)if(!nextDay(slice[i-1].date,slice[i].date))return null;
+  let level=0,low=0,high=0,lowDate=slice[0].date+'直前',highDate=slice[0].date+'直前';
+  for(const x of slice){
+    level+=Number(x.diff)||0;
+    if(level<low){low=level;lowDate=x.date}
+    if(level>high){high=level;highDate=x.date}
+  }
+  const range=high-low,played=slice.filter(x=>Number(x.games)>0).length;
+  return{from:slice[0].date,to:slice[slice.length-1].date,level,low,high,lowDate,highDate,range,played,windowDays,
+    aboveLow:level-low,belowHigh:level-high,position:range>0?100*(level-low)/range:null};
+}
+function bottomIsSignal(row,state){
+  return !!(row&&Number(row.games)>0&&state&&state.range>=1000&&state.played>=Math.ceil(state.windowDays*.7)&&state.position!==null&&state.position<=10);
+}
+function bottomFuture(rows,i,days){
+  const future=rows.slice(i+1,i+days+1);
+  if(future.length!==days)return null;
+  for(let j=0;j<future.length;j++){
+    const prev=j===0?rows[i]:future[j-1];
+    if(!nextDay(prev.date,future[j].date)||Number(future[j].games)<=0)return null;
+  }
+  return future.reduce((sum,r)=>sum+(Number(r.diff)||0),0);
+}
+function bottomEvents(rows,windowDays){
+  const cases=[];let previouslyInZone=false,lastAccepted=-100000;
+  for(let i=windowDays-1;i<rows.length;i++){
+    const state=bottomWindowState(rows,i,windowDays),flag=bottomIsSignal(rows[i],state);
+    if(flag&&!previouslyInZone&&i-lastAccepted>7){
+      cases.push({index:i,date:rows[i].date,state,day1:bottomFuture(rows,i,1),day3:bottomFuture(rows,i,3),day7:bottomFuture(rows,i,7)});
+      lastAccepted=i;
+    }
+    previouslyInZone=flag;
+  }
+  return cases;
+}
+function bottomStats(cases,key){
+  const samples=cases.map(x=>x[key]).filter(x=>x!==null&&Number.isFinite(x));
+  const n=samples.length,plus=samples.filter(x=>x>0).length,negative=samples.filter(x=>x<0).length;
+  const sorted=samples.slice().sort((a,b)=>a-b);
+  return{n,plus,negative,avg:n?samples.reduce((s,x)=>s+x,0)/n:null,
+    median:n?(sorted[Math.floor((n-1)/2)]+sorted[Math.floor(n/2)])/2:null,
+    min:n?sorted[0]:null,max:n?sorted[n-1]:null};
+}
+function bottomRender(){
+  const box=$('bottomPanel');if(!box||!RECORDS.length)return;
+  const machine=$('bottomMachine').value,windowDays=Number($('bottomWindow').value);
+  const rows=RECORDS.filter(x=>String(x.machineNo)===machine).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  if(!rows.length){box.hidden=true;return}
+  const latest=rows[rows.length-1],overview=$('bottomOverview');
+  $('bottomDate').textContent='データ基準：'+latest.date.replace(/-/g,'/');
+  overview.innerHTML=[30,60,90].map(n=>{
+    const state=bottomWindowState(rows,rows.length-1,n);
+    if(!state)return'<div class="bottomCard"><h3>直近'+n+'日</h3><div class="bottomEmpty">連続した記録が不足しています。</div></div>';
+    const qualify=bottomIsSignal(latest,state);
+    const pos=state.position!==null?state.position.toFixed(1)+'%':'比較不可';
+    const text=qualify?'底圏の判定条件に該当':state.position===null?'高低差なし':state.position<=10?'底付近（稼働・値幅条件は未達）':'底圏の判定条件には非該当';
+    return'<div class="bottomCard'+(n===windowDays?' isSelected':'')+'"><h3>直近'+n+'日</h3>'+
+      '<span>以前の最安点から</span><strong>'+signed(state.aboveLow)+'枚</strong>'+
+      '<span>以前の最高点から <b class="'+(state.belowHigh<0?'red':'')+'">'+signed(state.belowHigh)+'枚</b></span>'+
+      '<span>高低差 '+fmt(state.range)+'枚 ／ 稼働'+state.played+'/'+n+'日</span>'+
+      '<span>累積差枚の位置 '+pos+'（0%が最安、100%が最高）</span>'+
+      '<div class="bottomGauge"><i style="width:'+Math.max(0,Math.min(100,state.position||0)).toFixed(1)+'%"></i></div>'+
+      '<div class="bottomState">'+text+'</div>'+
+      '<span>最安点：'+esc(state.lowDate)+' ／ 最高点：'+esc(state.highDate)+'</span></div>';
+  }).join('');
+  const events=bottomEvents(rows,windowDays);
+  const evaluated=events.filter(x=>x.day7!==null).length;
+  const recent=events.length?events[events.length-1]:null;
+  $('bottomSampleInfo').textContent=machine+'番台 ／ '+windowDays+'日基準で過去に底圏入り '+events.length+
+    '件（7日後まで確認済み '+evaluated+'件）'+(recent&&recent.day7===null?' ／ 最新の該当日 '+recent.date+'は結果待ち':'')+
+    '。1回の底入りを独立イベントとして数えるため、7日以内の重複を除外。';
+  const follow=$('bottomFollowup'),columns=[{key:'day1',name:'1日後'},{key:'day3',name:'3日後まで'},{key:'day7',name:'7日後まで'}];
+  const output=columns.map(x=>{
+    const st=bottomStats(events,x.key);
+    const color=st.avg>0?'blue':st.avg<0?'red':'';
+    return'<tr><td>'+x.name+'</td><td>'+st.n+'件'+(st.n<5?'<small>参考件数が少ない</small>':'')+'</td>'+
+      '<td>'+(st.n?(st.plus/st.n*100).toFixed(1)+'%':'-')+'<small>'+st.plus+'件プラス・'+st.negative+'件マイナス</small></td>'+
+      '<td class="'+color+'">'+(st.n?signed(st.avg)+'枚':'-')+'</td>'+
+      '<td>'+(st.n?signed(st.median)+'枚':'-')+'</td>'+
+      '<td>'+(st.n?signed(st.min)+'〜'+signed(st.max)+'枚':'-')+'</td></tr>';
+  }).join('');
+  follow.innerHTML='<div class="bottomTableScroll"><table class="bottomTable"><thead><tr><th>期間</th><th>件数</th><th>プラスの割合</th><th>平均差枚</th><th>中央値</th><th>最小〜最大</th></tr></thead><tbody>'+output+'</tbody></table></div>'+
+    '<p class="bottomNote">「3日後まで」「7日後まで」は該当日の翌日から、その期間の差枚を合計した値です。結果未取得の期間や修理中をまたぐケースは各期間の集計から除外しています。</p>';
+  if(!events.length){
+    $('bottomCases').innerHTML='<div class="bottomEmpty">条件に合う過去の事例はありません。</div>';
+  }else{
+    const cases=events.slice(-12).reverse();
+    const f=v=>v===null?'未確定':signed(v)+'枚';
+    $('bottomCases').innerHTML='<div class="bottomTableScroll"><table class="bottomTable"><thead><tr><th>底圏入り日</th><th>底から</th><th>位置</th><th>1日後</th><th>3日後まで</th><th>7日後まで</th></tr></thead><tbody>'+
+      cases.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+signed(x.state.aboveLow)+'枚</td><td>'+x.state.position.toFixed(1)+'%</td>'+
+      '<td class="'+(x.day1!==null?(x.day1>0?'blue':x.day1<0?'red':''):'')+'">'+f(x.day1)+'</td>'+
+      '<td class="'+(x.day3!==null?(x.day3>0?'blue':x.day3<0?'red':''):'')+'">'+f(x.day3)+'</td>'+
+      '<td class="'+(x.day7!==null?(x.day7>0?'blue':x.day7<0?'red':''):'')+'">'+f(x.day7)+'</td></tr>').join('')+'</tbody></table></div>'+
+      (events.length>12?'<p class="bottomNote">直近12件を表示（全'+events.length+'件の集計）。</p>':'');
+  }
+  box.hidden=false;
+}
+function setupBottomPanel(){
+  const newest=RECORDS.reduce((s,r)=>String(r.date)>s?String(r.date):s,'');
+  const machines=[...new Set(RECORDS.filter(r=>String(r.date)===newest).map(r=>String(r.machineNo)))].sort((a,b)=>Number(a)-Number(b));
+  const select=$('bottomMachine');
+  select.innerHTML=machines.map(m=>'<option value="'+esc(m)+'">'+esc(m)+'番台</option>').join('');
+  select.value=machines.includes('3232')?'3232':machines[0]||'';
+  select.addEventListener('change',bottomRender);
+  $('bottomWindow').addEventListener('change',bottomRender);
+  bottomRender();
+}
+
 const WEEKDAY_LABELS=['日','月','火','水','木','金','土'];
 let weekdayShowAll=false;
 function weekdayNumber(date){
@@ -796,6 +957,7 @@ if(focusParams.get('focus')==='1'){
 }
 render();
 setupWeekdaySection();
+setupBottomPanel();
 if(focusParams.get('focus')==='1')requestAnimationFrame(graphFocusOpen);
 }
 
