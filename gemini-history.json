@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-28T22:46:22.159Z",
+  "updatedAt": "2026-10-29T21:51:25.425Z",
   "history": [
     {
       "generatedAt": "2026-10-13T23:02:15.128Z",
@@ -303,7 +303,7 @@
     {
       "targetDate": "2026-10-29",
       "sourceLatestDate": "2026-10-28",
-      "generatedAt": "2026-10-28T22:45:43.537Z",
+      "generatedAt": "2026-10-28T22:46:48.241Z",
       "ranking": [
         {
           "machineNo": "3233",
@@ -311,12 +311,12 @@
           "confidence": "高め"
         },
         {
-          "machineNo": "3232",
+          "machineNo": "3235",
           "rank": 2,
           "confidence": "高め"
         },
         {
-          "machineNo": "3235",
+          "machineNo": "3232",
           "rank": 3,
           "confidence": "高め"
         }
@@ -324,13 +324,13 @@
       "predictions": [
         {
           "machineNo": "3233",
-          "score": 42.8,
+          "score": 43.1,
           "label": "ややマイナス寄り",
           "confidence": "高め"
         },
         {
           "machineNo": "3232",
-          "score": 39.2,
+          "score": 39,
           "label": "マイナス寄り",
           "confidence": "高め"
         },
