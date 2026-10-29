@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-29T21:51:25.425Z",
+  "updatedAt": "2026-10-29T21:56:01.864Z",
   "history": [
     {
       "generatedAt": "2026-10-13T23:02:15.128Z",
@@ -301,43 +301,85 @@
       "targetDate": "2026-10-23"
     },
     {
-      "targetDate": "2026-10-29",
-      "sourceLatestDate": "2026-10-28",
       "generatedAt": "2026-10-28T22:46:48.241Z",
+      "predictions": [
+        {
+          "confidence": "高め",
+          "label": "ややマイナス寄り",
+          "machineNo": "3233",
+          "score": 43.1
+        },
+        {
+          "confidence": "高め",
+          "label": "マイナス寄り",
+          "machineNo": "3232",
+          "score": 39
+        },
+        {
+          "confidence": "高め",
+          "label": "マイナス寄り",
+          "machineNo": "3235",
+          "score": 38.5
+        }
+      ],
       "ranking": [
         {
+          "confidence": "高め",
           "machineNo": "3233",
+          "rank": 1
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3235",
+          "rank": 2
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3232",
+          "rank": 3
+        }
+      ],
+      "sourceLatestDate": "2026-10-28",
+      "targetDate": "2026-10-29"
+    },
+    {
+      "targetDate": "2026-10-30",
+      "sourceLatestDate": "2026-10-29",
+      "generatedAt": "2026-10-29T21:51:27.588Z",
+      "ranking": [
+        {
+          "machineNo": "3232",
           "rank": 1,
           "confidence": "高め"
         },
         {
-          "machineNo": "3235",
+          "machineNo": "3233",
           "rank": 2,
           "confidence": "高め"
         },
         {
-          "machineNo": "3232",
+          "machineNo": "3235",
           "rank": 3,
           "confidence": "高め"
         }
       ],
       "predictions": [
         {
+          "machineNo": "3232",
+          "score": 45,
+          "label": "中立",
+          "confidence": "高め"
+        },
+        {
           "machineNo": "3233",
-          "score": 43.1,
+          "score": 44.4,
           "label": "ややマイナス寄り",
           "confidence": "高め"
         },
         {
-          "machineNo": "3232",
-          "score": 39,
-          "label": "マイナス寄り",
-          "confidence": "高め"
-        },
-        {
           "machineNo": "3235",
-          "score": 38.5,
-          "label": "マイナス寄り",
+          "score": 43.2,
+          "label": "ややマイナス寄り",
           "confidence": "高め"
         }
       ]
