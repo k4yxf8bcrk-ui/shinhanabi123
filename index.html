@@ -279,6 +279,7 @@ body.graphFocusOpen{overflow:hidden}
     <div id="aiBox" class="aiBox"></div>
     <div id="aiAccuracyBox" class="aiAccuracyBox"></div>
     <div id="editorChiefBox" class="editorChiefBox"></div>
+    <div id="editorMethodologyBox" class="editorChiefBox" hidden></div>
     <div id="regBiasBox" class="regBiasBox" aria-label="REGとBIGの偏りによる翌日実績"></div>
     <div id="editorChiefAccuracy" class="aiAccuracyBox editorChiefAccuracy"></div>
     <div id="rankAuditBox" class="rankAuditBox" aria-label="Geminiと編集長の順位別的中率"></div>
@@ -681,6 +682,24 @@ function editorAccuracy(){
   const hist=editorHistory(),out=[];
   for(const h of hist){const rows=RECORDS.filter(r=>String(r.date)===String(h.targetDate));if(!rows.length||(h.ranking||[]).some(x=>!rows.some(r=>String(r.machineNo)===String(x.machineNo)&&Number(r.games)>0)))continue;const actual=new Map();for(const r of rows)actual.set(String(r.machineNo),(actual.get(String(r.machineNo))||0)+(Number(r.diff)||0));const ranked=(h.ranking||[]).filter(x=>actual.has(String(x.machineNo)));if(!ranked.length)continue;const top=ranked[0],topDiff=actual.get(String(top.machineNo))||0,maxDiff=Math.max(...actual.values()),top2=ranked.slice(0,2);out.push({targetDate:String(h.targetDate),topMachine:String(top.machineNo),topDiff,plusHit:topDiff>0,bestHit:topDiff===maxDiff,top2Plus:top2.some(x=>(actual.get(String(x.machineNo))||0)>0)});}const n=out.length;return{n,plusHits:out.filter(x=>x.plusHit).length,bestHits:out.filter(x=>x.bestHit).length,top2Hits:out.filter(x=>x.top2Plus).length,avg:n?out.reduce((a,x)=>a+x.topDiff,0)/n:0,pending:hist.filter(h=>!RECORDS.some(r=>String(r.date)===String(h.targetDate))).length,recent:out.slice(-10).reverse()};
 }
+
+function renderEditorMethodology(){
+ const box=$('editorMethodologyBox');if(!box)return;
+ const m=EDITOR_CHIEF?.methodology;
+ if(!m||!Array.isArray(m.rules)){box.hidden=true;return;}
+ const rules=m.rules.map((x,i)=>'<li>'+esc(x)+'</li>').join('');
+ const oldTarget=EDITOR_CHIEF?.latest?.targetDate||'';
+ box.innerHTML='<details class="editorComment"><summary>'+esc(m.title||'編集長予想の判断基準')+
+   '</summary><div class="editorCommentBody">'+
+   '<p>新基準の開始日：'+esc(m.effectiveFrom||'-')+'。'+
+   (oldTarget&&oldTarget<m.effectiveFrom?'現在表示中の'+esc(oldTarget)+'予想は旧基準のまま記録しています。':'')+'</p>'+
+   '<p>'+esc(m.purpose||'')+'</p><ol>'+rules+'</ol>'+
+   '<p>過去11件の結果では編集長1位のプラスは2件、2位は6件、3位は4件。'+
+   'この数だけで2位・3位を優先すべきとは言えません。将来の予測力を検証する方針です。</p>'+
+   '</div></details>';
+ box.hidden=false;
+}
+
 function renderEditorChief(){
   const box=$('editorChiefBox'),acc=$('editorChiefAccuracy');if(!box||!acc)return;const ed=EDITOR_CHIEF||{},l=ed.latest;
   if(!l?.summary||!Array.isArray(l.ranking)||!l.ranking.length){box.innerHTML='<h3>編集長分析 <span class="editorBadge">ChatGPT</span></h3><div class="muted">まだ編集長予想はありません。チャットで「今日の編集長予想を公開して」と伝えると更新できます。</div>';}
@@ -1031,7 +1050,7 @@ function setup(){const machines=[...new Set(RECORDS.map(r=>String(r.machineNo)))
   $('editorChiefAccuracy').innerHTML='';
   $('regBiasBox').innerHTML='';
   $('rankAuditBox').innerHTML='';
-}else{renderPredictions();renderAiAccuracy();renderEditorChief();renderRegBiasAnalysis();renderRankAudit();}
+}else{renderPredictions();renderAiAccuracy();renderEditorChief();renderEditorMethodology();renderRegBiasAnalysis();renderRankAudit();}
 
 /* 本体・編集長予想・曜日別・底圏・日別、および外部JS追加の分析パネルを初期状態で閉じる */
 const FOLD_SECTION_LABELS={
