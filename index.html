@@ -209,6 +209,17 @@ body.graphFocusOpen{overflow:hidden}
 .graphRangeBar button.active{color:#fff;background:#245f9e;border-color:#245f9e}
 .graphRangeBar button:focus-visible{outline:3px solid #e6a83f;outline-offset:2px}
 .graphRangeInfo{font-size:12px;color:#536277;margin:7px 0 5px}
+
+/* 差枚グラフ用・開始日／終了日の任意指定。通常表示と拡大表示の両方で使用 */
+.graphDateBar{display:flex;align-items:flex-end;flex-wrap:wrap;gap:8px;margin:10px 0 5px;padding:10px 12px;background:#f8fbff;border:1px solid #dbe5f2;border-radius:10px}
+.graphDateBar label{display:flex;flex:1 1 145px;min-width:128px;flex-direction:column;gap:4px;font-size:12px;font-weight:750;color:#34506f}
+.graphDateBar input[type=date]{box-sizing:border-box;min-height:40px;width:100%;max-width:100%;border:1px solid #b9c9df;border-radius:7px;padding:7px;color:#223348;background:#fff;font-size:14px}
+.graphDateBar button{min-height:40px;border:1px solid #b9c9df;border-radius:8px;padding:8px 13px;background:white;color:#245f9e;font-weight:800;cursor:pointer;touch-action:manipulation}
+.graphDateBar button.graphDateApply{background:#245f9e;border-color:#245f9e;color:#fff}
+.graphDateBar button:focus-visible,.graphDateBar input:focus-visible{outline:3px solid #e6a83f;outline-offset:2px}
+.graphDateBar .graphDateNotice{flex-basis:100%;font-size:12px;color:#536277;line-height:1.5}
+@media(max-width:700px){.graphDateBar{padding:9px}.graphDateBar label{flex:1 1 calc(50% - 6px);min-width:0}.graphDateBar button{flex:1 1 110px}}
+
 .graphTapDetail{position:absolute;bottom:7px;left:7px;right:7px;z-index:3;padding:9px 10px;border-radius:8px;background:rgba(23,40,61,.94);color:#fff;font-size:13px;font-weight:700;line-height:1.55;box-shadow:0 2px 12px rgba(0,0,0,.18);pointer-events:none}
 .graphTapDetail[hidden]{display:none!important}
 #graphFocusRangeBar{margin:0;border-radius:0;border-width:0 0 1px}
@@ -291,6 +302,13 @@ body.graphFocusOpen{overflow:hidden}
       <label>台番<select id="machineSel"></select></label>
       <label>期間<select id="monthSel"></select></label>
       <label>グラフ<select id="modeSel"><option value="cumulative">累計差枚</option><option value="daily">日別差枚</option><option value="monthly">月別差枚</option></select></label>
+    </div>
+    <div id="graphDateBar" class="graphDateBar" aria-label="差枚グラフの指定日付">
+      <label for="graphDateStart">開始日<input id="graphDateStart" type="date"></label>
+      <label for="graphDateEnd">終了日<input id="graphDateEnd" type="date"></label>
+      <button type="button" id="graphDateApply" class="graphDateApply">この期間を表示</button>
+      <button type="button" id="graphDateClear">日付指定を解除</button>
+      <div id="graphDateNotice" class="graphDateNotice" role="status" aria-live="polite">日付を自由に指定できます（開始日だけ・終了日だけも可）。</div>
     </div>
     <div class="graphFocusLaunch"><button type="button" id="graphFocusOpen" aria-controls="graphFocusLayer" aria-haspopup="dialog">⛶ グラフだけ表示</button><small>スマホで拡大表示できます。横向きもおすすめです。</small></div>
     <div id="cards" class="cards"></div>
@@ -391,6 +409,13 @@ body.graphFocusOpen{overflow:hidden}
       <label for="graphFocusMonth">期間<select id="graphFocusMonth"></select></label>
       <label for="graphFocusMode">グラフ<select id="graphFocusMode"></select></label>
     </div>
+    <div id="graphFocusDateBar" class="graphDateBar" aria-label="差枚グラフの指定日付">
+      <label for="graphFocusDateStart">開始日<input id="graphFocusDateStart" type="date"></label>
+      <label for="graphFocusDateEnd">終了日<input id="graphFocusDateEnd" type="date"></label>
+      <button type="button" id="graphFocusDateApply" class="graphDateApply">この期間を表示</button>
+      <button type="button" id="graphFocusDateClear">日付指定を解除</button>
+      <div id="graphFocusDateNotice" class="graphDateNotice" role="status" aria-live="polite">日付を自由に指定できます（開始日だけ・終了日だけも可）。</div>
+    </div>
     <div id="graphFocusRangeBar" class="graphRangeBar" aria-label="拡大グラフの表示期間"><span class="graphRangeCaption">表示期間</span></div>
     <div id="focusChartSlot"></div>
     <div id="graphFocusStats" class="graphFocusStats" aria-label="選択中のグラフの実績"></div>
@@ -460,13 +485,13 @@ function isInPeriod(date,period,bounds){
 }
 function filtered(){
   const m=machineSel.value,period=monthSel.value,bounds=recentPeriodBounds(period);
-  return RECORDS.filter(r=>(m==='ALL'||String(r.machineNo)===m)&&isInPeriod(r.date,period,bounds));
+  return RECORDS.filter(r=>(m==='ALL'||String(r.machineNo)===m)&&isInPeriod(r.date,period,bounds)&&(!graphCustomRange.active||((!graphCustomRange.start||String(r.date)>=graphCustomRange.start)&&(!graphCustomRange.end||String(r.date)<=graphCustomRange.end))));
 }
 function daily(rows){const map=new Map();for(const r of rows){if(!map.has(r.date))map.set(r.date,{date:r.date,games:0,diff:0,rows:0,repairRecords:0,repairMachines:[]});const d=map.get(r.date);d.games+=Number(r.games)||0;d.diff+=Number(r.diff)||0;d.rows++;if(isRepairRecord(r)){d.repairRecords++;d.repairMachines.push(String(r.machineNo));}}return[...map.values()].sort((a,b)=>a.date.localeCompare(b.date)).map(d=>({...d,repair:d.games===0&&d.rows>0&&d.repairRecords===d.rows,repairMachines:[...new Set(d.repairMachines)]}));}
 function extremes(ds){const live=ds.filter(d=>Number(d.games)>0);if(!live.length)return null;let hi=live[0],lo=live[0];for(const d of live){if(d.diff>hi.diff)hi=d;if(d.diff<lo.diff)lo=d;}return{hi,lo};}
 function streakEndingAt(ds,i){if(!ds.length||i<0||i>=ds.length)return null;const sign=Number(ds[i].games)>0?Math.sign(Number(ds[i].diff)||0):0;if(!sign)return{sign:0,days:0,diff:0,start:ds[i].date,end:ds[i].date};let a=i,sum=Number(ds[i].diff)||0;while(a>0&&Number(ds[a-1].games)>0&&nextDay(ds[a-1].date,ds[a].date)&&Math.sign(Number(ds[a-1].diff)||0)===sign){a--;sum+=Number(ds[a].diff)||0}return{sign,days:i-a+1,diff:sum,start:ds[a].date,end:ds[i].date}}
 function streaks(ds){let bestUp={days:0,diff:0,start:'',end:''},bestDn={days:0,diff:0,start:'',end:''};for(let i=0;i<ds.length;i++){const r=streakEndingAt(ds,i);if(!r||!r.sign)continue;if(r.sign>0&&(r.days>bestUp.days||(r.days===bestUp.days&&r.diff>bestUp.diff)))bestUp={days:r.days,diff:r.diff,start:r.start,end:r.end};if(r.sign<0&&(r.days>bestDn.days||(r.days===bestDn.days&&r.diff<bestDn.diff)))bestDn={days:r.days,diff:r.diff,start:r.start,end:r.end};}return{bestUp,bestDn};}
-function trendAnalysis(){const m=machineSel.value,mo=monthSel.value;const all=daily(RECORDS.filter(r=>m==='ALL'||String(r.machineNo)===m));if(!all.length)return null;const bounds=recentPeriodBounds(mo),visible=all.filter(d=>isInPeriod(d.date,mo,bounds));if(!visible.length)return null;const endpoint=visible[visible.length-1].date,idx=all.findIndex(d=>d.date===endpoint),current=streakEndingAt(all,idx);if(!current||!current.sign)return{current,repair:visible[visible.length-1].repair,cases:[],nextCount:0,nextPlus:0,nextAvg:0,twoCount:0,twoPlus:0};const cases=[];for(let i=0;i<idx;i++){const r=streakEndingAt(all,i);if(!r||r.sign!==current.sign||r.days!==current.days)continue;const n=all[i+1];if(!n||Number(n.games)<=0||!nextDay(all[i].date,n.date))continue;const n2=all[i+2],has2=!!(n2&&Number(n2.games)>0&&nextDay(n.date,n2.date));cases.push({nextDiff:Number(n.diff)||0,nextPlus:(Number(n.diff)||0)>0,has2,twoPlus:has2?((Number(n.diff)||0)>0||(Number(n2.diff)||0)>0):false});}const nextCount=cases.length,nextPlus=cases.filter(c=>c.nextPlus).length,nextAvg=nextCount?cases.reduce((a,c)=>a+c.nextDiff,0)/nextCount:0,two=cases.filter(c=>c.has2),twoCount=two.length,twoPlus=two.filter(c=>c.twoPlus).length;return{current,cases,nextCount,nextPlus,nextAvg,twoCount,twoPlus};}
+function trendAnalysis(){const m=machineSel.value,mo=monthSel.value;const all=daily(RECORDS.filter(r=>m==='ALL'||String(r.machineNo)===m));if(!all.length)return null;const bounds=recentPeriodBounds(mo),visible=all.filter(d=>isInPeriod(d.date,mo,bounds)&&(!graphCustomRange.active||((!graphCustomRange.start||d.date>=graphCustomRange.start)&&(!graphCustomRange.end||d.date<=graphCustomRange.end))));if(!visible.length)return null;const endpoint=visible[visible.length-1].date,idx=all.findIndex(d=>d.date===endpoint),current=streakEndingAt(all,idx);if(!current||!current.sign)return{current,repair:visible[visible.length-1].repair,cases:[],nextCount:0,nextPlus:0,nextAvg:0,twoCount:0,twoPlus:0};const cases=[];for(let i=0;i<idx;i++){const r=streakEndingAt(all,i);if(!r||r.sign!==current.sign||r.days!==current.days)continue;const n=all[i+1];if(!n||Number(n.games)<=0||!nextDay(all[i].date,n.date))continue;const n2=all[i+2],has2=!!(n2&&Number(n2.games)>0&&nextDay(n.date,n2.date));cases.push({nextDiff:Number(n.diff)||0,nextPlus:(Number(n.diff)||0)>0,has2,twoPlus:has2?((Number(n.diff)||0)>0||(Number(n2.diff)||0)>0):false});}const nextCount=cases.length,nextPlus=cases.filter(c=>c.nextPlus).length,nextAvg=nextCount?cases.reduce((a,c)=>a+c.nextDiff,0)/nextCount:0,two=cases.filter(c=>c.has2),twoCount=two.length,twoPlus=two.filter(c=>c.twoPlus).length;return{current,cases,nextCount,nextPlus,nextAvg,twoCount,twoPlus};}
 function renderTrend(){const box=$('trendBox'),a=trendAnalysis();if(!a){box.innerHTML='';return}if(!a.current||!a.current.sign){box.innerHTML='<div class="trendCurrent">'+(a.repair?'選択期間末は修理中（0G）です。': '選択期間末は差枚0枚のため、')+'連続上昇・下降の傾向判定はありません。</div><div class="trendNote">過去実績であり、今後の結果を保証する予測ではありません。</div>';return}const c=a.current,dir=c.sign>0?'上昇':'下降',color=c.sign>0?'blue':'red',sample=a.nextCount?a.nextCount+'回':'該当なし',nextRate=a.nextCount?(a.nextPlus/a.nextCount*100).toFixed(1)+'% ('+a.nextPlus+'/'+a.nextCount+')':'-',twoRate=a.twoCount?(a.twoPlus/a.twoCount*100).toFixed(1)+'% ('+a.twoPlus+'/'+a.twoCount+')':'-',avgCls=a.nextAvg>0?'blue':a.nextAvg<0?'red':'';box.innerHTML='<div class="trendCurrent">現在：<span class="'+color+'">'+c.days+'日連続'+dir+' ('+signed(c.diff)+'枚) '+shortDate(c.start)+'〜'+shortDate(c.end)+'</span></div><div class="trendGrid"><div class="trendCard"><div class="k">過去の同条件</div><div class="v '+(a.nextCount>=10?'trendGood':'trendLow')+'">'+sample+'</div></div><div class="trendCard"><div class="k">翌日プラス率</div><div class="v">'+nextRate+'</div></div><div class="trendCard"><div class="k">翌日平均差枚</div><div class="v '+avgCls+'">'+(a.nextCount?signed(a.nextAvg)+'枚':'-')+'</div></div><div class="trendCard"><div class="k">2日以内にプラス</div><div class="v">'+twoRate+'</div></div></div><div class="trendNote">同条件＝同じ台番条件で、同じ方向・同じ連続日数になった過去ケース。データが抜けた日は連続扱いしません。'+(a.nextCount&&a.nextCount<5?' 参考件数が少ないため、数値の振れが大きいです。':'')+' 過去実績であり、次回の結果を保証する予測ではありません。</div>';}
 function stat(rows){const played=rows.filter(d=>Number(d.games)>0),n=played.length,w=played.filter(d=>Number(d.diff)>0).length;return{n,w,rate:n?w/n:.5,avg:n?played.reduce((a,d)=>a+Number(d.diff||0),0)/n:0}}function smooth(s){return s.n?(s.w+2)/(s.n+4):.5}function streakStat(ds,c){if(!c||!c.sign)return{n:0,w:0,rate:.5,avg:0};const arr=[];for(let i=0;i<ds.length-1;i++){const r=streakEndingAt(ds,i);if(r&&r.sign===c.sign&&r.days===c.days&&Number(ds[i+1].games)>0&&nextDay(ds[i].date,ds[i+1].date))arr.push(ds[i+1])}return stat(arr)}function predLabel(x){if(x>=60)return['プラス寄り','blue'];if(x>=55)return['ややプラス寄り','blue'];if(x<=40)return['マイナス寄り','red'];if(x<=45)return['ややマイナス寄り','red'];return['中立','']}
 /* 同じ台番で、REGがBIGに大きく先行した日の翌日を抽出。
@@ -733,6 +758,55 @@ function series(ds){const mode=modeSel.value;if(mode==='monthly'){const m=new Ma
 /* スマホでは直近30日を優先表示。期間切替は元データや累積値を変更しない。 */
 let graphMobileRange=(window.matchMedia('(pointer: coarse)').matches||window.matchMedia('(max-width:700px)').matches)?'30':'ALL';
 const GRAPH_RANGES=[['7','7日'],['14','14日'],['30','30日'],['90','90日'],['ALL','全期間']];
+
+let graphCustomRange={start:'',end:'',active:false};
+function syncGraphDateFields(){
+  for(const key of ['graphDate','graphFocusDate']){
+    const from=$(key+'Start'),to=$(key+'End');
+    if(from)from.value=graphCustomRange.start;
+    if(to)to.value=graphCustomRange.end;
+  }
+}
+function setGraphDateNotice(message,error=false){
+  for(const key of ['graphDate','graphFocusDate']){
+    const el=$(key+'Notice');
+    if(el){el.textContent=message;el.style.color=error?'#b42318':'#536277';}
+  }
+}
+function graphDateDefaultMessage(){return '日付を自由に指定できます（開始日だけ・終了日だけも可）。';}
+function clearGraphDateRange(redraw=true){
+  graphCustomRange={start:'',end:'',active:false};
+  syncGraphDateFields();
+  setGraphDateNotice(graphDateDefaultMessage());
+  graphMobileRange=(window.matchMedia('(pointer: coarse)').matches||window.matchMedia('(max-width:700px)').matches)?'30':'ALL';
+  graphZoomResetState();
+  const detail=$('graphTapDetail');if(detail)detail.hidden=true;
+  tooltip.style.display='none';
+  if(redraw){render();graphRangeControls();if($('weekdayPeriodSel')?.value==='CHART')renderWeekdaySection();}
+}
+function applyGraphDateRange(key){
+  const start=$(key+'Start').value,end=$(key+'End').value;
+  if(!start&&!end){clearGraphDateRange();return;}
+  if(start&&end&&start>end){setGraphDateNotice('開始日が終了日より後です。日付を確認してください。',true);return;}
+  graphCustomRange={start,end,active:true};
+  monthSel.value='ALL';
+  graphMobileRange='ALL';
+  graphZoomResetState();
+  const detail=$('graphTapDetail');if(detail)detail.hidden=true;
+  tooltip.style.display='none';
+  syncGraphDateFields();
+  setGraphDateNotice('指定日付：'+(start||'データの最初')+' 〜 '+(end||'データの最新')+'。差枚・集計・日別一覧に反映中。');
+  render();graphRangeControls();
+  if($('weekdayPeriodSel')?.value==='CHART')renderWeekdaySection();
+}
+function setupGraphDateRange(){
+  for(const key of ['graphDate','graphFocusDate']){
+    $(key+'Apply').addEventListener('click',()=>applyGraphDateRange(key));
+    $(key+'Clear').addEventListener('click',()=>clearGraphDateRange());
+  }
+  syncGraphDateFields();
+}
+
 function graphWindowSeries(all){
   if(!Array.isArray(all)||modeSel.value==='monthly'||graphMobileRange==='ALL')return all;
   const count=Number(graphMobileRange);
@@ -744,18 +818,24 @@ function graphRangeControls(){
     if(!box)return;
     const caption=key==='graphFocusRangeBar'?'期間表示':'スマホ用：表示する日数';
     box.innerHTML='<span class="graphRangeCaption">'+caption+'</span>'+
-      GRAPH_RANGES.map(([value,label])=>'<button type="button" data-range="'+value+'" aria-pressed="'+(graphMobileRange===value?'true':'false')+'" class="'+(graphMobileRange===value?'active':'')+'">'+label+'</button>').join('');
+      GRAPH_RANGES.map(([value,label])=>'<button type="button" data-range="'+value+'" aria-pressed="'+((graphMobileRange===value&&!graphCustomRange.active)?'true':'false')+'" class="'+((graphMobileRange===value&&!graphCustomRange.active)?'active':'')+'">'+label+'</button>').join('');
     box.querySelectorAll('button[data-range]').forEach(button=>button.addEventListener('click',()=>{
+      if(graphCustomRange.active){
+        graphCustomRange={start:'',end:'',active:false};
+        syncGraphDateFields();setGraphDateNotice(graphDateDefaultMessage());
+      }
       graphMobileRange=button.dataset.range;
       graphZoomResetState();
       tooltip.style.display='none';
       const info=$('graphTapDetail');if(info){info.hidden=true;info.textContent='';}
-      graphRangeControls();draw(daily(filtered()));renderGraphFocusStats();
+      graphRangeControls();render();
     }));
   }
   const source=$('graphRangeInfo');
   if(source){
-    source.textContent=modeSel.value==='monthly'?'月別グラフには日数切替を適用しません。':
+    source.textContent=graphCustomRange.active?
+      '日付指定：'+(graphCustomRange.start||'最初')+' 〜 '+(graphCustomRange.end||'最新')+'（累計差枚はこの範囲内で集計）':
+      modeSel.value==='monthly'?'月別グラフには日数切替を適用しません。':
       graphMobileRange==='ALL'?'表示：選択中の全期間。スマホでは「30日」がおすすめです。':
       '表示：直近'+graphMobileRange+'日分のグラフ。累積値は上の「期間」の開始日からの差枚合計です。';
   }
@@ -934,6 +1014,10 @@ function weekdayPeriodBounds(){
   }
   if(period==='CHART'){
     const v=monthSel.value,bounds=recentPeriodBounds(v);
+    if(graphCustomRange.active){
+      const first=RECORDS.reduce((s,r)=>!s||String(r.date)<s?String(r.date):s,'');
+      return{start:graphCustomRange.start||first,end:graphCustomRange.end||latest};
+    }
     if(v==='ALL')return{start:RECORDS.reduce((s,r)=>!s||String(r.date)<s?String(r.date):s,''),end:latest};
     if(bounds)return bounds;
     const inMonth=RECORDS.filter(r=>String(r.date).startsWith(v)).map(r=>String(r.date)).sort();
@@ -1115,6 +1199,7 @@ if(focusParams.get('focus')==='1'){
   const requestedMonth=focusParams.get('focusMonth');
   if(requestedMonth&&[...monthSel.options].some(x=>x.value===requestedMonth))monthSel.value=requestedMonth;
 }
+setupGraphDateRange();
 render();
 graphRangeControls();
 setupWeekdaySection();
@@ -1157,7 +1242,10 @@ function focusSyncFromMain(){
     dst.innerHTML=src.innerHTML;dst.value=src.value;
   }
   $('graphFocusTitle').textContent=STORE_NAME+'｜'+(machineSel.value==='ALL'?'全台合計':machineSel.value+'番台')+'のグラフ';
-  $('graphFocusFoot').textContent=monthSel.value==='ALL'?'全期間を表示中・点に触れると日別差枚を確認できます':monthSel.options[monthSel.selectedIndex]?.textContent+'・点に触れると日別差枚を確認できます';
+  $('graphFocusFoot').textContent=graphCustomRange.active?
+    '日付指定中・点に触れると日別差枚を確認できます':
+    (monthSel.value==='ALL'?'全期間を表示中・点に触れると日別差枚を確認できます':monthSel.options[monthSel.selectedIndex]?.textContent+'・点に触れると日別差枚を確認できます');
+  syncGraphDateFields();
 }
 function graphFocusOpen(){
   if(!graphFocusLayer.hidden)return;
@@ -1262,7 +1350,12 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-[machineSel,monthSel,modeSel].forEach(x=>x.addEventListener('change',()=>{const info=$('graphTapDetail');if(info)info.hidden=true;render();graphRangeControls();if(x===monthSel&&$('weekdayPeriodSel')?.value==='CHART')renderWeekdaySection();}));window.addEventListener('resize',()=>{if(RECORDS.length)render();});function showChartTooltip(e){
+[machineSel,monthSel,modeSel].forEach(x=>x.addEventListener('change',()=>{const info=$('graphTapDetail');if(info)info.hidden=true;render();graphRangeControls();if(x===monthSel){
+  if(graphCustomRange.active){
+    graphCustomRange={start:'',end:'',active:false};syncGraphDateFields();setGraphDateNotice(graphDateDefaultMessage());
+  }
+  if($('weekdayPeriodSel')?.value==='CHART')renderWeekdaySection();
+}}));window.addEventListener('resize',()=>{if(RECORDS.length)render();});function showChartTooltip(e){
  if(graphZoomTouches.size>=2||graphZoomPinch)return;
  if(!points.length)return;
  const r=canvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
