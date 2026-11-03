@@ -96,6 +96,8 @@ panel.innerHTML=[
 '<p class="df-note">「達成割合」の分母は、指定した台番・期間・曜日・G数・BIG/REG条件に合う稼働日数（台・日）です。修理・0G日は除きます。「翌日」「3日間」「7日間」は該当日の翌日からの差枚合計で、欠損日・0G日がある場合や結果が未取得の場合は除外します。同じ台が連日条件達成すると将来期間が重複するため、各例を独立した予測成功例とは扱えません。過去の成績は将来の当選確率や期待収支を保証しません。</p>'
 ].join('');
 const before=$('weekdayPanel')||$('tablePanel');if(before&&before.parentNode===root)root.insertBefore(panel,before);else root.appendChild(panel);
+// 他の分析欄と同じく、データ取得前から閉じた状態で表示する。
+if(typeof window.makeFoldable==='function')window.makeFoldable(panel);
 function dateShift(date,days){
  const ms=Date.parse(date+'T12:00:00Z');if(!Number.isFinite(ms))return'';
  return new Date(ms+days*86400000).toISOString().slice(0,10);
