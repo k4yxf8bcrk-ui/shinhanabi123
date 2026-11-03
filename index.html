@@ -1338,7 +1338,15 @@ graphFocusStore.addEventListener('change',()=>{
   window.location.assign(url.toString());
 });
 for(const [dst,src] of [[graphFocusMachine,machineSel],[graphFocusMonth,monthSel],[graphFocusMode,modeSel]]){
-  dst.addEventListener('change',()=>{src.value=dst.value;graphZoomResetState();focusSyncFromMain();render();});
+  dst.addEventListener('change',()=>{
+    src.value=dst.value;
+    if(src===monthSel&&graphCustomRange.active){
+      graphCustomRange={start:'',end:'',active:false};
+      syncGraphDateFields();setGraphDateNotice(graphDateDefaultMessage());
+    }
+    graphZoomResetState();focusSyncFromMain();render();graphRangeControls();
+    if(src===monthSel&&$('weekdayPeriodSel')?.value==='CHART')renderWeekdaySection();
+  });
 }
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&!graphFocusLayer.hidden){e.preventDefault();graphFocusClose();}
@@ -1350,12 +1358,15 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-[machineSel,monthSel,modeSel].forEach(x=>x.addEventListener('change',()=>{const info=$('graphTapDetail');if(info)info.hidden=true;render();graphRangeControls();if(x===monthSel){
-  if(graphCustomRange.active){
-    graphCustomRange={start:'',end:'',active:false};syncGraphDateFields();setGraphDateNotice(graphDateDefaultMessage());
+[machineSel,monthSel,modeSel].forEach(x=>x.addEventListener('change',()=>{
+  const info=$('graphTapDetail');if(info)info.hidden=true;
+  if(x===monthSel&&graphCustomRange.active){
+    graphCustomRange={start:'',end:'',active:false};
+    syncGraphDateFields();setGraphDateNotice(graphDateDefaultMessage());
   }
-  if($('weekdayPeriodSel')?.value==='CHART')renderWeekdaySection();
-}}));window.addEventListener('resize',()=>{if(RECORDS.length)render();});function showChartTooltip(e){
+  render();graphRangeControls();
+  if(x===monthSel&&$('weekdayPeriodSel')?.value==='CHART')renderWeekdaySection();
+}));window.addEventListener('resize',()=>{if(RECORDS.length)render();});function showChartTooltip(e){
  if(graphZoomTouches.size>=2||graphZoomPinch)return;
  if(!points.length)return;
  const r=canvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
