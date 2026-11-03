@@ -7,7 +7,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const f=n=>Math.round(Number(n)||0).toLocaleString('ja-JP');
 const signed=n=>(Number(n)>0?'+':'')+f(n);
 const week=['日','月','火','水','木','金','土'];
-const state={records:[],latest:'',earliest:'',byMachine:new Map(),lastResult:[],limit:50,loaded:false};
+const state={records:[],latest:'',earliest:'',byMachine:new Map(),lastResult:[],sortedResult:[],limit:50,loaded:false};
 const css=document.createElement('style');
 css.textContent=[
 '#diffFinderPanel{border-color:#bfd7eb}',
@@ -15,6 +15,7 @@ css.textContent=[
 '#diffFinderPanel .df-preset{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0 14px}',
 '#diffFinderPanel .df-preset button{border:1px solid #aabfd6;background:#fff;border-radius:9px;color:#25527c;font-size:13px;font-weight:800;padding:9px 12px;cursor:pointer;min-height:40px}',
 '#diffFinderPanel .df-preset button.df-on{background:#2369aa;color:#fff;border-color:#2369aa}',
+'#diffFinderPanel [hidden]{display:none!important}',
 '#diffFinderPanel .df-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}',
 '#diffFinderPanel .df-field{display:flex;flex-direction:column;gap:5px;min-width:0;font-size:12px;color:#45566a;font-weight:800}',
 '#diffFinderPanel .df-field select,#diffFinderPanel .df-field input{width:100%;min-width:0;min-height:41px;background:#fff;border:1px solid #bfcbd8;border-radius:8px;font-size:14px;color:#1b2638;padding:8px 9px}',
@@ -62,7 +63,7 @@ panel.innerHTML=[
 '<button type="button" data-val="2500">+2,500枚以上</button>',
 '<button type="button" data-val="3000">+3,000枚以上</button>',
 '<button type="button" data-val="1000">+1,000枚以上</button>',
-'<button type="button" data-val="0">プラスのみ</button>',
+'<button type="button" data-val="1">プラスのみ</button>',
 '</div>',
 '<div class="df-form">',
 '<label class="df-field">台番<select id="dfMachine"><option value="ALL">すべての台</option></select></label>',
@@ -228,6 +229,7 @@ function renderTable(enriched){
   return b.row.date.localeCompare(a.row.date)||Number(a.row.machineNo)-Number(b.row.machineNo);
  });
  $('dfListCount').textContent='（'+sorted.length+'件）';
+ state.sortedResult=sorted;
  const list=sorted.slice(0,state.limit);
  const outcome=x=>x===null?'<span class="df-muted">未取得・対象外</span>':'<span class="'+(x>0?'df-positive':x<0?'df-negative':'')+'">'+signed(x)+'</span>';
  $('dfList').innerHTML=sorted.length?
@@ -239,7 +241,7 @@ function renderTable(enriched){
  if(!more.hidden)more.textContent='さらに'+Math.min(50,sorted.length-state.limit)+'件表示（残り'+(sorted.length-state.limit)+'件）';
 }
 function downloadCsv(){
- const rows=state.lastResult;if(!rows.length)return;
+ const rows=state.sortedResult;if(!rows.length)return;
  const first=['日付','曜日','台番','G数','BIG','REG','差枚数','翌日差枚','翌日から3日間','翌日から7日間'];
  const data=[first,...rows.map(x=>[x.row.date,week[weekday(x.row.date)],x.row.machineNo,x.row.games,x.row.bb,x.row.rb,x.row.diff,x.next1??'',x.next3??'',x.next7??''])];
  const csv='\ufeff'+data.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
