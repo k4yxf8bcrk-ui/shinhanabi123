@@ -620,7 +620,14 @@ function renderPredictions(){
   else if(AI_ANALYSIS&&AI_ANALYSIS.sourceLatestDate===latestDate&&!compositionChanged){
     const ranks=rawRanks.filter(x=>!x.machineNo||activeSet.has(String(x.machineNo))),watch=Array.isArray(AI_ANALYSIS.watchPoints)?AI_ANALYSIS.watchPoints:[];
     box.innerHTML='<h3>Gemini AI分析</h3>'+forecastDateHtml(AI_ANALYSIS.targetDate,AI_ANALYSIS.sourceLatestDate,'Gemini AI予想')+'<div>'+esc(AI_ANALYSIS.summary||'')+'</div>'+(ranks.length?'<div class="aiRank">'+ranks.map((x,i)=>'<div class="aiRankCard"><div class="aiRankHead"><span class="rankNo">'+(i+1)+'位</span><span class="machineStrong">'+esc(x.machineNo||'')+'</span>'+(x.confidence?'<span class="conf">信頼度 '+esc(x.confidence)+'</span>':'')+'</div><div>'+esc(x.view||'')+'</div>'+(x.weekdayTrend?'<div class="aiDetail"><span>曜日傾向</span><span>'+esc(x.weekdayTrend)+'</span></div>':'')+(x.streakView?'<div class="aiDetail"><span>連勝/連敗</span><span>'+esc(x.streakView)+'</span></div>':'')+(x.recentView?'<div class="aiDetail"><span>直近</span><span>'+esc(x.recentView)+'</span></div>':'')+(x.graphTrend?'<div class="aiDetail"><span>グラフ傾向</span><span>'+esc(x.graphTrend)+'</span></div>':'')+(Array.isArray(x.plusFactors)&&x.plusFactors.length?'<div class="factors plus"><span>良い材料</span>'+x.plusFactors.map(v=>'<em>'+esc(v)+'</em>').join('')+'</div>':'')+(Array.isArray(x.minusFactors)&&x.minusFactors.length?'<div class="factors minus"><span>悪い材料</span>'+x.minusFactors.map(v=>'<em>'+esc(v)+'</em>').join('')+'</div>':'')+'</div>').join('')+'</div>':'')+(watch.length?'<div class="aiWatch"><b>今日見るポイント</b><ul>'+watch.map(v=>'<li>'+esc(v)+'</li>').join('')+'</ul></div>':'')+(AI_ANALYSIS.caution?'<div class="muted" style="margin-top:8px">'+esc(AI_ANALYSIS.caution)+'</div>':'');
-  }else{box.innerHTML='<h3>Gemini AI分析</h3>'+(AI_ANALYSIS?.targetDate?forecastDateHtml(AI_ANALYSIS.targetDate,AI_ANALYSIS.sourceLatestDate,'Gemini AI予想'):'')+'<div class="muted">'+(compositionChanged?'台構成が変わったため、撤去済み台を除外してAI分析を再実行してください。':'最新データに対するAI分析はまだありません。')+'</div>';}
+  }else{
+    const saved=mergedGeminiHistory(),last=saved[saved.length-1]||null;
+    const lastLabel=last?.targetDate?'保存済みの最終Gemini予想：'+esc(last.targetDate)+'（基準データ：'+esc(last.sourceLatestDate||'不明')+'）。':'過去のGemini予想履歴はありません。';
+    box.innerHTML='<h3>Gemini AI分析</h3>'+
+      '<div class="muted">最新データ：'+esc(latestDate)+'。'+lastLabel+'</div>'+
+      '<div class="muted">'+(compositionChanged?'台構成が変わったため、撤去済み台を除外してAI分析を再実行してください。':'最新データに対するGemini AI予想はまだ公開されていません。')+'</div>'+
+      '<div class="tiny" style="margin-top:8px">PCのChrome拡張機能から「AIで今日を分析してGitHubへ公開」を実行してください。GitHub公開失敗の場合は拡張機能に原因が表示されます（v5.14.1以降）。</div>';
+  }
   $('predictionPanel').hidden=false;
 }
 
