@@ -1,6 +1,6 @@
 {
   "schemaVersion": 4,
-  "generatedAt": "2026-11-03T23:11:47.491Z",
+  "generatedAt": "2026-11-05T21:56:41.489Z",
   "records": [
     {
       "date": "2025-09-11",
@@ -18136,6 +18136,84 @@
       "bbProb": 607.5,
       "rbProb": 405,
       "collectedAt": "2026-11-03T22:25:51.717Z"
+    },
+    {
+      "date": "2026-11-04",
+      "weekday": "水",
+      "machineNo": "3232",
+      "games": 4321,
+      "diff": -161,
+      "bb": 17,
+      "rb": 7,
+      "totalProb": 180,
+      "bbProb": 254.2,
+      "rbProb": 617.3,
+      "collectedAt": "2026-11-05T21:55:56.241Z"
+    },
+    {
+      "date": "2026-11-04",
+      "weekday": "水",
+      "machineNo": "3233",
+      "games": 1439,
+      "diff": -1008,
+      "bb": 1,
+      "rb": 7,
+      "totalProb": 179.9,
+      "bbProb": 1439,
+      "rbProb": 205.6,
+      "collectedAt": "2026-11-05T21:55:56.241Z"
+    },
+    {
+      "date": "2026-11-04",
+      "weekday": "水",
+      "machineNo": "3235",
+      "games": 1459,
+      "diff": -261,
+      "bb": 4,
+      "rb": 4,
+      "totalProb": 182.4,
+      "bbProb": 364.8,
+      "rbProb": 364.8,
+      "collectedAt": "2026-11-05T21:55:56.241Z"
+    },
+    {
+      "date": "2026-11-05",
+      "weekday": "木",
+      "machineNo": "3232",
+      "games": 4770,
+      "diff": 306,
+      "bb": 16,
+      "rb": 14,
+      "totalProb": 159,
+      "bbProb": 298.1,
+      "rbProb": 340.7,
+      "collectedAt": "2026-11-05T21:55:21.347Z"
+    },
+    {
+      "date": "2026-11-05",
+      "weekday": "木",
+      "machineNo": "3233",
+      "games": 3690,
+      "diff": 594,
+      "bb": 14,
+      "rb": 12,
+      "totalProb": 141.9,
+      "bbProb": 263.6,
+      "rbProb": 307.5,
+      "collectedAt": "2026-11-05T21:55:21.347Z"
+    },
+    {
+      "date": "2026-11-05",
+      "weekday": "木",
+      "machineNo": "3235",
+      "games": 5112,
+      "diff": 1108,
+      "bb": 19,
+      "rb": 22,
+      "totalProb": 124.7,
+      "bbProb": 269.1,
+      "rbProb": 232.4,
+      "collectedAt": "2026-11-05T21:55:21.347Z"
     }
   ],
   "aiAnalysis": null,
