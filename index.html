@@ -223,6 +223,11 @@ body.graphFocusOpen{overflow:hidden}
 @media (pointer:coarse) and (max-width:700px), (pointer:coarse) and (orientation:landscape) and (max-height:650px){
  .graphDateBar button.pointPicker,.graphDateBar .pointPickerHint{display:none!important}
 }
+/* グラフ上の点の表示・非表示切替。通常表示と拡大表示で共有する */
+.graphPointToggleBar{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:5px 2px}
+.graphPointToggleBar label{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#34506f;cursor:pointer;white-space:nowrap}
+.graphPointToggleBar input[type=checkbox]{width:17px;height:17px;margin:0;accent-color:#245f9e;cursor:pointer}
+.graphFocusLayer .graphPointToggleBar{padding:4px 11px;background:#f8fbff;border-bottom:1px solid #e2e8f0;flex:0 0 auto}
 .chartWrap canvas.pointPicking{cursor:crosshair}
 
 .graphDateBar button:focus-visible,.graphDateBar input:focus-visible{outline:3px solid #e6a83f;outline-offset:2px}
@@ -326,6 +331,7 @@ body.graphFocusOpen{overflow:hidden}
     <div id="repairSummary" class="repairSummary" hidden></div>
     <div id="graphQuickRanges" class="graphRangeBar" aria-label="表示する日数"><span class="graphRangeCaption">スマホ用：グラフの表示期間（タップで切替）</span></div>
     <div id="graphRangeInfo" class="graphRangeInfo"></div>
+    <div class="graphPointToggleBar"><label for="showGraphPoints"><input type="checkbox" id="showGraphPoints" checked> 点を表示</label></div>
     <div class="chartWrap"><canvas id="chart"></canvas><div id="tooltip" class="tooltip"></div><div id="graphTapDetail" class="graphTapDetail" hidden aria-live="polite"></div></div>
     <div id="legend" class="legend"></div>
     <div id="trendBox" class="trendBox"></div>
@@ -430,6 +436,7 @@ body.graphFocusOpen{overflow:hidden}
       <div id="graphFocusDateNotice" class="graphDateNotice" role="status" aria-live="polite">日付を自由に指定できます（開始日だけ・終了日だけも可）。</div>
     </div>
     <div id="graphFocusRangeBar" class="graphRangeBar" aria-label="拡大グラフの表示期間"><span class="graphRangeCaption">表示期間</span></div>
+    <div class="graphPointToggleBar"><label for="showGraphPointsFocus"><input type="checkbox" id="showGraphPointsFocus" checked> 点を表示</label></div>
     <div id="focusChartSlot"></div>
     <div id="graphFocusStats" class="graphFocusStats" aria-label="選択中のグラフの実績"></div>
     <div id="graphFocusFoot" class="graphFocusFoot">点に触れると差枚を確認できます</div>
@@ -781,6 +788,20 @@ const GRAPH_RANGES=[['7','7日'],['14','14日'],['30','30日'],['90','90日'],['
 
 let graphCustomRange={start:'',end:'',active:false};
 
+/* 点の表示設定は通常グラフと拡大グラフで共通。初期値は表示。 */
+let showGraphPoints=true;
+function setupGraphPointToggles(){
+  const controls=[$('showGraphPoints'),$('showGraphPointsFocus')].filter(Boolean);
+  controls.forEach(el=>{
+    el.checked=showGraphPoints;
+    el.addEventListener('change',()=>{
+      showGraphPoints=el.checked;
+      controls.forEach(other=>{other.checked=showGraphPoints;});
+      draw(daily(filtered()));
+    });
+  });
+}
+
 let pointPickActive=false,pointPickStart='',pointPickDown=null;
 function updatePointPickUI(){
   for(const key of ['graphDate','graphFocusDate']){
@@ -976,8 +997,8 @@ const zoomYAxis=modeSel.value!=='daily'&&((graphMobileRange!=='ALL'&&modeSel.val
 if(!zoomYAxis){min=Math.min(0,min);max=Math.max(0,max);}
 if(max===min){max+=100;min-=100;}
 if(zoomYAxis){const pad=(max-min)*.06;min-=pad;max+=pad;}
-const range=max-min||1,x=i=>p.l+(data.length===1?w/2:i*w/(data.length-1)),y=v=>p.t+(max-v)*h/range;c.strokeStyle='#e4e8ee';c.fillStyle='#6b7280';c.font=phonePortrait?'11px system-ui':'12px system-ui';for(let i=0;i<=4;i++){const val=max-range*i/4,yy=p.t+h*i/4;c.beginPath();c.moveTo(p.l,yy);c.lineTo(p.l+w,yy);c.stroke();c.textAlign='right';c.textBaseline='middle';c.fillText(Math.round(val).toLocaleString('ja-JP'),p.l-8,yy);}if(min<0&&max>0){c.strokeStyle='#9aa0a6';c.beginPath();c.moveTo(p.l,y(0));c.lineTo(p.l+w,y(0));c.stroke();}const mode=modeSel.value;if(mode==='daily'){const bw=Math.max(2,Math.min(14,w/Math.max(1,data.length)*.72)),y0=y(0);data.forEach((d,i)=>{const yy=y(d.value);c.fillStyle=d.repair?'#8b9ab0':d.value>=0?'#1a73e8':'#d93025';c.fillRect(x(i)-bw/2,d.repair?y0-2:Math.min(yy,y0),bw,d.repair?4:Math.max(1,Math.abs(y0-yy)));});}else if(mode==='cumulative'){for(let i=1;i<data.length;i++){c.strokeStyle=data[i].repair?'#7d8da3':data[i].diff>0?'#1a73e8':data[i].diff<0?'#d93025':'#9aa0a6';c.setLineDash(data[i].repair?[4,4]:[]);c.lineWidth=phonePortrait?.85:1.15;c.beginPath();c.moveTo(x(i-1),y(data[i-1].value));c.lineTo(x(i),y(data[i].value));c.stroke();c.setLineDash([]);}data.forEach((d,i)=>{c.beginPath();c.fillStyle=d.repair?'#7d8da3':d.diff>0?'#1a73e8':d.diff<0?'#d93025':'#9aa0a6';c.arc(x(i),y(d.value),pointRadius,0,Math.PI*2);c.fill();if(!densePhone){c.strokeStyle='#fff';c.lineWidth=phonePortrait?.6:1;c.stroke();}});}else{c.strokeStyle='#1a73e8';c.lineWidth=phonePortrait?.85:1.15;c.beginPath();data.forEach((d,i)=>i?c.lineTo(x(i),y(d.value)):c.moveTo(x(i),y(d.value)));c.stroke();data.forEach((d,i)=>{c.beginPath();c.fillStyle=d.value>=0?'#1a73e8':'#d93025';c.arc(x(i),y(d.value),pointRadius,0,Math.PI*2);c.fill();});}const maxLabels=Math.min(6,Math.max(2,Math.floor(w/(phonePortrait?90:150)))),step=Math.max(1,Math.ceil((data.length-1)/Math.max(1,maxLabels-1)));c.fillStyle='#6b7280';c.font=phonePortrait?'11px system-ui':'11px system-ui';c.textAlign='center';c.textBaseline='top';data.forEach((d,i)=>{if(phonePortrait?(i===0||i===data.length-1||(i%step===0&&i+Math.max(1,Math.round(step*.45))<data.length-1)):(i%step===0||i===data.length-1))c.fillText(d.label,x(i),p.t+h+(phonePortrait?8:10));});points=data.map((d,i)=>({x:x(i),y:y(d.value),d}));
-if(pointPickActive&&pointPickStart){
+const range=max-min||1,x=i=>p.l+(data.length===1?w/2:i*w/(data.length-1)),y=v=>p.t+(max-v)*h/range;c.strokeStyle='#e4e8ee';c.fillStyle='#6b7280';c.font=phonePortrait?'11px system-ui':'12px system-ui';for(let i=0;i<=4;i++){const val=max-range*i/4,yy=p.t+h*i/4;c.beginPath();c.moveTo(p.l,yy);c.lineTo(p.l+w,yy);c.stroke();c.textAlign='right';c.textBaseline='middle';c.fillText(Math.round(val).toLocaleString('ja-JP'),p.l-8,yy);}if(min<0&&max>0){c.strokeStyle='#9aa0a6';c.beginPath();c.moveTo(p.l,y(0));c.lineTo(p.l+w,y(0));c.stroke();}const mode=modeSel.value;if(mode==='daily'){const bw=Math.max(2,Math.min(14,w/Math.max(1,data.length)*.72)),y0=y(0);data.forEach((d,i)=>{const yy=y(d.value);c.fillStyle=d.repair?'#8b9ab0':d.value>=0?'#1a73e8':'#d93025';c.fillRect(x(i)-bw/2,d.repair?y0-2:Math.min(yy,y0),bw,d.repair?4:Math.max(1,Math.abs(y0-yy)));});}else if(mode==='cumulative'){for(let i=1;i<data.length;i++){c.strokeStyle=data[i].repair?'#7d8da3':data[i].diff>0?'#1a73e8':data[i].diff<0?'#d93025':'#9aa0a6';c.setLineDash(data[i].repair?[4,4]:[]);c.lineWidth=phonePortrait?.85:1.15;c.beginPath();c.moveTo(x(i-1),y(data[i-1].value));c.lineTo(x(i),y(data[i].value));c.stroke();c.setLineDash([]);}if(showGraphPoints)data.forEach((d,i)=>{c.beginPath();c.fillStyle=d.repair?'#7d8da3':d.diff>0?'#1a73e8':d.diff<0?'#d93025':'#9aa0a6';c.arc(x(i),y(d.value),pointRadius,0,Math.PI*2);c.fill();if(!densePhone){c.strokeStyle='#fff';c.lineWidth=phonePortrait?.6:1;c.stroke();}});}else{c.strokeStyle='#1a73e8';c.lineWidth=phonePortrait?.85:1.15;c.beginPath();data.forEach((d,i)=>i?c.lineTo(x(i),y(d.value)):c.moveTo(x(i),y(d.value)));c.stroke();if(showGraphPoints)data.forEach((d,i)=>{c.beginPath();c.fillStyle=d.value>=0?'#1a73e8':'#d93025';c.arc(x(i),y(d.value),pointRadius,0,Math.PI*2);c.fill();});}const maxLabels=Math.min(6,Math.max(2,Math.floor(w/(phonePortrait?90:150)))),step=Math.max(1,Math.ceil((data.length-1)/Math.max(1,maxLabels-1)));c.fillStyle='#6b7280';c.font=phonePortrait?'11px system-ui':'11px system-ui';c.textAlign='center';c.textBaseline='top';data.forEach((d,i)=>{if(phonePortrait?(i===0||i===data.length-1||(i%step===0&&i+Math.max(1,Math.round(step*.45))<data.length-1)):(i%step===0||i===data.length-1))c.fillText(d.label,x(i),p.t+h+(phonePortrait?8:10));});points=data.map((d,i)=>({x:x(i),y:y(d.value),d}));
+if(showGraphPoints&&pointPickActive&&pointPickStart){
   const p=points.find(x=>x.d.date===pointPickStart);
   if(p){c.beginPath();c.arc(p.x,p.y,8,0,Math.PI*2);c.strokeStyle='#ef9f16';c.lineWidth=3;c.stroke();}
 }
@@ -1298,6 +1319,7 @@ if(focusParams.get('focus')==='1'){
   if(requestedMonth&&[...monthSel.options].some(x=>x.value===requestedMonth))monthSel.value=requestedMonth;
 }
 setupGraphDateRange();
+setupGraphPointToggles();
 render();
 graphRangeControls();
 setupWeekdaySection();
