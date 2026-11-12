@@ -210,20 +210,11 @@ body.graphFocusOpen{overflow:hidden}
 .graphRangeBar button:focus-visible{outline:3px solid #e6a83f;outline-offset:2px}
 .graphRangeInfo{font-size:12px;color:#536277;margin:7px 0 5px}
 
-/* 差枚グラフ用・開始日／終了日の任意指定。通常表示と拡大表示の両方で使用 */
-.graphDateBar{display:flex;align-items:flex-end;flex-wrap:wrap;gap:8px;margin:10px 0 5px;padding:10px 12px;background:#f8fbff;border:1px solid #dbe5f2;border-radius:10px}
-.graphDateBar label{display:flex;flex:1 1 145px;min-width:128px;flex-direction:column;gap:4px;font-size:12px;font-weight:750;color:#34506f}
-.graphDateBar input[type=date]{box-sizing:border-box;min-height:40px;width:100%;max-width:100%;border:1px solid #b9c9df;border-radius:7px;padding:7px;color:#223348;background:#fff;font-size:14px}
-.graphDateBar button{min-height:40px;border:1px solid #b9c9df;border-radius:8px;padding:8px 13px;background:white;color:#245f9e;font-weight:800;cursor:pointer;touch-action:manipulation}
 /* グラフ上の点の表示・非表示切替。通常表示と拡大表示で共有する */
 .graphPointToggleBar{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:5px 2px}
 .graphPointToggleBar label{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#34506f;cursor:pointer;white-space:nowrap}
 .graphPointToggleBar input[type=checkbox]{width:17px;height:17px;margin:0;accent-color:#245f9e;cursor:pointer}
 .graphFocusLayer .graphPointToggleBar{padding:4px 11px;background:#f8fbff;border-bottom:1px solid #e2e8f0;flex:0 0 auto}
-
-.graphDateBar button:focus-visible,.graphDateBar input:focus-visible{outline:3px solid #e6a83f;outline-offset:2px}
-.graphDateBar .graphDateNotice{flex-basis:100%;font-size:12px;color:#536277;line-height:1.5}
-@media(max-width:700px){.graphDateBar{padding:9px}.graphDateBar label{flex:1 1 calc(50% - 6px);min-width:0}.graphDateBar button{flex:1 1 110px}}
 
 .graphTapDetail{position:absolute;bottom:7px;left:7px;right:7px;z-index:3;padding:9px 10px;border-radius:8px;background:rgba(23,40,61,.94);color:#fff;font-size:13px;font-weight:700;line-height:1.55;box-shadow:0 2px 12px rgba(0,0,0,.18);pointer-events:none}
 .graphTapDetail[hidden]{display:none!important}
@@ -307,12 +298,6 @@ body.graphFocusOpen{overflow:hidden}
       <label>台番<select id="machineSel"></select></label>
       <label>期間<select id="monthSel"></select></label>
       <label>グラフ<select id="modeSel"><option value="cumulative">累計差枚</option><option value="daily">日別差枚</option><option value="monthly">月別差枚</option></select></label>
-    </div>
-    <div id="graphDateBar" class="graphDateBar" aria-label="差枚グラフの指定日付">
-      <label for="graphDateStart">開始日<input id="graphDateStart" type="date"></label>
-      <label for="graphDateEnd">終了日<input id="graphDateEnd" type="date"></label>
-      <button type="button" id="graphDateClear">日付指定を解除</button>
-      <div id="graphDateNotice" class="graphDateNotice" role="status" aria-live="polite">日付を自由に指定できます（開始日だけ・終了日だけも可）。</div>
     </div>
     <div class="graphFocusLaunch"><button type="button" id="graphFocusOpen" aria-controls="graphFocusLayer" aria-haspopup="dialog">⛶ グラフだけ表示</button><small>スマホで拡大表示できます。横向きもおすすめです。</small></div>
     <div id="cards" class="cards"></div>
@@ -413,12 +398,6 @@ body.graphFocusOpen{overflow:hidden}
       <label for="graphFocusMachine">台番<select id="graphFocusMachine"></select></label>
       <label for="graphFocusMonth">期間<select id="graphFocusMonth"></select></label>
       <label for="graphFocusMode">グラフ<select id="graphFocusMode"></select></label>
-    </div>
-    <div id="graphFocusDateBar" class="graphDateBar" aria-label="差枚グラフの指定日付">
-      <label for="graphFocusDateStart">開始日<input id="graphFocusDateStart" type="date"></label>
-      <label for="graphFocusDateEnd">終了日<input id="graphFocusDateEnd" type="date"></label>
-      <button type="button" id="graphFocusDateClear">日付指定を解除</button>
-      <div id="graphFocusDateNotice" class="graphDateNotice" role="status" aria-live="polite">日付を自由に指定できます（開始日だけ・終了日だけも可）。</div>
     </div>
     <div id="graphFocusRangeBar" class="graphRangeBar" aria-label="拡大グラフの表示期間"><span class="graphRangeCaption">表示期間</span></div>
     <div class="graphPointToggleBar"><label for="showGraphPointsFocus"><input type="checkbox" id="showGraphPointsFocus" checked> 点を表示</label></div>
@@ -830,17 +809,6 @@ function applyGraphDateRange(key){
   render();graphRangeControls();
   if($('weekdayPeriodSel')?.value==='CHART')renderWeekdaySection();
 }
-function setupGraphDateRange(){
-  for(const key of ['graphDate','graphFocusDate']){
-    // 日付を確定した時点で自動適用する。
-    for(const field of ['Start','End']){
-      $(key+field).addEventListener('change',()=>applyGraphDateRange(key));
-    }
-    $(key+'Clear').addEventListener('click',()=>clearGraphDateRange());
-  }
-  syncGraphDateFields();
-}
-
 function graphWindowSeries(all){
   if(!Array.isArray(all)||modeSel.value==='monthly'||graphMobileRange==='ALL')return all;
   const count=Number(graphMobileRange);
@@ -1234,7 +1202,6 @@ if(focusParams.get('focus')==='1'){
   const requestedMonth=focusParams.get('focusMonth');
   if(requestedMonth&&[...monthSel.options].some(x=>x.value===requestedMonth))monthSel.value=requestedMonth;
 }
-setupGraphDateRange();
 setupGraphPointToggles();
 render();
 graphRangeControls();
