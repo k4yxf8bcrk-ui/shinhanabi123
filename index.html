@@ -215,7 +215,6 @@ body.graphFocusOpen{overflow:hidden}
 .graphDateBar label{display:flex;flex:1 1 145px;min-width:128px;flex-direction:column;gap:4px;font-size:12px;font-weight:750;color:#34506f}
 .graphDateBar input[type=date]{box-sizing:border-box;min-height:40px;width:100%;max-width:100%;border:1px solid #b9c9df;border-radius:7px;padding:7px;color:#223348;background:#fff;font-size:14px}
 .graphDateBar button{min-height:40px;border:1px solid #b9c9df;border-radius:8px;padding:8px 13px;background:white;color:#245f9e;font-weight:800;cursor:pointer;touch-action:manipulation}
-.graphDateBar button.graphDateApply{background:#245f9e;border-color:#245f9e;color:#fff}
 /* グラフ上の点の表示・非表示切替。通常表示と拡大表示で共有する */
 .graphPointToggleBar{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:5px 2px}
 .graphPointToggleBar label{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#34506f;cursor:pointer;white-space:nowrap}
@@ -312,7 +311,6 @@ body.graphFocusOpen{overflow:hidden}
     <div id="graphDateBar" class="graphDateBar" aria-label="差枚グラフの指定日付">
       <label for="graphDateStart">開始日<input id="graphDateStart" type="date"></label>
       <label for="graphDateEnd">終了日<input id="graphDateEnd" type="date"></label>
-      <button type="button" id="graphDateApply" class="graphDateApply">この期間を表示</button>
       <button type="button" id="graphDateClear">日付指定を解除</button>
       <div id="graphDateNotice" class="graphDateNotice" role="status" aria-live="polite">日付を自由に指定できます（開始日だけ・終了日だけも可）。</div>
     </div>
@@ -419,7 +417,6 @@ body.graphFocusOpen{overflow:hidden}
     <div id="graphFocusDateBar" class="graphDateBar" aria-label="差枚グラフの指定日付">
       <label for="graphFocusDateStart">開始日<input id="graphFocusDateStart" type="date"></label>
       <label for="graphFocusDateEnd">終了日<input id="graphFocusDateEnd" type="date"></label>
-      <button type="button" id="graphFocusDateApply" class="graphDateApply">この期間を表示</button>
       <button type="button" id="graphFocusDateClear">日付指定を解除</button>
       <div id="graphFocusDateNotice" class="graphDateNotice" role="status" aria-live="polite">日付を自由に指定できます（開始日だけ・終了日だけも可）。</div>
     </div>
@@ -835,7 +832,10 @@ function applyGraphDateRange(key){
 }
 function setupGraphDateRange(){
   for(const key of ['graphDate','graphFocusDate']){
-    $(key+'Apply').addEventListener('click',()=>applyGraphDateRange(key));
+    // 日付の確定時に自動適用し、「この期間を表示」ボタンを不要にする。
+    for(const field of ['Start','End']){
+      $(key+field).addEventListener('change',()=>applyGraphDateRange(key));
+    }
     $(key+'Clear').addEventListener('click',()=>clearGraphDateRange());
   }
   syncGraphDateFields();
