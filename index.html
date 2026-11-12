@@ -832,7 +832,7 @@ function applyGraphDateRange(key){
 }
 function setupGraphDateRange(){
   for(const key of ['graphDate','graphFocusDate']){
-    // 日付の確定時に自動適用し、「この期間を表示」ボタンを不要にする。
+    // 日付を確定した時点で自動適用する。
     for(const field of ['Start','End']){
       $(key+field).addEventListener('change',()=>applyGraphDateRange(key));
     }
