@@ -216,19 +216,11 @@ body.graphFocusOpen{overflow:hidden}
 .graphDateBar input[type=date]{box-sizing:border-box;min-height:40px;width:100%;max-width:100%;border:1px solid #b9c9df;border-radius:7px;padding:7px;color:#223348;background:#fff;font-size:14px}
 .graphDateBar button{min-height:40px;border:1px solid #b9c9df;border-radius:8px;padding:8px 13px;background:white;color:#245f9e;font-weight:800;cursor:pointer;touch-action:manipulation}
 .graphDateBar button.graphDateApply{background:#245f9e;border-color:#245f9e;color:#fff}
-.graphDateBar button.pointPicker{flex:1 1 100%;background:#eaf3ff;color:#245f9e;border:2px solid #245f9e}
-.graphDateBar button.pointPicker[aria-pressed="true"]{background:#245f9e;color:white}
-.graphDateBar .pointPickerHint{font-size:12px;color:#536277;flex-basis:100%}
-/* スマホでは点から期間選択するボタンと説明だけ非表示。日付入力とPCの操作は維持。 */
-@media (pointer:coarse) and (max-width:700px), (pointer:coarse) and (orientation:landscape) and (max-height:650px){
- .graphDateBar button.pointPicker,.graphDateBar .pointPickerHint{display:none!important}
-}
 /* グラフ上の点の表示・非表示切替。通常表示と拡大表示で共有する */
 .graphPointToggleBar{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:5px 2px}
 .graphPointToggleBar label{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#34506f;cursor:pointer;white-space:nowrap}
 .graphPointToggleBar input[type=checkbox]{width:17px;height:17px;margin:0;accent-color:#245f9e;cursor:pointer}
 .graphFocusLayer .graphPointToggleBar{padding:4px 11px;background:#f8fbff;border-bottom:1px solid #e2e8f0;flex:0 0 auto}
-.chartWrap canvas.pointPicking{cursor:crosshair}
 
 .graphDateBar button:focus-visible,.graphDateBar input:focus-visible{outline:3px solid #e6a83f;outline-offset:2px}
 .graphDateBar .graphDateNotice{flex-basis:100%;font-size:12px;color:#536277;line-height:1.5}
@@ -322,8 +314,6 @@ body.graphFocusOpen{overflow:hidden}
       <label for="graphDateEnd">終了日<input id="graphDateEnd" type="date"></label>
       <button type="button" id="graphDateApply" class="graphDateApply">この期間を表示</button>
       <button type="button" id="graphDateClear">日付指定を解除</button>
-      <button type="button" id="graphDatePick" class="pointPicker" aria-pressed="false">● グラフの点から期間を選ぶ</button>
-      <div class="pointPickerHint">開始日の点をタップし、続いて終了日の点をタップしてください。</div>
       <div id="graphDateNotice" class="graphDateNotice" role="status" aria-live="polite">日付を自由に指定できます（開始日だけ・終了日だけも可）。</div>
     </div>
     <div class="graphFocusLaunch"><button type="button" id="graphFocusOpen" aria-controls="graphFocusLayer" aria-haspopup="dialog">⛶ グラフだけ表示</button><small>スマホで拡大表示できます。横向きもおすすめです。</small></div>
@@ -431,8 +421,6 @@ body.graphFocusOpen{overflow:hidden}
       <label for="graphFocusDateEnd">終了日<input id="graphFocusDateEnd" type="date"></label>
       <button type="button" id="graphFocusDateApply" class="graphDateApply">この期間を表示</button>
       <button type="button" id="graphFocusDateClear">日付指定を解除</button>
-      <button type="button" id="graphFocusDatePick" class="pointPicker" aria-pressed="false">● グラフの点から期間を選ぶ</button>
-      <div class="pointPickerHint">開始日の点をタップし、続いて終了日の点をタップしてください。</div>
       <div id="graphFocusDateNotice" class="graphDateNotice" role="status" aria-live="polite">日付を自由に指定できます（開始日だけ・終了日だけも可）。</div>
     </div>
     <div id="graphFocusRangeBar" class="graphRangeBar" aria-label="拡大グラフの表示期間"><span class="graphRangeCaption">表示期間</span></div>
@@ -806,74 +794,6 @@ function setupGraphPointToggles(){
   });
 }
 
-let pointPickActive=false,pointPickStart='',pointPickDown=null;
-function updatePointPickUI(){
-  for(const key of ['graphDate','graphFocusDate']){
-    const b=$(key+'Pick');
-    if(!b)continue;
-    b.setAttribute('aria-pressed',pointPickActive?'true':'false');
-    b.textContent=pointPickActive?(pointPickStart?'● 終了日の点をタップ':'● 開始日の点をタップ'):'● グラフの点から期間を選ぶ';
-  }
-  canvas.classList.toggle('pointPicking',pointPickActive);
-}
-function resetPointPick(){pointPickActive=false;pointPickStart='';pointPickDown=null;updatePointPickUI();}
-function togglePointPick(){
-  if(modeSel.value==='monthly'){
-    setGraphDateNotice('点での日付指定は、累計差枚または日別差枚で使用してください。',true);return;
-  }
-  if(pointPickActive){
-    resetPointPick();syncGraphDateFields();
-    setGraphDateNotice(graphDateDefaultMessage());
-  }else{
-    pointPickActive=true;pointPickStart='';pointPickDown=null;updatePointPickUI();
-    setGraphDateNotice('まず、グラフの開始日の点をタップしてください。');
-  }
-  draw(daily(filtered()));
-}
-function choosePointDate(e){
-  if(!pointPickActive||!points.length||graphZoomPinch||graphZoomTouches.size>1)return;
-  const r=canvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
-  let chosen=null,dist=Infinity;
-  for(const p of points){
-    const dx=Math.abs(p.x-mx),dy=Math.abs(p.y-my);
-    const score=e.pointerType==='mouse'?Math.hypot(dx,dy):dx+Math.min(dy,40)*.08;
-    if(score<dist){chosen=p;dist=score;}
-  }
-  if(!chosen||dist>(e.pointerType==='mouse'?28:Math.max(22,r.width/Math.max(2,points.length-1))))return;
-  const d=String(chosen.d.date||'');
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return;
-  if(!pointPickStart){
-    pointPickStart=d;
-    for(const key of ['graphDate','graphFocusDate']){$(key+'Start').value=d;$(key+'End').value='';}
-    updatePointPickUI();
-    setGraphDateNotice('開始日 '+d+' を選択。続いて終了日の点をタップしてください。');
-    const info=$('graphTapDetail');if(info){info.textContent='開始日 '+d+' を選択しました';info.hidden=false;}
-    tooltip.style.display='none';draw(daily(filtered()));
-  }else{
-    const a=pointPickStart;
-    for(const key of ['graphDate','graphFocusDate']){
-      $(key+'Start').value=a<=d?a:d;$(key+'End').value=a<=d?d:a;
-    }
-    resetPointPick();applyGraphDateRange('graphDate');
-  }
-}
-function setupPointPicker(){
-  for(const key of ['graphDate','graphFocusDate'])$(key+'Pick').addEventListener('click',togglePointPick);
-  canvas.addEventListener('pointerdown',e=>{
-    if(pointPickActive)pointPickDown={id:e.pointerId,x:e.clientX,y:e.clientY};
-  });
-  canvas.addEventListener('pointermove',e=>{
-    if(pointPickDown&&e.pointerId===pointPickDown.id&&Math.hypot(e.clientX-pointPickDown.x,e.clientY-pointPickDown.y)>12)pointPickDown=null;
-  });
-  canvas.addEventListener('pointerup',e=>{
-    if(!pointPickActive||!pointPickDown||e.pointerId!==pointPickDown.id)return;
-    const delta=Math.hypot(e.clientX-pointPickDown.x,e.clientY-pointPickDown.y);
-    pointPickDown=null;if(delta<=12)choosePointDate(e);
-  });
-  canvas.addEventListener('pointercancel',()=>{pointPickDown=null;});
-  updatePointPickUI();
-}
-
 function syncGraphDateFields(){
   for(const key of ['graphDate','graphFocusDate']){
     const from=$(key+'Start'),to=$(key+'End');
@@ -889,7 +809,6 @@ function setGraphDateNotice(message,error=false){
 }
 function graphDateDefaultMessage(){return '日付を自由に指定できます（開始日だけ・終了日だけも可）。';}
 function clearGraphDateRange(redraw=true){
-  resetPointPick();
   graphCustomRange={start:'',end:'',active:false};
   syncGraphDateFields();
   setGraphDateNotice(graphDateDefaultMessage());
@@ -900,7 +819,6 @@ function clearGraphDateRange(redraw=true){
   if(redraw){render();graphRangeControls();if($('weekdayPeriodSel')?.value==='CHART')renderWeekdaySection();}
 }
 function applyGraphDateRange(key){
-  resetPointPick();
   const start=$(key+'Start').value,end=$(key+'End').value;
   if(!start&&!end){clearGraphDateRange();return;}
   if(start&&end&&start>end){setGraphDateNotice('開始日が終了日より後です。日付を確認してください。',true);return;}
@@ -921,7 +839,6 @@ function setupGraphDateRange(){
     $(key+'Clear').addEventListener('click',()=>clearGraphDateRange());
   }
   syncGraphDateFields();
-  setupPointPicker();
 }
 
 function graphWindowSeries(all){
@@ -941,8 +858,7 @@ function graphRangeControls(){
         graphCustomRange={start:'',end:'',active:false};
         syncGraphDateFields();setGraphDateNotice(graphDateDefaultMessage());
       }
-      resetPointPick();
-      graphMobileRange=button.dataset.range;
+          graphMobileRange=button.dataset.range;
       graphZoomResetState();
       tooltip.style.display='none';
       const info=$('graphTapDetail');if(info){info.hidden=true;info.textContent='';}
@@ -1002,10 +918,6 @@ if(!zoomYAxis){min=Math.min(0,min);max=Math.max(0,max);}
 if(max===min){max+=100;min-=100;}
 if(zoomYAxis){const pad=(max-min)*.06;min-=pad;max+=pad;}
 const range=max-min||1,x=i=>p.l+(data.length===1?w/2:i*w/(data.length-1)),y=v=>p.t+(max-v)*h/range;c.strokeStyle='#e4e8ee';c.fillStyle='#6b7280';c.font=phonePortrait?'11px system-ui':'12px system-ui';for(let i=0;i<=4;i++){const val=max-range*i/4,yy=p.t+h*i/4;c.beginPath();c.moveTo(p.l,yy);c.lineTo(p.l+w,yy);c.stroke();c.textAlign='right';c.textBaseline='middle';c.fillText(Math.round(val).toLocaleString('ja-JP'),p.l-8,yy);}if(min<0&&max>0){c.strokeStyle='#9aa0a6';c.beginPath();c.moveTo(p.l,y(0));c.lineTo(p.l+w,y(0));c.stroke();}const mode=modeSel.value;if(mode==='daily'){const bw=Math.max(2,Math.min(14,w/Math.max(1,data.length)*.72)),y0=y(0);data.forEach((d,i)=>{const yy=y(d.value);c.fillStyle=d.repair?'#8b9ab0':d.value>=0?'#1a73e8':'#d93025';c.fillRect(x(i)-bw/2,d.repair?y0-2:Math.min(yy,y0),bw,d.repair?4:Math.max(1,Math.abs(y0-yy)));});}else if(mode==='cumulative'){for(let i=1;i<data.length;i++){c.strokeStyle=data[i].repair?'#7d8da3':data[i].diff>0?'#1a73e8':data[i].diff<0?'#d93025':'#9aa0a6';c.setLineDash(data[i].repair?[4,4]:[]);c.lineWidth=phonePortrait?.85:1.15;c.beginPath();c.moveTo(x(i-1),y(data[i-1].value));c.lineTo(x(i),y(data[i].value));c.stroke();c.setLineDash([]);}if(showGraphPoints)data.forEach((d,i)=>{c.beginPath();c.fillStyle=d.repair?'#7d8da3':d.diff>0?'#1a73e8':d.diff<0?'#d93025':'#9aa0a6';c.arc(x(i),y(d.value),pointRadius,0,Math.PI*2);c.fill();if(!densePhone){c.strokeStyle='#fff';c.lineWidth=phonePortrait?.6:1;c.stroke();}});}else{c.strokeStyle='#1a73e8';c.lineWidth=phonePortrait?.85:1.15;c.beginPath();data.forEach((d,i)=>i?c.lineTo(x(i),y(d.value)):c.moveTo(x(i),y(d.value)));c.stroke();if(showGraphPoints)data.forEach((d,i)=>{c.beginPath();c.fillStyle=d.value>=0?'#1a73e8':'#d93025';c.arc(x(i),y(d.value),pointRadius,0,Math.PI*2);c.fill();});}const maxLabels=Math.min(6,Math.max(2,Math.floor(w/(phonePortrait?90:150)))),step=Math.max(1,Math.ceil((data.length-1)/Math.max(1,maxLabels-1)));c.fillStyle='#6b7280';c.font=phonePortrait?'11px system-ui':'11px system-ui';c.textAlign='center';c.textBaseline='top';data.forEach((d,i)=>{if(phonePortrait?(i===0||i===data.length-1||(i%step===0&&i+Math.max(1,Math.round(step*.45))<data.length-1)):(i%step===0||i===data.length-1))c.fillText(d.label,x(i),p.t+h+(phonePortrait?8:10));});points=data.map((d,i)=>({x:x(i),y:y(d.value),d}));
-if(showGraphPoints&&pointPickActive&&pointPickStart){
-  const p=points.find(x=>x.d.date===pointPickStart);
-  if(p){c.beginPath();c.arc(p.x,p.y,8,0,Math.PI*2);c.strokeStyle='#ef9f16';c.lineWidth=3;c.stroke();}
-}
 const ex=extremes(ds),st=streaks(ds);$('legend').innerHTML=(ex?'<span class="blue">最大差枚 '+signed(ex.hi.diff)+'枚 '+shortDate(ex.hi.date)+'</span> / <span class="red">最大マイナス '+signed(ex.lo.diff)+'枚 '+shortDate(ex.lo.date)+'</span> / ':'')+'<span class="blue">最長上昇 '+st.bestUp.days+'日 ('+signed(st.bestUp.diff)+'枚) '+shortDate(st.bestUp.start)+'〜'+shortDate(st.bestUp.end)+'</span> / <span class="red">最長下降 '+st.bestDn.days+'日 ('+signed(st.bestDn.diff)+'枚) '+shortDate(st.bestDn.start)+'〜'+shortDate(st.bestDn.end)+'</span>';}
 
 
@@ -1463,8 +1375,7 @@ graphFocusStore.addEventListener('change',()=>{
 });
 for(const [dst,src] of [[graphFocusMachine,machineSel],[graphFocusMonth,monthSel],[graphFocusMode,modeSel]]){
   dst.addEventListener('change',()=>{
-    resetPointPick();
-    src.value=dst.value;
+      src.value=dst.value;
     if(src===monthSel&&graphCustomRange.active){
       graphCustomRange={start:'',end:'',active:false};
       syncGraphDateFields();setGraphDateNotice(graphDateDefaultMessage());
@@ -1484,7 +1395,6 @@ document.addEventListener('keydown',e=>{
 });
 
 [machineSel,monthSel,modeSel].forEach(x=>x.addEventListener('change',()=>{
-  resetPointPick();
   const info=$('graphTapDetail');if(info)info.hidden=true;
   if(x===monthSel&&graphCustomRange.active){
     graphCustomRange={start:'',end:'',active:false};
@@ -1493,7 +1403,7 @@ document.addEventListener('keydown',e=>{
   render();graphRangeControls();
   if(x===monthSel&&$('weekdayPeriodSel')?.value==='CHART')renderWeekdaySection();
 }));window.addEventListener('resize',()=>{if(RECORDS.length)render();});function showChartTooltip(e){
- if(pointPickActive||graphZoomTouches.size>=2||graphZoomPinch)return;
+ if(graphZoomTouches.size>=2||graphZoomPinch)return;
  if(!points.length)return;
  const r=canvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
  const touch=e.pointerType==='touch'||e.pointerType==='pen';
