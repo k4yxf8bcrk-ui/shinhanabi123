@@ -1,6 +1,6 @@
 {
   "schemaVersion": 4,
-  "generatedAt": "2026-11-12T22:12:34.545Z",
+  "generatedAt": "2026-11-12T22:34:55.388Z",
   "records": [
     {
       "date": "2025-09-11",
@@ -18489,7 +18489,71 @@
       "collectedAt": "2026-11-12T22:10:43.582Z"
     }
   ],
-  "aiAnalysis": null,
+  "aiAnalysis": {
+    "generatedAt": "2026-11-12T22:34:54.128Z",
+    "sourceLatestDate": "2026-11-12",
+    "targetDate": "2026-11-13",
+    "summary": "2026年11-13対象の3台分析。全台でプラス材料が優勢だが、グラフ形状や直近の推移を重視して慎重に判断する。",
+    "ranking": [
+      {
+        "machineNo": "3235",
+        "view": "高値圏で上昇が加速しており総合的に最も勢いが強い。",
+        "weekdayTrend": "金曜は勝率50.8%と平均的で大きな偏りはない。",
+        "streakView": "2日上昇中で過去の同条件では平均76枚。",
+        "recentView": "直近7日平均833枚と好調を維持している。",
+        "graphTrend": "強い右肩上がりで高値圏を維持、ボラティリティは1051。",
+        "confidence": "高め",
+        "plusFactors": [
+          "直近7日平均が833枚と高い水準",
+          "グラフ形状が強い右肩上がり"
+        ],
+        "minusFactors": [
+          "ボラティリティが高くブレやすい",
+          "全体勝率は41.8%とやや低い"
+        ]
+      },
+      {
+        "machineNo": "3233",
+        "view": "高値圏にあるが直近は下降気味で勢いに陰りが見える。",
+        "weekdayTrend": "金曜の勝率は45.9%で特段の強さはない。",
+        "streakView": "1日下降中で過去の同条件では平均64枚。",
+        "recentView": "直近7日平均71枚で直近30日は150枚。",
+        "graphTrend": "横ばい圏だがモメンタム悪化加速、位置は88.5%。",
+        "confidence": "高め",
+        "plusFactors": [
+          "直近30日の安定感がある",
+          "日付末尾3の日は勝率高め"
+        ],
+        "minusFactors": [
+          "モメンタムが大幅に悪化している",
+          "直近は下降トレンドに入っている"
+        ]
+      },
+      {
+        "machineNo": "3232",
+        "view": "高値圏に位置するが勢いがやや鈍化傾向にある。",
+        "weekdayTrend": "金曜は勝率37.7%とやや苦手傾向。",
+        "streakView": "1日上昇中で過去の同条件では平均95枚。",
+        "recentView": "直近7日平均531枚と推移している。",
+        "graphTrend": "強い右肩上がりだがモメンタムは勢い鈍化。",
+        "confidence": "高め",
+        "plusFactors": [
+          "直近7日の平均値が高い",
+          "高値圏を維持している"
+        ],
+        "minusFactors": [
+          "金曜日の勝率や平均が低め",
+          "上昇の勢いが鈍化している"
+        ]
+      }
+    ],
+    "watchPoints": [
+      "3235の強い上昇トレンドの継続性",
+      "3233のモメンタム悪化からの推移",
+      "各台の金曜日における過去傾向との合致"
+    ],
+    "caution": "数値傾向に基づく分析であり、未来の結果を断定するものではありません。過度な期待は避け、慎重な判断を心がけてください。"
+  },
   "aiHistory": [
     {
       "generatedAt": "2026-10-13T23:02:15.128Z",
@@ -18874,22 +18938,64 @@
       "targetDate": "2026-10-30"
     },
     {
-      "targetDate": "2026-11-06",
-      "sourceLatestDate": "2026-11-05",
       "generatedAt": "2026-11-05T21:58:15.193Z",
+      "predictions": [
+        {
+          "confidence": "高め",
+          "label": "中立",
+          "machineNo": "3233",
+          "score": 47.7
+        },
+        {
+          "confidence": "高め",
+          "label": "中立",
+          "machineNo": "3232",
+          "score": 46.9
+        },
+        {
+          "confidence": "高め",
+          "label": "中立",
+          "machineNo": "3235",
+          "score": 45.7
+        }
+      ],
       "ranking": [
         {
+          "confidence": "高め",
           "machineNo": "3233",
+          "rank": 1
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3232",
+          "rank": 2
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3235",
+          "rank": 3
+        }
+      ],
+      "sourceLatestDate": "2026-11-05",
+      "targetDate": "2026-11-06"
+    },
+    {
+      "targetDate": "2026-11-13",
+      "sourceLatestDate": "2026-11-12",
+      "generatedAt": "2026-11-12T22:34:54.128Z",
+      "ranking": [
+        {
+          "machineNo": "3235",
           "rank": 1,
           "confidence": "高め"
         },
         {
-          "machineNo": "3232",
+          "machineNo": "3233",
           "rank": 2,
           "confidence": "高め"
         },
         {
-          "machineNo": "3235",
+          "machineNo": "3232",
           "rank": 3,
           "confidence": "高め"
         }
@@ -18897,19 +19003,19 @@
       "predictions": [
         {
           "machineNo": "3233",
-          "score": 47.7,
-          "label": "中立",
-          "confidence": "高め"
-        },
-        {
-          "machineNo": "3232",
-          "score": 46.9,
+          "score": 50.8,
           "label": "中立",
           "confidence": "高め"
         },
         {
           "machineNo": "3235",
-          "score": 45.7,
+          "score": 48.8,
+          "label": "中立",
+          "confidence": "高め"
+        },
+        {
+          "machineNo": "3232",
+          "score": 46.5,
           "label": "中立",
           "confidence": "高め"
         }
@@ -18925,7 +19031,7 @@
     "top2Hits": 6,
     "top2Rate": 0.5454545454545454,
     "avgTopDiff": -76.81818181818181,
-    "pending": 0,
+    "pending": 1,
     "recent": [
       {
         "targetDate": "2026-11-06",
