@@ -264,6 +264,7 @@ body.graphFocusOpen{overflow:hidden}
       <select id="storeSelect">
         <option value="yuto">コンコルド浜松雄踏店</option>
         <option value="morita">ABC浜松森田町店（ABC森田）</option>
+        <option value="magarikane">スーパーコンコルド曲金店（静岡）</option>
       </select>
     </label>
     <div class="storeHint">店舗ごとに台データ・グラフ・予想履歴を分けて表示します。既存の雄踏店データはそのまま保持しています。</div>
@@ -394,6 +395,7 @@ body.graphFocusOpen{overflow:hidden}
       <label for="graphFocusStore">店舗<select id="graphFocusStore">
         <option value="yuto">コンコルド雄踏</option>
         <option value="morita">ABC森田</option>
+        <option value="magarikane">スーパーコンコルド曲金</option>
       </select></label>
       <label for="graphFocusMachine">台番<select id="graphFocusMachine"></select></label>
       <label for="graphFocusMonth">期間<select id="graphFocusMonth"></select></label>
@@ -413,25 +415,31 @@ body.graphFocusOpen{overflow:hidden}
 </main>
 <script>
 const STORE_PARAM=new URLSearchParams(window.location.search).get('store');
-const STORE_ID=(STORE_PARAM==='morita'||STORE_PARAM==='abc-morita')?'morita':'yuto';
-const STORE_NAME=STORE_ID==='morita'?'ABC浜松森田町店':'コンコルド浜松雄踏店';
-const STORE_DATA_URL=STORE_ID==='morita'?'./stores/abc-morita/data.json':'./data.json';
-const STORE_EDITOR_URL=STORE_ID==='morita'?'./stores/abc-morita/editor.json':'./editor.json';
+const STORE_ID=(STORE_PARAM==='morita'||STORE_PARAM==='abc-morita')?'morita'
+  :(STORE_PARAM==='magarikane'||STORE_PARAM==='super-concorde-magarikane')?'magarikane':'yuto';
+const STORE_CONFIGS={
+  yuto:{name:'コンコルド浜松雄踏店',data:'./data.json',editor:'./editor.json'},
+  morita:{name:'ABC浜松森田町店',data:'./stores/abc-morita/data.json',editor:'./stores/abc-morita/editor.json'},
+  magarikane:{name:'スーパーコンコルド曲金店',data:'./stores/super-concorde-magarikane/data.json',editor:'./stores/super-concorde-magarikane/editor.json'}
+};
+const STORE_NAME=STORE_CONFIGS[STORE_ID].name;
+const STORE_DATA_URL=STORE_CONFIGS[STORE_ID].data;
+const STORE_EDITOR_URL=STORE_CONFIGS[STORE_ID].editor;
 window.SHINHANABI_STORE_ID=STORE_ID;
 window.SHINHANABI_DATA_URL=STORE_DATA_URL;
 const storeSelect=document.getElementById('storeSelect');
 storeSelect.value=STORE_ID;
 storeSelect.addEventListener('change',()=>{
   const u=new URL(window.location.href);
-  if(storeSelect.value==='morita')u.searchParams.set('store','morita');
-  else u.searchParams.delete('store');
+  if(storeSelect.value==='yuto')u.searchParams.delete('store');
+  else u.searchParams.set('store',storeSelect.value);
   window.location.assign(u.toString());
 });
 document.title='新ハナビ分析｜'+STORE_NAME;
-if(STORE_ID==='morita'){
+if(STORE_ID!=='yuto'){
   const notice=document.getElementById('storeNotice');
   notice.hidden=false;
-  notice.textContent='ABC森田：初期データ0件から取得を開始します。Chrome拡張の店舗選択でABC浜松森田町店を選び、取得・公開するとこちらへ反映されます。雄踏店データとは混ざりません。';
+  notice.textContent=STORE_NAME+'専用のデータを表示しています。Chrome拡張で同じ店舗を選んで取得・公開してください。他店舗のデータは混ざりません。';
   const logic=document.getElementById('logicFold');
   if(logic)logic.hidden=true;
 }
@@ -1124,16 +1132,16 @@ function renderTable(rows){$('tbody').innerHTML=rows.slice().sort((a,b)=>b.date.
  return '<tr'+(repair?' class="repairRow"':'')+'><td>'+esc(r.date)+'</td><td>'+esc(r.weekday||'')+'</td><td>'+esc(r.machineNo)+'</td><td>'+(repair?'<span class="repairLabel">修理中（0G）</span>':fmt(r.games))+'</td><td class="'+(!repair&&Number(r.diff)>=0?'blue':!repair?'red':'')+'">'+signed(r.diff)+'</td><td>'+r.bb+'</td><td>'+r.rb+'</td><td>'+prob(r.totalProb)+'</td><td>'+prob(r.bbProb)+'</td><td>'+prob(r.rbProb)+'</td></tr>';
 }).join('');}
 function render(){const rows=filtered(),ds=daily(rows);renderCards(ds);renderRepairSummary(rows);draw(ds);renderGraphFocusStats();renderTrend();renderTable(rows);}
-function setup(){const machines=[...new Set(RECORDS.map(r=>String(r.machineNo)))].sort((a,b)=>Number(a)-Number(b));machineSel.innerHTML='<option value="ALL">全台合計</option>'+machines.map(m=>'<option value="'+m+'">台番 '+m+'</option>').join('');const months=[...new Set(RECORDS.map(r=>String(r.date).slice(0,7)))].sort().reverse();monthSel.innerHTML='<option value="ALL">全期間</option><option value="RECENT_2M">直近2か月</option><option value="RECENT_3M">直近3か月</option><option value="RECENT_6M">直近6か月（半年）</option><option value="RECENT_12M">直近1年</option>'+months.map(m=>'<option value="'+m+'">'+m.replace('-','年')+'月</option>').join('');$('title').textContent=STORE_NAME+'・新ハナビ';$('subtitle').textContent='保存データ '+RECORDS.length.toLocaleString('ja-JP')+'行 / 最終更新 '+(GENERATED_AT?new Date(GENERATED_AT).toLocaleString('ja-JP'):'-');$('loadStatus').hidden=true;$('mainPanel').hidden=false;$('tablePanel').hidden=false;if(STORE_ID==='morita'){
+function setup(){const machines=[...new Set(RECORDS.map(r=>String(r.machineNo)))].sort((a,b)=>Number(a)-Number(b));machineSel.innerHTML='<option value="ALL">全台合計</option>'+machines.map(m=>'<option value="'+m+'">台番 '+m+'</option>').join('');const months=[...new Set(RECORDS.map(r=>String(r.date).slice(0,7)))].sort().reverse();monthSel.innerHTML='<option value="ALL">全期間</option><option value="RECENT_2M">直近2か月</option><option value="RECENT_3M">直近3か月</option><option value="RECENT_6M">直近6か月（半年）</option><option value="RECENT_12M">直近1年</option>'+months.map(m=>'<option value="'+m+'">'+m.replace('-','年')+'月</option>').join('');$('title').textContent=STORE_NAME+'・新ハナビ';$('subtitle').textContent='保存データ '+RECORDS.length.toLocaleString('ja-JP')+'行 / 最終更新 '+(GENERATED_AT?new Date(GENERATED_AT).toLocaleString('ja-JP'):'-');$('loadStatus').hidden=true;$('mainPanel').hidden=false;$('tablePanel').hidden=false;if(STORE_ID!=='yuto'){
   $('predictionPanel').hidden=false;
-  $('predictionHeading').textContent='ABC森田・編集長予想は準備中';
+  $('predictionHeading').textContent=STORE_NAME+'・編集長予想は準備中';
   $('predictionExplainer').textContent='確認できた日付が少なく古いため、現時点では未来の予想順位を表示しません。';
   $('predictionTarget').textContent=RECORDS.length?'最新データあり（分析準備中）':'取得前・データ0件';
   $('predictionGrid').innerHTML='<div class="predictionCard">新ハナビのデータ取得を開始すると、ここで台別の実績を確認できます。データ未取得の日を0Gとして補完しません。</div>';
   $('consensusBox').innerHTML='';
   $('aiBox').innerHTML='';
   $('aiAccuracyBox').innerHTML='';
-  $('editorChiefBox').innerHTML='<h3>編集長分析 <span class="editorBadge">ABC森田専用</span></h3><div class="muted">雄踏店の予想は表示しません。日別の記録が蓄積したら、ABC森田のデータだけで編集長予想を作成します。</div>';
+  $('editorChiefBox').innerHTML='<h3>編集長分析 <span class="editorBadge">'+esc(STORE_NAME)+'専用</span></h3><div class="muted">雄踏店の予想は表示しません。日別の記録が蓄積したら、この店舗のデータだけで編集長予想を作成します。</div>';
   $('editorChiefAccuracy').innerHTML='';
   $('regBiasBox').innerHTML='';
   $('rankAuditBox').innerHTML='';
@@ -1332,8 +1340,8 @@ graphFocusStore.addEventListener('change',()=>{
   if(graphFocusStore.value===STORE_ID)return;
   // 店舗を変更してもグラフ専用モードを維持。台番は新店舗の番号から選び直せる。
   const url=new URL(window.location.href);
-  if(graphFocusStore.value==='morita')url.searchParams.set('store','morita');
-  else url.searchParams.delete('store');
+  if(graphFocusStore.value==='yuto')url.searchParams.delete('store');
+  else url.searchParams.set('store',graphFocusStore.value);
   url.searchParams.set('focus','1');
   url.searchParams.set('focusMode',modeSel.value);
   if(monthSel.value!=='ALL')url.searchParams.set('focusMonth',monthSel.value);
@@ -1404,7 +1412,7 @@ canvas.addEventListener('pointermove',e=>{if(e.pointerType==='touch')showChartTo
 (async()=>{try{const [res,edRes,ghRes]=await Promise.all([fetch(STORE_DATA_URL+'?ts='+Date.now(),{cache:'no-store'}),fetch(STORE_EDITOR_URL+'?ts='+Date.now(),{cache:'no-store'}).catch(()=>null),(STORE_ID==='yuto'?fetch('./gemini-history.json?ts='+Date.now(),{cache:'no-store'}).catch(()=>null):Promise.resolve(null))]);if(!res.ok)throw new Error('data.json '+res.status);const data=await res.json();RECORDS=Array.isArray(data.records)?data.records:[];GENERATED_AT=data.generatedAt||'';AI_ANALYSIS=data.aiAnalysis||null;AI_ACCURACY=data.aiAccuracy||null;AI_HISTORY_PUBLIC=Array.isArray(data.aiHistory)?data.aiHistory:[];if(edRes&&edRes.ok){try{EDITOR_CHIEF=await edRes.json();}catch(_){EDITOR_CHIEF=null;}}if(ghRes&&ghRes.ok){try{const gh=await ghRes.json();GEMINI_HISTORY=Array.isArray(gh)?gh:(Array.isArray(gh.history)?gh.history:[]);}catch(_){GEMINI_HISTORY=[];}}if(!RECORDS.length&&STORE_ID==='yuto')throw new Error('公開データがまだありません。拡張から「今すぐ最新版を公開」を実行してください。');setup();}catch(e){const box=$('loadStatus');box.classList.add('error');box.innerHTML='公開データを読み込めませんでした。<br>'+String(e.message||e)+'<br><span class="muted">初回設定直後の場合は、GitHub Pagesの公開設定と data.json の配置を確認してください。</span>';}})();
 </script>
 <script>
-// 追加分析スクリプトは雄踏店専用の歴史データを参照するため、ABC森田では読み込まない。
+// 追加分析スクリプトは雄踏店専用の歴史データを参照するため、他店舗では読み込まない。
 if(STORE_ID==='yuto'){
   const scripts=['./public-gemini-consensus.js?v=20261015c','./public-dip-nextday.js?v=20261015c','./public-rise-fall-follow.js?v=20261015c','./public-shape-match.js?v=20261015a','./public-probability-lab.js?v=20261015a'];
   for(const src of scripts){const tag=document.createElement('script');tag.src=src;tag.async=false;document.body.appendChild(tag);}
