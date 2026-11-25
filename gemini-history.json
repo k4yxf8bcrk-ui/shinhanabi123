@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-25T02:41:19.323Z",
+  "updatedAt": "2026-11-25T02:59:14.583Z",
   "history": [
     {
       "generatedAt": "2026-10-13T23:02:15.128Z",
@@ -511,9 +511,51 @@
       "targetDate": "2026-11-14"
     },
     {
-      "targetDate": "2026-11-20",
-      "sourceLatestDate": "2026-11-19",
       "generatedAt": "2026-11-25T02:41:17.976Z",
+      "predictions": [
+        {
+          "confidence": "高め",
+          "label": "中立",
+          "machineNo": "3235",
+          "score": 49
+        },
+        {
+          "confidence": "高め",
+          "label": "中立",
+          "machineNo": "3232",
+          "score": 47.3
+        },
+        {
+          "confidence": "高め",
+          "label": "ややマイナス寄り",
+          "machineNo": "3233",
+          "score": 44.8
+        }
+      ],
+      "ranking": [
+        {
+          "confidence": "高め",
+          "machineNo": "3235",
+          "rank": 1
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3232",
+          "rank": 2
+        },
+        {
+          "confidence": "高め",
+          "machineNo": "3233",
+          "rank": 3
+        }
+      ],
+      "sourceLatestDate": "2026-11-19",
+      "targetDate": "2026-11-20"
+    },
+    {
+      "targetDate": "2026-11-25",
+      "sourceLatestDate": "2026-11-24",
+      "generatedAt": "2026-11-25T02:59:11.489Z",
       "ranking": [
         {
           "machineNo": "3235",
@@ -534,20 +576,20 @@
       "predictions": [
         {
           "machineNo": "3235",
-          "score": 49,
+          "score": 52.8,
           "label": "中立",
           "confidence": "高め"
         },
         {
           "machineNo": "3232",
-          "score": 47.3,
+          "score": 48.4,
           "label": "中立",
           "confidence": "高め"
         },
         {
           "machineNo": "3233",
-          "score": 44.8,
-          "label": "ややマイナス寄り",
+          "score": 47.7,
+          "label": "中立",
           "confidence": "高め"
         }
       ]
